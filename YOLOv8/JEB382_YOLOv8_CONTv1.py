@@ -8,7 +8,8 @@ import ultralytics
 from ultralytics import YOLO
 from ultralytics import settings
 #------------------------
-import os,sys,time,shutil
+import os,sys,time,shutil,cv2
+import matplotlib.pyplot as plt
 import numpy as np
 dir_path = os.path.abspath("")
 print(f"DIRECTORY:\t\t<{dir_path}>")
@@ -150,7 +151,21 @@ def YOLOv8_find_latest(folder_path):
         if os.path.isfile(f'{folder_path}/{folder}/weights/best.pt'): return f'{folder_path}/{folder}/weights/best.pt'
     return None
 
-
+EXPAN_RATE=0.7
+COMPRESS_RATE=10
+def reduce_found_obj(file_path, coords, output_path):
+    #read
+    img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    
+    #crop
+    img = img[ int(coords[0][1]*EXPAN_RATE):int( img.shape[0]-(img.shape[0]-coords[1][1])*EXPAN_RATE ),  int(coords[0][0]*EXPAN_RATE):int( img.shape[1]-(img.shape[1]-coords[1][0])*EXPAN_RATE )  ]
+    
+    #compress
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), COMPRESS_RATE]
+    _, encimg = cv2.imencode('.jpg', img, encode_param)
+    decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
+    
+    cv2.imwrite(output_path, decoded_img )
 
 
 
