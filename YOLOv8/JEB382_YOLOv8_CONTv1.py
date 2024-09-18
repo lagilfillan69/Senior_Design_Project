@@ -1,8 +1,6 @@
+# Written by Jonah Earl Belback
+
 # YOLOv8n stable module container
-
-
-
-
 
 
 #-------
@@ -17,7 +15,6 @@ print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 from fun_colors import *
 #------------------------
-PTV2_HYPER_DEF=[24,128*2,0.2,10,1000,30000,100,1e-3,200,64,4,4,0.0]
 
 
 #===============================================================================
@@ -26,17 +23,21 @@ vers: type of YOLOv8 model
     - n(nano)
     - s(mall), larger
     - else raises error
-modelpath: either
+    
+modelpath: either:
     - directpath to a YOLOv8 model
     or
     - its training folder: find latest 'best.pt' file
+    
+verbose: passed YOLOv8 attribute, deals with YOLO printouts
 
 '''
 
 class YOLO_model_v1:
-    def __init__(self, vers='n', hyperparameters=PTV2_HYPER_DEF, model_path=None,name=None):
+    def __init__(self, vers='n', model_path=None,verbose=False):
         #check library
         ultralytics.checks()
+        self.verbose=verbose
         
         #---------------------------------------
         # NOTE: Model Creation
@@ -45,8 +46,8 @@ class YOLO_model_v1:
         if model_path == None:
             prGreen("Creating new model")
             #load version
-            if vers.lower() == 'n': self.model = YOLO("yolov8n.pt")
-            elif vers.lower() == 's': self.model = YOLO("yolov8s.pt")
+            if vers.lower() == 'n': self.model = YOLO("yolov8n.pt",verbose=self.verbose)
+            elif vers.lower() == 's': self.model = YOLO("yolov8s.pt",verbose=self.verbose)
             else: raise ValueError(f"YOLOv8 version not found: <_{vers}_>")
             
             prGreen("SUCCESS: MODEL CREATED")
@@ -99,7 +100,7 @@ class YOLO_model_v1:
                 #load model from file
                 prALERT("Please double check your   < hyperparameters >   are aligned with saved model")
                 prLightPurple(latest_model)
-                self.model = YOLO(dir_path)
+                self.model = YOLO(dir_path,verbose=self.verbose)
             
             except Exception as e:
                 prALERT(str(e))
@@ -109,14 +110,27 @@ class YOLO_model_v1:
         else:
             prALERT("Please double check your   < hyperparameters >   are aligned with saved model")
             prLightPurple(model_path)
-            self.model = YOLO(dir_path)
+            self.model = YOLO(dir_path,verbose=self.verbose)
         
         prGreen("SUCCESS: MODEL LOADED")
     
     
     # ========================================
-    def run_model(self,data=None,length=256,verbose=False):
-        pass
+    def run_model(self,data_path):
+        results = self.model(data_path)  # predict on an image file
+        arr = [];temp=[]
+        for obj in results:
+            xyxy = list(obj.boxes.xyxy.numpy()[0])
+            arr.append( obj.names[ int(obj.boxes.cls.numpy()[0]) ],  obj.boxes.conf,  [xyxy[:2],xyxy[2:]] )
+        
+        #list of list of individual object properties [ classification, conf, [Top right BB corod, Bottom Left] ]
+        return arr
+    
+    
+    # ========================================
+    def train_model(self,data_path,iter):
+        train_obj = self.model.train(data=data_path, epochs=iter)  # train the model
+        return train_obj.save_dir
 
 
 #==========================================================

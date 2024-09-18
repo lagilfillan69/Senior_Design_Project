@@ -1,3 +1,5 @@
+# Written by Jonah Earl Belback
+
 # Helper functions
 
 import pickle, win32api,datetime,pandas,re
