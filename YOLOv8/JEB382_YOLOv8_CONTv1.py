@@ -121,9 +121,9 @@ class YOLO_model_v1:
         arr = [];temp=[]
         for obj in results:
             xyxy = list(obj.boxes.xyxy.numpy()[0])
-            arr.append( obj.names[ int(obj.boxes.cls.numpy()[0]) ],  obj.boxes.conf,  [xyxy[:2],xyxy[2:]] )
+            arr.append( obj.names[ int(obj.boxes.cls.numpy()[0]) ],  [xyxy[:2],xyxy[2:]] )
         
-        #list of list of individual object properties [ classification, conf, [Top right BB corod, Bottom Left] ]
+        #list of list of individual object properties [ classification, [Top right BB corod, Bottom Left] ]
         return arr
     
     
