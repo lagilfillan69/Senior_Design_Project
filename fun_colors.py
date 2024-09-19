@@ -2,7 +2,7 @@
 
 # Helper functions
 
-import pickle, win32api,datetime,pandas,re
+import win32api,datetime,pandas
 from colorama import Fore, Back, Style
 def prRed(skk): print("\033[91m{}\033[00m" .format(skk))
 def prGreen(skk): print("\033[92m{}\033[00m" .format(skk))
@@ -51,26 +51,6 @@ def file_wipe(path):
     t_file= open(path,'w', encoding="utf-8")
     t_file.close()
 
-def fun_encode(s,stoi):
-    return [stoi[c] for c in s] # encoder: take a string, output a list of integers
-def fun_decode(l,itos):
-    return ''.join([itos[i] for i in l]) # decoder: take a list of integers, output a string
-
-def load_RBT_Arr(file):
-    print(file)
-    with open(file, 'rb') as f: dat = pickle.load(f)
-    return dat
-        
-def sublist_sort(list_tb: list): #sort list of lists by 2nd element
-    list_tb.sort(key = lambda x: x[1], reverse=True)
-    return list_tb
-
-def sorted_RBT(file):
-    return sublist_sort(load_RBT_Arr(file))
-
-def sorted_byVAL(file):
-    return [item[0] for item in sublist_sort(load_RBT_Arr(file))]
-
 def rgb(minimum, maximum, value):
     ratio = 2 * (value-minimum) / (maximum - minimum)
     b = max(0, (1 - ratio))
@@ -102,17 +82,36 @@ def csv_size(filepath):
                 break
         return sze
 
-def parquet_size(filepath):
-    df = pandas.read_parquet(filepath)
-    return df.shape[0]
+       
+#===================
+import os,cv2
+#find latest YOLOv8 file from a folder or then latest best.pt in subfolders
+def YOLOv8_find_latest(folder_path):
+    folder_list = os.listdir(folder_path)
+    file_list = [ i for i in folder_list if i[-3:] == '.pt']
+    folder_list.reverse()
+    file_list.reverse()
+    # print( folder_list )
+    # print( file_list )
 
-def data_clean(data:str):
-    for i in ['™']: data=data.replace(i,"")
-    for i in ['“','”']: data=data.replace(i,'"')
-    for i in ['‘','’']: data=data.replace(i,"'")
-    for i in ['--','---','***','�','—','\t','_','|']: data=data.replace(i," ")
-    data= re.sub(' {2,}',' ',data)
-    return data
+    if file_list: return f'{folder_path}/{file_list[0]}'
 
-        
+    for folder in folder_list:
+        if os.path.isfile(f'{folder_path}/{folder}/weights/best.pt'): return f'{folder_path}/{folder}/weights/best.pt'
+    return None
+
+EXPAN_RATE=0.7
+COMPRESS_RATE=10
+def reduce_found_obj(file_path, coords, output_path):
+    #read
+    img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
     
+    #crop
+    img = img[ int(coords[0][1]*EXPAN_RATE):int( img.shape[0]-(img.shape[0]-coords[1][1])*EXPAN_RATE ),  int(coords[0][0]*EXPAN_RATE):int( img.shape[1]-(img.shape[1]-coords[1][0])*EXPAN_RATE )  ]
+    
+    #compress
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), COMPRESS_RATE]
+    _, encimg = cv2.imencode('.jpg', img, encode_param)
+    decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
+    
+    cv2.imwrite(output_path, decoded_img )
