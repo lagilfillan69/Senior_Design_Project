@@ -1,10 +1,11 @@
 # Written by Jonah Earl Belback
 
-# Stable container for Depth Camera
+# Stable container for Depth Camera from Carnegie Robotics
 
 import math
+from fun_colors import *
 
-
+#needs to be manually set
 DISTANCE_CAM_TO_GND = 0
 
 
