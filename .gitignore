@@ -6,3 +6,4 @@
 /runs
 /Py_Modules/YOLOv8/datasets/example_dataset
 /Py_Modules/YOLOv8/runs
+/Py_Modules/__pycache__
