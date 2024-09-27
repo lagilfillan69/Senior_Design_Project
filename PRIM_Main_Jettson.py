@@ -1,4 +1,6 @@
 # Main on Jettson
+# Uses modules avalible to it in Py_Modules directory
+
 # Primary Main: Responsible for decision making process, tells ESP32 what to do through serial
 #   - see Serial_Comms
 
