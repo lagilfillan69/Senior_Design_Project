@@ -8,3 +8,4 @@
 /Py_Modules/YOLOv8/runs
 /Py_Modules/__pycache__
 /Py_Modules/YOLOv8/loadable_models/testing
+*.ipynb
