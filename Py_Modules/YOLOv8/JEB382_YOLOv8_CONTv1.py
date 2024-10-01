@@ -9,10 +9,10 @@ import ultralytics
 from ultralytics import YOLO
 from ultralytics import settings
 #onnx
-import onnxruntime
+import onnxruntime,cv2
 from PIL import Image
 #------------------------
-import os,sys,time,shutil,cv2
+import os,sys,time,shutil
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -47,12 +47,14 @@ classes: list of classifier names
 
 '''
 
-
 class YOLO_model_v1:
     def __init__(self, vers='n', model_path=None,verbose=False,model_type='classify',classes=['Cardboard','glass','metal','paper','plastic']):
+        self.verbose=verbose
+        self.model_type=model_type
+        self.classes=classes
+        
         #check library
         ultralytics.checks()
-        self.verbose=verbose
         
         #---------------------------------------
         # NOTE: Model Creation
@@ -71,7 +73,6 @@ class YOLO_model_v1:
             
         #load latest model from a directory
         else:
-            self.classes=classes
             self.load_model(model_path)
             self.pretrain=True
         
@@ -117,7 +118,7 @@ class YOLO_model_v1:
         if model_path[-5:] =='.onnx':
             prALERT("Please double check your   < hyperparameters >   are aligned with saved model")
             prLightPurple('From File:\t'+model_path)
-            self.model = YOLO(model_path,verbose=self.verbose,task='classify')
+            self.model = YOLO(model_path,verbose=self.verbose,task=self.model_type)
             
             # onnx runs differently
             self.opt_session = onnxruntime.SessionOptions()
@@ -170,7 +171,7 @@ class YOLO_model_v1:
         
         #if not onnx model
         if self.full_model:
-            results = self.model(data_path)  # predict on an image file
+            results = self.model(data_path,verbose=self.verbose)  # predict on an image file
             arr = []       
             for obj in results:            
                 if obj.boxes.xyxy.shape[0] == 0: continue #catch empty results
@@ -228,7 +229,7 @@ class YOLO_model_v1:
     
     
     '''
-    opt: optimizer
+    opt: optimizer (honestly dont know the difference)
         - None: let YOlO decide which on to use
         - SGD:
         - Adam:
@@ -261,7 +262,8 @@ class YOLO_model_v1:
                     # optimizer=opt,
                     pretrained=self.pretrain,
                     # imgsz=imgsize,
-                    rect=rect
+                    rect=rect,
+                    verbose=self.verbose
                     )
             else:
                 train_obj = self.model.train(
@@ -270,7 +272,8 @@ class YOLO_model_v1:
                     # optimizer=opt,
                     pretrained=self.pretrain,
                     imgsz=imgsize,
-                    rect=rect
+                    rect=rect,
+                    verbose=self.verbose
                     )
         else:
             if imgsize == None:
@@ -280,7 +283,8 @@ class YOLO_model_v1:
                     optimizer=opt,
                     pretrained=self.pretrain,
                     # imgsz=imgsize,
-                    rect=rect
+                    rect=rect,
+                    verbose=self.verbose
                     )
             else:
                 train_obj = self.model.train(
@@ -289,7 +293,8 @@ class YOLO_model_v1:
                     optimizer=opt,
                     pretrained=self.pretrain,
                     imgsz=imgsize,
-                    rect=rect
+                    rect=rect,
+                    verbose=self.verbose
                     )
         
         self.pretrain=True
@@ -324,25 +329,26 @@ if __name__ == "__main__":
     test_model = YOLO_model_v1()
     print(Back.CYAN+f'model1 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
     print(Back.CYAN+f'model1 full_model:\t{test_model.full_model}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model1 verbose:\t{test_model.verbose}'+Style.RESET_ALL)
     #training
     start_time = time.time()
     save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
     end_time = time.time()
     print(Back.CYAN+f'model1 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
     print(Back.CYAN+f'model1 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model1 Train output:\t{save_dir}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model1 Train output:\t{save_dir}'+Style.RESET_ALL)
     #running
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model1 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model1 Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model1 Run output:\t{result}'+Style.RESET_ALL)
     #running square
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model1 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model1 Sq Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model1 Sq Run output:\t{result}'+Style.RESET_ALL)
     #saving
     start_time = time.time()
     result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_initModelN.onnx')
@@ -364,19 +370,19 @@ if __name__ == "__main__":
     end_time = time.time()
     print(Back.CYAN+f'model2 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
     print(Back.CYAN+f'model2 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model2 Train output:\t{save_dir}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model2 Train output:\t{save_dir}'+Style.RESET_ALL)
     #running
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model2 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model2 Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model2 Run output:\t{result}'+Style.RESET_ALL)
     #running square
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model2 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model2 Sq Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model2 Sq Run output:\t{result}'+Style.RESET_ALL)
     #saving
     start_time = time.time()
     result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_initModelS.onnx')
@@ -398,19 +404,19 @@ if __name__ == "__main__":
     end_time = time.time()
     print(Back.CYAN+f'model3 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
     print(Back.CYAN+f'model3 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model3 Train output:\t{save_dir}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model3 Train output:\t{save_dir}'+Style.RESET_ALL)
     #running
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model3 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model3 Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model3 Run output:\t{result}'+Style.RESET_ALL)
     #running square
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model3 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model3 Sq Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model3 Sq Run output:\t{result}'+Style.RESET_ALL)
     #saving
     start_time = time.time()
     result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_LoadModPT.onnx',imgsz=[512,384])
@@ -431,25 +437,25 @@ if __name__ == "__main__":
         save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
         raise KeyError("model4 NOT SUPPOSED TO BE ABLE TO TRAIN")
     except:
-        print(Back.CYAN+f'model4 SUCCESS: cant train .onnx model'+Style.RESET_ALL)
+        print(Back.BLUE+f'model4 SUCCESS: cant train .onnx model'+Style.RESET_ALL)
     #running
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model4 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model4 Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model4 Run output:\t{result}'+Style.RESET_ALL)
     #running square
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
     end_time = time.time()
     print(Back.CYAN+f'model4 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    print(Back.CYAN+f'model4 Sq Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model4 Sq Run output:\t{result}'+Style.RESET_ALL)
     #saving (not allowed)
     try:
         result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_LoadModONNX.onnx')
         raise KeyError("model4 NOT SUPPOSED TO BE ABLE TO SAVE")
     except:
-        print(Back.CYAN+f'model4 SUCCESS: cant save .onnx model'+Style.RESET_ALL)
+        print(Back.BLUE+f'model4 SUCCESS: cant save .onnx model'+Style.RESET_ALL)
     
     
     
@@ -465,5 +471,5 @@ if __name__ == "__main__":
         reduce_found_obj(
             file_path=  YOLO_home+'datasets/TEST_example.jpg',
             coords=     res[1],
-            output_path=    YOLO_home+f'loadable_models/testing/Reduce_{i}.jpg'
+            output_path=    YOLO_home+f'loadable_models/testing/Reduce_{i}__{res[0]}.jpg'
         )
