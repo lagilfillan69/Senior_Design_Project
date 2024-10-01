@@ -311,75 +311,77 @@ if __name__ == "__main__":
     
     
     
-    # # init model outside container -----------------------------------------------
-    # print( Back.RED+"\n\ninit model outside container -----------------------------------------------"+Style.RESET_ALL )
-    # test_model = YOLO(YOLO_home+"loadable_models/defaults/yolov8n.pt")
+    # init model outside container -----------------------------------------------
+    print( Back.RED+"\n\ninit model outside container -----------------------------------------------"+Style.RESET_ALL )
+    test_model = YOLO(YOLO_home+"loadable_models/defaults/yolov8n.pt")
     
     
     
     
     
-    # # init model (n) -----------------------------------------------
-    # print( Back.RED+"\n\ninit model (n) -----------------------------------------------"+Style.RESET_ALL )
-    # test_model = YOLO_model_v1()
-    # print(Back.CYAN+f'model1 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model1 full_model:\t{test_model.full_model}'+Style.RESET_ALL)
-    # #training
-    # start_time = time.time()
-    # save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
-    # end_time = time.time()
-    # print(Back.CYAN+f'model1 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model1 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model1 Train output:\t{save_dir}'+Style.RESET_ALL)
-    # #running
-    # start_time = time.time()
-    # result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
-    # end_time = time.time()
-    # print(Back.CYAN+f'model1 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model1 Run output:\t{result}'+Style.RESET_ALL)
-    # start_time = time.time()
-    # result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
-    # end_time = time.time()
-    # print(Back.CYAN+f'model1 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model1 Sq Run output:\t{result}'+Style.RESET_ALL)
-    # #saving
-    # start_time = time.time()
-    # result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_initModelN.onnx')
-    # end_time = time.time()
-    # print(Back.CYAN+f'model1 Savetime:\t{end_time-start_time}'+Style.RESET_ALL)
+    # init model (n) -----------------------------------------------
+    print( Back.RED+"\n\ninit model (n) -----------------------------------------------"+Style.RESET_ALL )
+    test_model = YOLO_model_v1()
+    print(Back.CYAN+f'model1 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model1 full_model:\t{test_model.full_model}'+Style.RESET_ALL)
+    #training
+    start_time = time.time()
+    save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
+    end_time = time.time()
+    print(Back.CYAN+f'model1 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model1 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model1 Train output:\t{save_dir}'+Style.RESET_ALL)
+    #running
+    start_time = time.time()
+    result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
+    end_time = time.time()
+    print(Back.CYAN+f'model1 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model1 Run output:\t{result}'+Style.RESET_ALL)
+    #running square
+    start_time = time.time()
+    result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
+    end_time = time.time()
+    print(Back.CYAN+f'model1 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model1 Sq Run output:\t{result}'+Style.RESET_ALL)
+    #saving
+    start_time = time.time()
+    result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_initModelN.onnx')
+    end_time = time.time()
+    print(Back.CYAN+f'model1 Savetime:\t{end_time-start_time}'+Style.RESET_ALL)
     
     
     
     
     
-    # # init model (s) -----------------------------------------------
-    # print( Back.RED+"\n\ninit model (s) -----------------------------------------------"+Style.RESET_ALL )
-    # test_model = YOLO_model_v1(vers='s')
-    # print(Back.CYAN+f'model2 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model2 full_model:\t{test_model.full_model}'+Style.RESET_ALL)
-    # #training
-    # start_time = time.time()
-    # save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
-    # end_time = time.time()
-    # print(Back.CYAN+f'model2 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model2 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model2 Train output:\t{save_dir}'+Style.RESET_ALL)
-    # #running
-    # start_time = time.time()
-    # result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
-    # end_time = time.time()
-    # print(Back.CYAN+f'model2 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model2 Run output:\t{result}'+Style.RESET_ALL)
-    # start_time = time.time()
-    # result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
-    # end_time = time.time()
-    # print(Back.CYAN+f'model2 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model2 Sq Run output:\t{result}'+Style.RESET_ALL)
-    # #saving
-    # start_time = time.time()
-    # result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_initModelS.onnx')
-    # end_time = time.time()
-    # print(Back.CYAN+f'model2 Savetime:\t{end_time-start_time}'+Style.RESET_ALL)
+    # init model (s) -----------------------------------------------
+    print( Back.RED+"\n\ninit model (s) -----------------------------------------------"+Style.RESET_ALL )
+    test_model = YOLO_model_v1(vers='s')
+    print(Back.CYAN+f'model2 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model2 full_model:\t{test_model.full_model}'+Style.RESET_ALL)
+    #training
+    start_time = time.time()
+    save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
+    end_time = time.time()
+    print(Back.CYAN+f'model2 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model2 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model2 Train output:\t{save_dir}'+Style.RESET_ALL)
+    #running
+    start_time = time.time()
+    result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
+    end_time = time.time()
+    print(Back.CYAN+f'model2 Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model2 Run output:\t{result}'+Style.RESET_ALL)
+    #running square
+    start_time = time.time()
+    result = test_model.run_model(YOLO_home+'datasets/TEST_example_square.jpg')
+    end_time = time.time()
+    print(Back.CYAN+f'model2 Sq Runtime:\t{end_time-start_time}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model2 Sq Run output:\t{result}'+Style.RESET_ALL)
+    #saving
+    start_time = time.time()
+    result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_initModelS.onnx')
+    end_time = time.time()
+    print(Back.CYAN+f'model2 Savetime:\t{end_time-start_time}'+Style.RESET_ALL)
     
     
     
@@ -391,12 +393,12 @@ if __name__ == "__main__":
     print(Back.CYAN+f'model3 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
     print(Back.CYAN+f'model3 full_model:\t{test_model.full_model}'+Style.RESET_ALL)
     #training
-    # start_time = time.time()
-    # save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
-    # end_time = time.time()
-    # print(Back.CYAN+f'model3 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model3 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
-    # print(Back.CYAN+f'model3 Train output:\t{save_dir}'+Style.RESET_ALL)
+    start_time = time.time()
+    save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
+    end_time = time.time()
+    print(Back.CYAN+f'model3 pretrain:\t{test_model.pretrain}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model3 Train Time:\t{end_time-start_time}'+Style.RESET_ALL)
+    print(Back.CYAN+f'model3 Train output:\t{save_dir}'+Style.RESET_ALL)
     #running
     start_time = time.time()
     result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
@@ -453,15 +455,15 @@ if __name__ == "__main__":
     
     
     
-    # # loading model (folder) -----------------------------------------------
-    # print( Back.RED+"\n\nloading model (folder) -----------------------------------------------"+Style.RESET_ALL )
-    # test_model = YOLO_model_v1(model_path=YOLO_home+'loadable_models')
-    # #demo of the compression
-    # result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
-    # print(Back.CYAN+f'model5 Run output:\t{result}'+Style.RESET_ALL)
-    # for i,res in enumerate(result):
-    #     reduce_found_obj(
-    #         file_path=  YOLO_home+'datasets/TEST_example.jpg',
-    #         coords=     res[1],
-    #         output_path=    YOLO_home+f'loadable_models/testing/Reduce_{i}.jpg'
-    #     )
+    # loading model (folder) -----------------------------------------------
+    print( Back.RED+"\n\nloading model (folder) -----------------------------------------------"+Style.RESET_ALL )
+    test_model = YOLO_model_v1(model_path=YOLO_home+'loadable_models')
+    #demo of the compression
+    result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
+    print(Back.CYAN+f'model5 Run output:\t{result}'+Style.RESET_ALL)
+    for i,res in enumerate(result):
+        reduce_found_obj(
+            file_path=  YOLO_home+'datasets/TEST_example.jpg',
+            coords=     res[1],
+            output_path=    YOLO_home+f'loadable_models/testing/Reduce_{i}.jpg'
+        )
