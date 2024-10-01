@@ -466,7 +466,7 @@ if __name__ == "__main__":
     test_model = YOLO_model_v1(model_path=YOLO_home+'loadable_models')
     #demo of the compression
     result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
-    print(Back.CYAN+f'model5 Run output:\t{result}'+Style.RESET_ALL)
+    print(Back.BLUE+f'model5 Run output:\t{result}'+Style.RESET_ALL)
     for i,res in enumerate(result):
         reduce_found_obj(
             file_path=  YOLO_home+'datasets/TEST_example.jpg',
