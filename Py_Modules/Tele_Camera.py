@@ -9,18 +9,24 @@ import cv2
 class TeleCAM():
     def __init__(self, index):
         self.capture = cv2.VideoCapture(index)
+    
+    #---------------------------------------------------------------------
         
-    def feed(self):
+    def get_feed(self):
         ret, frame = self.capture.read()
         if not ret: raise KeyError("Can't receive frame (stream end?)")
         return frame
     
     def display_feed(self):
         while True:
-            cv2.imshow('frame; <q key> to quit', self.feed())
+            cv2.imshow('frame; <q key> to quit', self.get_feed())
 
             # Press 'q' to exit
             if cv2.waitKey(1) == ord('q'): break
+    
+    #---------------------------------------------------------------------
+    def get_relativeANGLE(self, PIXEL_x,PIXEL_y):
+        pass
 
 
 #==========================================================

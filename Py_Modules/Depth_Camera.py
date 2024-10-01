@@ -27,7 +27,7 @@ class Depth_Camera:
     
     #---------------------------------------------------------------------
     
-    def get_picture(self):
+    def get_feed(self):
         #return camera feed
         pass
     

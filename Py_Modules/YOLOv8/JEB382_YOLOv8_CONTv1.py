@@ -5,6 +5,7 @@
 
 #-------
 #YOLO
+#https://colab.research.google.com/github/ultralytics/ultralytics/blob/main/examples/tutorial.ipynb#scrollTo=X58w8JLpMnjH
 import ultralytics
 from ultralytics import YOLO
 from ultralytics import settings
@@ -116,11 +117,11 @@ class YOLO_model_v1:
     def load_model(self,model_path):
         #load model but cant train
         if model_path[-5:] =='.onnx':
-            prALERT("Please double check your   < hyperparameters >   are aligned with saved model")
             prLightPurple('From File:\t'+model_path)
             self.model = YOLO(model_path,verbose=self.verbose,task=self.model_type)
             
             # onnx runs differently
+            #https://alimustoofaa.medium.com/how-to-load-model-yolov8-onnx-runtime-b632fad33cec
             self.opt_session = onnxruntime.SessionOptions()
             self.opt_session.enable_mem_pattern = False
             self.opt_session.enable_cpu_mem_arena = False
@@ -140,7 +141,6 @@ class YOLO_model_v1:
                 
         #load model from file
         elif model_path[-3:] =='.pt':
-            prALERT("Please double check your   < hyperparameters >   are aligned with saved model")
             prLightPurple('From File:\t'+model_path)
             self.model = YOLO(model_path,verbose=self.verbose)#,task='classify')
             self.full_model = True
@@ -155,7 +155,6 @@ class YOLO_model_v1:
             
             try:
                 #load model from file
-                prALERT("Please double check your   < hyperparameters >   are aligned with saved model")
                 prLightPurple('From Directory:\t'+latest_model)
                 self.model = YOLO(latest_model,verbose=self.verbose)#,task='classify')
                 self.full_model = True

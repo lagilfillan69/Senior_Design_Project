@@ -115,6 +115,9 @@ def reduce_found_obj(file_path, coords, output_path, Expan_rate=0.7, Compress_ra
     
     cv2.imwrite(output_path, decoded_img )
     
+def find_center(coords):
+    return [     abs(coords[0][0]-coords[1][0]),  abs(coords[0][1]-coords[1][1])      ]
+    
 
 #==============
 #funcs for onnx
