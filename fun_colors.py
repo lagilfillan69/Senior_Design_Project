@@ -114,3 +114,35 @@ def reduce_found_obj(file_path, coords, output_path, Expan_rate=0.7, Compress_ra
     decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
     
     cv2.imwrite(output_path, decoded_img )
+    
+
+#==============
+#funcs for onnx
+import numpy as np
+def simular_boxes(box1,box2,tolerance=10):
+    # print('a',box1,box2)
+    check = abs(box1[0] - box2[0])<= tolerance
+    check *= abs(box1[1] - box2[1])<= tolerance
+    check *= abs(box1[2] - box2[2])<= tolerance
+    check *= abs(box1[3] - box2[3])<= tolerance
+    return check
+
+def reduce_list(work,tolerance=10):
+    working=work.tolist()
+    # print(working)
+    cnt=0;cnt2=cnt+1
+    while cnt<len(working):
+        while cnt2<len(working):
+            if simular_boxes(   working[cnt], working[cnt2], tolerance   ):
+                # print(f'ye: {cnt},{cnt2}')
+                working.pop(cnt2)
+            else: cnt2+=1
+        cnt+=1;cnt2=cnt+1
+    return working
+
+#find list in list of lists
+def find_list_in_LoL(LoL,targ):
+    for i, row in enumerate(LoL):
+        if np.array_equal(row, targ):
+            return i
+    return -1
