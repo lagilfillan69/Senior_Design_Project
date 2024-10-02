@@ -20,8 +20,8 @@ class TeleCAM():
         
         #get shape
         t_frame = self.get_feed()
-        self.width,self.height,self.layers = t_frame.shape
-        prLightPurple(f'TELE CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+        self.height,self.width,self.layers = t_frame.shape
+        prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
         print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
     
     #---------------------------------------------------------------------
@@ -41,7 +41,17 @@ class TeleCAM():
     #---------------------------------------------------------------------
     def get_relativeANGLE(self, coord):
         mid = self.width/2
-        return ((mid - coord[0])/mid) * self.Degree_View
+        diff = mid - coord[0]
+        
+        #left
+        if diff>0:
+            return (1-(diff/mid)) * self.Degree_View/2
+        #right
+        elif diff<0:
+            return (diff/mid) * self.Degree_View/2
+        #middle
+        else:
+            return 0
 
 
 #==========================================================

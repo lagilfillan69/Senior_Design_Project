@@ -23,7 +23,7 @@ class Depth_Camera:
         
         #get shape
         t_frame = self.get_feed()
-        self.width,self.height,self.layers = t_frame.shape
+        self.height,self.width,self.layers = t_frame.shape
         prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
         pass
@@ -67,12 +67,10 @@ class Depth_Camera:
         diff = mid - coord[0]
         
         #left
-        if diff<0:
+        if diff>0:
             return (1-(diff/mid)) * self.Degree_View/2
         #right
-        elif diff>0:
-            #THIS IS WRONG [[[[[ REVIEW ]]]]] !!!!!!!!!!!!!
-            
+        elif diff<0:
             return (diff/mid) * self.Degree_View/2
         #middle
         else:
