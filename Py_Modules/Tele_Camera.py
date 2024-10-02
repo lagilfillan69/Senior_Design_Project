@@ -9,10 +9,13 @@ print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 from fun_colors import *
 
+#needs to be manually set
+TELECAM_DEGREE_VIEW = 45
+
 
 
 class TeleCAM():
-    def __init__(self, index):
+    def __init__(self, index, Degree_View=TELECAM_DEGREE_VIEW):
         self.capture = cv2.VideoCapture(index)
         
         #get shape
@@ -36,8 +39,9 @@ class TeleCAM():
             if cv2.waitKey(1) == ord('q'): break
     
     #---------------------------------------------------------------------
-    def get_relativeANGLE(self, PIXEL_x,PIXEL_y):
-        pass
+    def get_relativeANGLE(self, coord):
+        mid = self.width/2
+        return ((mid - coord[0])/mid) * self.Degree_View
 
 
 #==========================================================
