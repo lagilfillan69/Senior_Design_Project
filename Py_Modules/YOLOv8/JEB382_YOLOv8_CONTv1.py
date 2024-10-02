@@ -166,11 +166,11 @@ class YOLO_model_v1:
             
     
     # ========================================
-    def run_model(self,data_path,conf_thres=0.8, PIX_tol=10):
+    def run_model(self,data_path,conf_thres=0.8, PIX_tol=10, verbose=False):
         
         #if not onnx model
         if self.full_model:
-            results = self.model(data_path,verbose=self.verbose)  # predict on an image file
+            results = self.model(data_path,verbose=self.verbose or verbose)  # predict on an image file
             arr = []       
             for obj in results:            
                 if obj.boxes.xyxy.shape[0] == 0: continue #catch empty results
@@ -245,7 +245,7 @@ class YOLO_model_v1:
     '''
     # ========================================
     #imgsize=[512,384]?
-    def train_model(self,data_path,iter=1,opt=None,imgsize=None,rect=True):
+    def train_model(self,data_path,iter=1,opt=None,imgsize=None,rect=True,verbose=False):
         
         if not self.full_model: raise TypeError(f"Loaded Model is not full (.onnx not .pt): Cannot *Train*, can only *Run*")
         
@@ -262,7 +262,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     # imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
             else:
                 train_obj = self.model.train(
@@ -272,7 +272,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
         else:
             if imgsize == None:
@@ -283,7 +283,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     # imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
             else:
                 train_obj = self.model.train(
@@ -293,7 +293,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
         
         self.pretrain=True
@@ -301,7 +301,51 @@ class YOLO_model_v1:
 
 
 #==========================================================
+#helper funcs specific to YOLO Models
 
+#Finding Model File help
+def YOLOv8_find_latest(folder_path):
+    folder_list = os.listdir(folder_path)
+    file_list = [ i for i in folder_list if i[-3:] == '.pt']
+    folder_list.reverse()
+    file_list.reverse()
+    # print( folder_list )
+    # print( file_list )
+
+    if file_list: return f'{folder_path}/{file_list[0]}'
+
+    for folder in folder_list:
+        if os.path.isfile(f'{folder_path}/{folder}/weights/best.pt'): return f'{folder_path}/{folder}/weights/best.pt'
+    return None
+
+#ONNX help
+def simular_boxes(box1,box2,tolerance=10):
+    # print('a',box1,box2)
+    check = abs(box1[0] - box2[0])<= tolerance
+    check *= abs(box1[1] - box2[1])<= tolerance
+    check *= abs(box1[2] - box2[2])<= tolerance
+    check *= abs(box1[3] - box2[3])<= tolerance
+    return check
+
+def reduce_list(work,tolerance=10):
+    working=work.tolist()
+    # print(working)
+    cnt=0;cnt2=cnt+1
+    while cnt<len(working):
+        while cnt2<len(working):
+            if simular_boxes(   working[cnt], working[cnt2], tolerance   ):
+                # print(f'ye: {cnt},{cnt2}')
+                working.pop(cnt2)
+            else: cnt2+=1
+        cnt+=1;cnt2=cnt+1
+    return working
+
+#find list in list of lists
+def find_list_in_LoL(LoL,targ):
+    for i, row in enumerate(LoL):
+        if np.array_equal(row, targ):
+            return i
+    return -1
 
 
 

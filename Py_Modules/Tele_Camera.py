@@ -2,13 +2,24 @@
 
 # Stable container for Telescopic Camera
 
-import cv2
+import cv2,sys,os
+
+dir_path = os.path.abspath("")
+print(f"DIRECTORY:\t\t<{dir_path}>")
+sys.path.append(dir_path)
+from fun_colors import *
 
 
 
 class TeleCAM():
     def __init__(self, index):
         self.capture = cv2.VideoCapture(index)
+        
+        #get shape
+        t_frame = self.get_feed()
+        self.width,self.height,self.layers = t_frame.shape
+        prLightPurple(f'TELE CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+        print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
     
     #---------------------------------------------------------------------
         

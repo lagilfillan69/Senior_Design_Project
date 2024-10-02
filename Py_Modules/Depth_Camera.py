@@ -42,6 +42,10 @@ class Depth_Camera:
     def get_depthPOINT(self, PIXEL_x,PIXEL_y):
         pass
     
+    '''
+    (%of screen from middle to end on x axis)*45?
+    Left:  *=-1
+    '''
     #helper func for get_relativePOSITION and get_size
     def get_relativeANGLE(self, PIXEL_x,PIXEL_y):
         pass
