@@ -4,10 +4,7 @@
 
 import math
 from fun_colors import *
-
-#needs to be manually set
-DEPTHCAM_GND_HEIGHT = 0
-DEPTHCAM_DEGREE_VIEW = 45
+from SD_constants import DEPTHCAM_GND_HEIGHT,DEPTHCAM_DEGREE_VIEW
 
 
 class Depth_Camera:

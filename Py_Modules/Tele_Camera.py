@@ -10,7 +10,7 @@ sys.path.append(dir_path)
 from fun_colors import *
 
 #needs to be manually set
-TELECAM_DEGREE_VIEW = 45
+from SD_constants import TELECAM_DEGREE_VIEW
 
 
 
