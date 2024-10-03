@@ -10,12 +10,19 @@ sys.path.append(dir_path)
 from fun_colors import *
 
 #needs to be manually set
-from SD_constants import TELECAM_DEGREE_VIEW
+from SD_constants import TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW
 
 
 
 class TeleCAM():
-    def __init__(self, index, Degree_View=TELECAM_DEGREE_VIEW):
+    def __init__(self, index,
+                 GND_Height=TELECAM_GND_HEIGHT,
+                 H_DegView=TELECAM_HORZ_DEG_VIEW,
+                 V_DegView=TELECAM_VERT_DEG_VIEW):
+        self.GND_Height = GND_Height
+        self.H_DegView = H_DegView
+        self.V_DegView = V_DegView
+        
         self.capture = cv2.VideoCapture(index)
         
         #get shape
@@ -38,20 +45,32 @@ class TeleCAM():
             # Press 'q' to exit
             if cv2.waitKey(1) == ord('q'): break
     
+    
     #---------------------------------------------------------------------
-    def get_relativeANGLE(self, coord):
+    
+    #helper func for get_relativePOSITION and get_size
+    def get_relativeANGLEX(self, coord):
         mid = self.width/2
         diff = mid - coord[0]
         
         #left
-        if diff>0:
-            return (1-(diff/mid)) * self.Degree_View/2
+        if diff>0: return (1-(diff/mid)) * self.H_DegView/2
         #right
-        elif diff<0:
-            return (diff/mid) * self.Degree_View/2
+        elif diff<0: return (diff/mid) * self.H_DegView/2
         #middle
-        else:
-            return 0
+        else: return 0
+    
+    #Not sure if we'll use
+    def get_relativeANGLEY(self, coord):
+        mid = self.height/2
+        diff = mid - coord[1]
+        
+        #left
+        if diff>0: return (1-(diff/mid)) * self.V_DegView/2
+        #right
+        elif diff<0: return (diff/mid) * self.V_DegView/2
+        #middle
+        else: return 0
 
 
 #==========================================================
