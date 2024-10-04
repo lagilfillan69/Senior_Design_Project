@@ -10,12 +10,12 @@ sys.path.append(dir_path)
 from fun_colors import *
 
 #needs to be manually set
-from SD_constants import TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW
+from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW
 
 
 
 class TeleCAM():
-    def __init__(self, index,
+    def __init__(self, index=TELECAM_PORT,
                  GND_Height=TELECAM_GND_HEIGHT,
                  H_DegView=TELECAM_HORZ_DEG_VIEW,
                  V_DegView=TELECAM_VERT_DEG_VIEW):

@@ -4,14 +4,14 @@
 
 import math
 from fun_colors import *
-from SD_constants import DEPTHCAM_GND_HEIGHT,DEPTHCAM_HORZ_DEG_VIEW,DEPTHCAM_VERT_DEG_VIEW
+from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW
 
 
-class Depth_Camera:
+class Stereo_Camera:
     def __init__(self, IP_address=None, Port=None,
-                 GND_Height=DEPTHCAM_GND_HEIGHT,
-                 H_DegView=DEPTHCAM_HORZ_DEG_VIEW,
-                 V_DegView=DEPTHCAM_VERT_DEG_VIEW):
+                 GND_Height=STEREOCAM_GND_HEIGHT,
+                 H_DegView=STEREOCAM_HORZ_DEG_VIEW,
+                 V_DegView=STEREOCAM_VERT_DEG_VIEW):
         self.IP_address = None
         self.port = None
         self.Depth_Map = None
