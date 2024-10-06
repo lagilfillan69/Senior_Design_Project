@@ -1,0 +1,16 @@
+FROM dustynv/ros:humble-ros-base-l4t-r32.7.1
+
+ENV WORKSPACE=/home/workspace
+ENV ROS_VERSION=humble
+ENV ROS_ROOT=/opt/ros/${ROS_DISTRO}
+
+WORKDIR /
+
+RUN mkdir -p ${WORKSPACE}/src
+
+
+# setup entrypoint
+COPY ./ros_entrypoint.sh /ros_entrypoint.sh
+RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> .bashrc
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash"]
