@@ -22,7 +22,7 @@ class Serial_ESP32:
         pass
     
     def read_message(self):
-        return ""
+        pass
     
     def send_message(self,mes):
         pass
@@ -31,7 +31,9 @@ class Serial_ESP32:
     
     def Motor(self,arr):
         self.send_message(f"MOTOR\t{arr}")  #The exact framing of this message is still TBD
+        pass
 
     def Bluetooth(self,mes):
         self.send_message(f"BLUETOOTH\t{mes}")  #The exact framing of this message is still TBD
+        pass
 
