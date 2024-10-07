@@ -5,7 +5,7 @@
 import cv2,sys,os
 
 dir_path = os.path.abspath("")
-print(f"DIRECTORY:\t\t<{dir_path}>")
+if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 from fun_colors import *
 

@@ -12,7 +12,7 @@ from Py_Modules.SD_constants import STEREOCAM_MODELPATH,TELECAM_MODELPATH,CROPCO
 
 import os,sys
 dir_path = os.path.abspath("")
-print(f"DIRECTORY:\t\t<{dir_path}>")
+if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 from fun_colors import *
 

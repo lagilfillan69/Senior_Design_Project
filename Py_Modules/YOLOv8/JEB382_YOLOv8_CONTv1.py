@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 dir_path = os.path.abspath("")
-print(f"DIRECTORY:\t\t<{dir_path}>")
+if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 
 global YOLO_home
