@@ -4,17 +4,26 @@
 # Primary Main: Responsible for decision making process, tells ESP32 what to do through serial
 #   - see Serial_Comms
 
-from Py_Modules.YOLOv8.JEB382_YOLOv8_CONTv1 import YOLO_model_v1
+import os,sys
+dir_path = os.path.abspath("").replace('\\','/')
+if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
+sys.path.append(dir_path)
+
+#------------------------
+from Py_Modules.helper_functions import *
+from Py_Modules.JEB382_YOLOv8_CONTv1 import YOLO_model_v1
 from Py_Modules.Stereo_Camera import Stereo_Camera
 from Py_Modules.Tele_Camera  import TeleCAM
 from Py_Modules.Serial_Comms import Serial_ESP32
 from Py_Modules.SD_constants import STEREOCAM_MODELPATH,TELECAM_MODELPATH,CROPCOMPR_FILEPATH
+prGreen("PRIMARY MAIN Jetson: Import Success")
 
-import os,sys
-dir_path = os.path.abspath("")
-if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
-sys.path.append(dir_path)
-from fun_colors import *
+#------------------------
+
+
+
+
+#===============================================================================
 
 
 class PRIM_Main_Jetson():
@@ -152,3 +161,13 @@ class PRIM_Main_Jetson():
         else:
             self.Stereo_Pos = None
             return False
+
+
+
+prGreen("PRIMARY MAIN Jetson: Class Definition Success")
+#===============================================================================
+
+
+
+if __name__ == "__main__":
+    pass

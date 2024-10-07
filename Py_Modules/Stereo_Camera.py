@@ -3,8 +3,15 @@
 # Stable container for Depth Camera from Carnegie Robotics
 
 import math
-from fun_colors import *
-from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW
+
+try:
+    from helper_functions import *
+    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+except:
+    from Py_Modules.helper_functions import *
+    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+
+
 
 
 class Stereo_Camera:

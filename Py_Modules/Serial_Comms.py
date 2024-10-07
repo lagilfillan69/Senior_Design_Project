@@ -2,17 +2,15 @@
 
 # Stable container for Serial Communication from Jettson to ESP32
 
-from SD_constants import ESP32_PORT
-
-import os,sys
-dir_path = os.path.abspath("")
-if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
-sys.path.append(dir_path)
-from fun_colors import *
-
-
 #going to be using these libraries, but until can start working with ESP32 not sure exactly how
-import serial, Pyfirmata2
+import serial, pyfirmata2
+
+try:
+    from helper_functions import *
+    from SD_constants import ESP32_PORT #needs to be manually set
+except:
+    from Py_Modules.helper_functions import *
+    from Py_Modules.SD_constants import ESP32_PORT #needs to be manually set
 
 
 

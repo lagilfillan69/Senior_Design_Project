@@ -12,21 +12,25 @@ from ultralytics import settings
 #onnx
 import onnxruntime,cv2,math
 from PIL import Image
+
 #------------------------
 import os,sys,time,shutil
 import matplotlib.pyplot as plt
 import numpy as np
 
-dir_path = os.path.abspath("")
-if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
-sys.path.append(dir_path)
-
+#------------------------
+try:
+    from helper_functions import *
+except:
+    from Py_Modules.helper_functions import *
+    
 global YOLO_home
 YOLO_home = (os.getcwd()+'/Py_Modules/YOLOv8/').replace('\\','/')
 print(f"YOLO_home:\t\t<{YOLO_home}>")
 
-from fun_colors import *
 #------------------------
+
+
 
 
 #===============================================================================
