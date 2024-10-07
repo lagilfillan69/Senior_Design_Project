@@ -171,7 +171,7 @@ class YOLO_model_v1:
     
     # ========================================
     # 'data' can filepath to an image file or a cv2 object ( such as from getFeed() )
-    def run_model(self,data,conf_thres=0.8, type_comp=0, PIX_tol=10, PRC_tol=0.9, verbose=False):
+    def run_model(self,data,conf_thres=0.8, type_comp=3, PIX_tol=10, PRC_tol=0.8, verbose=False):
         
         #if not onnx model
         if self.full_model:
@@ -231,7 +231,7 @@ class YOLO_model_v1:
             
             does not check if simular bounding boxes are detecting the same class
             # '''
-            reduced = [ find_list_in_LoL(boxes,non_sim) for non_sim in ReduceList(work=boxes,typeR=type_comp,tolerance=PIX_tol,tolerance2=PRC_tol)  ]
+            reduced = [ find_list_in_LoL(boxes,non_sim) for non_sim in ReduceList(work=boxes,typeR=type_comp,PIX_tol=PIX_tol,PRC_tol=PRC_tol)  ]
             
             
             results=[]
@@ -353,19 +353,19 @@ def SimBox_Area(box1,box2,tolerance=0.9):
     area2 = abs(box2[0]-box2[2]) * abs(box2[1]-box2[3])
     perc = ((area3/area2)+(area3/area1))/2 #avg percent simularity of 1-2 & 2-1
     
-
+    print(perc,tolerance)
     return perc >= tolerance
     
 
-def ReduceList(work, typeR=0, PIX_tol=10, PRC_tol=0.9):
+def ReduceList(work, typeR=3, PIX_tol=10, PRC_tol=0.9):
     working=work.tolist()
     cnt=0;cnt2=cnt+1
     while cnt<len(working):
         while cnt2<len(working):
-            if typeR==0: del_bool = SimBox_Area(   working[cnt], working[cnt2], PIX_tol   )
-            elif typeR==1: del_bool = SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
-            elif typeR==2: del_bool = SimBox_Area(   working[cnt], working[cnt2], PIX_tol   ) and SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
-            elif typeR==3: del_bool = SimBox_Area(   working[cnt], working[cnt2], PIX_tol   ) or  SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
+            if   typeR==0: del_bool = SimBox_Corner(   working[cnt], working[cnt2], PIX_tol   )
+            elif typeR==1: del_bool = SimBox_Area  (   working[cnt], working[cnt2], PRC_tol   )
+            elif typeR==2: del_bool = SimBox_Corner(   working[cnt], working[cnt2], PIX_tol   ) and SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
+            elif typeR==3: del_bool = SimBox_Corner(   working[cnt], working[cnt2], PIX_tol   ) or  SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
             else: raise ValueError(f"typeR error: Must be 0,1,2,3\t typeR = <{typeR}>")
             
             if del_bool: working.pop(cnt2)
