@@ -104,31 +104,51 @@ class PRIM_Main_Jetson():
                 #----------------------------- 
                 #NOTE: this would be in previous mentioned loop (#1)
                 #check telescopic camera for objects
-                Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
-                if Tele_results is None: continue   #if theres no trash, go to begining on While Loop
-                
+                #   sets self.Tele_angles: list of relative angles
+                #   returns if theres any detections
+                if not self.detect_Tele(): continue   #if theres no trash, go to begining on While Loop
+               
                 
                 #----------------------------- 
-                #NOTE: !!! There'd be some loop (#2) and logic here about following angles of objects from Tele_results
+                #NOTE: !!! There'd be some loop (#2) and logic here about following angles of objects from self.Tele_angles
                 #   then finer searching with Stereo camera
                 
                 
                 #-----------------------------
                 #NOTE: this would be in previous mentioned loop (#2)
                 #check Stereo Camera for objects and their relative positions
-                del Tele_results
-                Stereo_photo = self.SterCam.get_feed()
-                Stereo_results = self.SterCam_Model.run_model( Stereo_photo  )
-                [ self.SterCam.get_relativePOSITION( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of trash
-                #outputs cropped & compressed pictures of trash
-                for index,res in enumerate(Stereo_results):
-                    reduce_found_obj( Stereo_photo,res[1],f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
+                #   sets self.Stereo_Pos: list of relative posititions
+                #   returns if theres any detections
+                if not self.detect_Stereo(): continue   #if theres no trash, go to begining on While Loop
                 
                 
                 #----------------------------- 
                 #NOTE: this would be in previous mentioned loop (#2)
-                #NOTE: !!! There'd be some loop and logic here about following to detected trash from Stereo_results, then picking it up
+                #NOTE: !!! There'd be some loop and logic here about following to detected trash from self.Stereo_Pos, then picking it up
                 
             pass
-                
-                
+        
+    def detect_Tele(self):
+        #check telescopic camera for objects
+        Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
+        if Tele_results is not None:
+            self.Tele_angles = [self.TeleCam.get_relativeANGLEX(res) for res in Tele_results]
+            return True
+        else:
+            self.Tele_angles = None
+            return False
+
+    def detect_Stereo(self,save_image=False):
+        #check Stereo Camera for objects and their relative positions
+        Stereo_photo = self.SterCam.get_feed()
+        Stereo_results = self.SterCam_Model.run_model( Stereo_photo  )
+        if Stereo_results is not None:
+            self.Stereo_Pos = [ self.SterCam.get_relativePOSITION( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of trash
+            #outputs cropped & compressed pictures of trash
+            if save_image:
+                for index,res in enumerate(Stereo_results):
+                    reduce_found_obj( Stereo_photo,res[1],f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
+            return True
+        else:
+            self.Stereo_Pos = None
+            return False

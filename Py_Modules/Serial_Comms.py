@@ -26,3 +26,12 @@ class Serial_ESP32:
     
     def send_message(self,mes):
         pass
+    
+    #==============================
+    
+    def Motor(self,arr):
+        self.send_message(f"MOTOR\t{arr}")  #The exact framing of this message is still TBD
+
+    def Bluetooth(self,mes):
+        self.send_message(f"BLUETOOTH\t{mes}")  #The exact framing of this message is still TBD
+

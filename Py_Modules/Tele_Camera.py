@@ -112,5 +112,6 @@ if __name__ == "__main__":
     available_ports,working_ports,non_working_ports=list_ports()
     print(available_ports,working_ports,non_working_ports)
     
-    Tele_camera = TeleCAM(working_ports[0])
+    # Tele_camera = TeleCAM(working_ports[0])
+    Tele_camera = TeleCAM(1)
     Tele_camera.display_feed()
