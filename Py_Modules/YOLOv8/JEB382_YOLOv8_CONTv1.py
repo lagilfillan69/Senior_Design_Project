@@ -10,7 +10,7 @@ import ultralytics
 from ultralytics import YOLO
 from ultralytics import settings
 #onnx
-import onnxruntime,cv2
+import onnxruntime,cv2,math
 from PIL import Image
 #------------------------
 import os,sys,time,shutil
@@ -166,11 +166,11 @@ class YOLO_model_v1:
             
     
     # ========================================
-    def run_model(self,data_path,conf_thres=0.8, PIX_tol=10):
+    def run_model(self,data_path,conf_thres=0.8, type_comp=0, PIX_tol=10, PRC_tol=0.9, verbose=False):
         
         #if not onnx model
         if self.full_model:
-            results = self.model(data_path,verbose=self.verbose)  # predict on an image file
+            results = self.model(data_path,verbose=self.verbose or verbose)  # predict on an image file
             arr = []       
             for obj in results:            
                 if obj.boxes.xyxy.shape[0] == 0: continue #catch empty results
@@ -213,12 +213,20 @@ class YOLO_model_v1:
             boxes *= np.array([image_width, image_height, image_width, image_height])
             boxes = boxes.astype(np.int32)
             
+            '''
+            NOTE: at this point there are a number of predictions of detected objects above a certain confidence, !!! SOME ARE DUPLICATE !!!
             
-            #NOTE: at this point there are a number of predictions of detected objects above a certain confidence, !!! SOME ARE DUPLICATE !!!
+            Removes "duplicate" detections based on tracing simualrity of bounding boxes:
+              - typeR/type_comp = 0: boxes are simular if each corner is less then < PIX_tol > pixels from eachother:  SimBox_Corner(tolerance= PIX_tol)
+                    - default
+              - typeR/type_comp = 1: boxes are simular if the intersecting area is on average less then < PIX_tol >% of the area of box1 and box2:  SimBox_Area(tolerance= PRC_tol)
+                    - make sure your using PRC_tol not PIX_tol
+              - typeR/type_comp = 2: SimBox_Corner(tolerance= PIX_tol)      AND     SimBox_Area(tolerance= PRC_tol)
+              - typeR/type_comp = 3: SimBox_Corner(tolerance= PIX_tol)      OR      SimBox_Area(tolerance= PRC_tol)
             
-            #removes "duplicate" detections based on tracing simualrity of bounding boxes by their seperate corners up to a set TOLERANCE
-            #does not check if simular bounding boxes are detecting the same class
-            reduced = [ find_list_in_LoL(boxes,non_sim) for non_sim in reduce_list(boxes,PIX_tol)  ]
+            does not check if simular bounding boxes are detecting the same class
+            # '''
+            reduced = [ find_list_in_LoL(boxes,non_sim) for non_sim in ReduceList(work=boxes,typeR=type_comp,tolerance=PIX_tol,tolerance2=PRC_tol)  ]
             
             
             results=[]
@@ -245,7 +253,7 @@ class YOLO_model_v1:
     '''
     # ========================================
     #imgsize=[512,384]?
-    def train_model(self,data_path,iter=1,opt=None,imgsize=None,rect=True):
+    def train_model(self,data_path,iter=1,opt=None,imgsize=None,rect=True,verbose=False):
         
         if not self.full_model: raise TypeError(f"Loaded Model is not full (.onnx not .pt): Cannot *Train*, can only *Run*")
         
@@ -262,7 +270,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     # imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
             else:
                 train_obj = self.model.train(
@@ -272,7 +280,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
         else:
             if imgsize == None:
@@ -283,7 +291,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     # imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
             else:
                 train_obj = self.model.train(
@@ -293,7 +301,7 @@ class YOLO_model_v1:
                     pretrained=self.pretrain,
                     imgsz=imgsize,
                     rect=rect,
-                    verbose=self.verbose
+                    verbose=self.verbose or verbose
                     )
         
         self.pretrain=True
@@ -301,7 +309,71 @@ class YOLO_model_v1:
 
 
 #==========================================================
+#helper funcs specific to YOLO Models
 
+#Finding Model File help
+def YOLOv8_find_latest(folder_path):
+    folder_list = os.listdir(folder_path)
+    file_list = [ i for i in folder_list if i[-3:] == '.pt']
+    folder_list.reverse()
+    file_list.reverse()
+    # print( folder_list )
+    # print( file_list )
+
+    if file_list: return f'{folder_path}/{file_list[0]}'
+
+    for folder in folder_list:
+        if os.path.isfile(f'{folder_path}/{folder}/weights/best.pt'): return f'{folder_path}/{folder}/weights/best.pt'
+    return None
+
+#ONNX help
+def SimBox_Corner(box1,box2,tolerance=10):
+    # print('a',box1,box2)
+    check = abs(box1[0] - box2[0])<= tolerance
+    check *= abs(box1[1] - box2[1])<= tolerance
+    check *= abs(box1[2] - box2[2])<= tolerance
+    check *= abs(box1[3] - box2[3])<= tolerance
+    return check
+
+def SimBox_Area(box1,box2,tolerance=0.9):
+    L_inter = max(box1[0], box2[0])
+    T_inter = max(box1[1], box2[1])
+    R_inter = min(box1[2], box2[2])
+    B_inter = min(box1[3], box2[3])
+    
+    if R_inter < L_inter or B_inter < T_inter: return False
+
+    area3= (R_inter-L_inter)*(B_inter-T_inter)
+    area1 = abs(box1[0]-box1[2]) * abs(box1[1]-box1[3])
+    area2 = abs(box2[0]-box2[2]) * abs(box2[1]-box2[3])
+    perc = ((area3/area2)+(area3/area1))/2 #avg percent simularity of 1-2 & 2-1
+    
+
+    return perc >= tolerance
+    
+
+def ReduceList(work, typeR=0, PIX_tol=10, PRC_tol=0.9):
+    working=work.tolist()
+    cnt=0;cnt2=cnt+1
+    while cnt<len(working):
+        while cnt2<len(working):
+            if typeR==0: del_bool = SimBox_Area(   working[cnt], working[cnt2], PIX_tol   )
+            elif typeR==1: del_bool = SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
+            elif typeR==2: del_bool = SimBox_Area(   working[cnt], working[cnt2], PIX_tol   ) and SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
+            elif typeR==3: del_bool = SimBox_Area(   working[cnt], working[cnt2], PIX_tol   ) or  SimBox_Area(   working[cnt], working[cnt2], PRC_tol   )
+            else: raise ValueError(f"typeR error: Must be 0,1,2,3\t typeR = <{typeR}>")
+            
+            if del_bool: working.pop(cnt2)
+            else: cnt2+=1
+        cnt+=1;cnt2=cnt+1
+    return working
+
+#find list in list of lists
+def find_list_in_LoL(LoL,targ):
+    for i, row in enumerate(LoL):
+        if np.array_equal(row, targ):
+            return i
+    return -1
 
 
 
