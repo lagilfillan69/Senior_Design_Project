@@ -32,7 +32,7 @@ class TeleCAM():
         print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
     
     #---------------------------------------------------------------------
-        
+    
     def get_feed(self):
         ret, frame = self.capture.read()
         if not ret: raise KeyError("Can't receive frame (stream end?)")

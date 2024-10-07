@@ -1,8 +1,6 @@
 # Written by Jonah Earl Belback
 
 # Stable container for Serial Communication from Jettson to ESP32
-<<<<<<< Updated upstream
-=======
 
 from SD_constants import ESP32_PORT
 
@@ -13,6 +11,8 @@ sys.path.append(dir_path)
 from fun_colors import *
 
 
+#going to be using these libraries, but until can start working with ESP32 not sure exactly how
+import serial, Pyfirmata2
 
 
 
@@ -26,4 +26,3 @@ class Serial_ESP32:
     
     def send_message(self,mes):
         pass
->>>>>>> Stashed changes
