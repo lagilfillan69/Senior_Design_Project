@@ -10,7 +10,14 @@ RUN mkdir -p ${WORKSPACE}/src
 
 
 # setup entrypoint
-COPY ./ros_entrypoint.sh /ros_entrypoint.sh
-RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> .bashrc
-ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["bash"]
+# COPY ./ros_entrypoint.sh /ros_entrypoint.sh
+# RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> .bashrc
+# ENTRYPOINT ["/ros_entrypoint.sh"]
+# CMD ["bash"]
+
+RUN  source /opt/ros/humble/install/setup.bash
+&& mkdir ros2_ws && cd ros2_ws \
+&& git clone --recurse-submodules https://github.com/carnegierobotics/multisense_ros2 src \
+&& git clone -b dashing-devel https://github.com/ros/xacro.git \
+&& colcon build \
+&& source install/setup.bash
