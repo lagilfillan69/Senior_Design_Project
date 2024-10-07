@@ -29,17 +29,27 @@ class Depth_Camera:
     
     def get_feed(self):
         #return camera feed
+        #NOTE: need actual functionality to figure out
+        if not self.check_connection(): raise KeyError("Could not check connection")
         pass
     
     def get_depthmap(self):
         #set internal object
+        #NOTE: need actual functionality to figure out
+        if not self.check_connection(): raise KeyError("Could not check connection")
         self.Depth_Map = None
         pass
     
     
     #---------------------------------------------------------------------
     #helper func for get_relativePOSITION and get_size
+<<<<<<< Updated upstream:Py_Modules/Depth_Camera.py
     def get_depthPOINT(self, PIXEL_x,PIXEL_y):
+=======
+    def get_depthPOINT(self, coord):
+        #NOTE: need actual functionality to figure out
+        self.get_depthmap()
+>>>>>>> Stashed changes:Py_Modules/Stereo_Camera.py
         pass
     
     #helper func for get_relativePOSITION and get_size
@@ -66,8 +76,13 @@ class Depth_Camera:
             y_dist = distance * math.cos(angle)
             return [x_dist,y_dist]
         
+<<<<<<< Updated upstream:Py_Modules/Depth_Camera.py
     #realtive position with current angle and current position
     def get_relativePOSITION(self, PIXEL_x,PIXEL_y, currPOS, currANG):
+=======
+    #realtive position with GIVEN CURRENT angle and position
+    def get_relativePOSITION(self, coord, currPOS, currANG):
+>>>>>>> Stashed changes:Py_Modules/Stereo_Camera.py
         
         angle = self.get_relativeANGLE(PIXEL_x,PIXEL_y) + currANG
         depth = self.get_depthPOINT(PIXEL_x,PIXEL_y)
@@ -82,6 +97,7 @@ class Depth_Camera:
     
     #=====================================================================
     
+    #get size of object given coords of [   [Top Left corner] and [Bottom Right corner]   ]
     def get_size(self, BB_coords):
         #BB_cord: [   [cord of Top Left bounding box point], [cord of Bottom Right]   ]
         TL_cord = self.get_relativePOSITION(BB_coords[0][0],BB_coords[0][1])#x of top left;     y of top left
