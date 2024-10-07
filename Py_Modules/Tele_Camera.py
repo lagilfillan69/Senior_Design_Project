@@ -5,7 +5,7 @@
 import cv2,sys,os
 
 dir_path = os.path.abspath("")
-print(f"DIRECTORY:\t\t<{dir_path}>")
+if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 from fun_colors import *
 
@@ -32,7 +32,7 @@ class TeleCAM():
         print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
     
     #---------------------------------------------------------------------
-        
+    
     def get_feed(self):
         ret, frame = self.capture.read()
         if not ret: raise KeyError("Can't receive frame (stream end?)")
@@ -112,5 +112,6 @@ if __name__ == "__main__":
     available_ports,working_ports,non_working_ports=list_ports()
     print(available_ports,working_ports,non_working_ports)
     
-    Tele_camera = TeleCAM(working_ports[0])
+    # Tele_camera = TeleCAM(working_ports[0])
+    Tele_camera = TeleCAM(1)
     Tele_camera.display_feed()

@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 dir_path = os.path.abspath("")
-print(f"DIRECTORY:\t\t<{dir_path}>")
+if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 
 global YOLO_home
@@ -166,11 +166,12 @@ class YOLO_model_v1:
             
     
     # ========================================
-    def run_model(self,data_path,conf_thres=0.8, type_comp=0, PIX_tol=10, PRC_tol=0.9, verbose=False):
+    # 'data' can filepath to an image file or a cv2 object ( such as from getFeed() )
+    def run_model(self,data,conf_thres=0.8, type_comp=0, PIX_tol=10, PRC_tol=0.9, verbose=False):
         
         #if not onnx model
         if self.full_model:
-            results = self.model(data_path,verbose=self.verbose or verbose)  # predict on an image file
+            results = self.model(data,verbose=self.verbose or verbose)  # predict on an image file
             arr = []       
             for obj in results:            
                 if obj.boxes.xyxy.shape[0] == 0: continue #catch empty results
@@ -182,7 +183,7 @@ class YOLO_model_v1:
         
         #onnx model
         else:
-            image = cv2.imread(data_path)
+            image = cv2.imread(data)
             image_height, image_width = image.shape[:2]
             # Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 

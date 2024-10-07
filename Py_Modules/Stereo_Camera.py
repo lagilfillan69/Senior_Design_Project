@@ -44,12 +44,17 @@ class Stereo_Camera:
     
     #---------------------------------------------------------------------
     
+    #return camera feed
     def get_feed(self):
         #return camera feed
+        if not self.check_connection(): raise KeyError("Could not check connection")
+        #NOTE: need actual functionality to figure out
         pass
     
+    #set internal object
     def get_depthmap(self):
-        #set internal object
+        if not self.check_connection(): raise KeyError("Could not check connection")
+        #NOTE: need actual functionality to figure out
         self.Depth_Map = None
         pass
     
@@ -59,6 +64,7 @@ class Stereo_Camera:
     #helper func for get_relativePOSITION and get_size
     def get_depthPOINT(self, coord):
         #NOTE: need actual functionality to figure out
+        self.get_depthmap()
         pass
     
     
