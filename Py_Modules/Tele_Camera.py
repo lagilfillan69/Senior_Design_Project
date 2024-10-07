@@ -2,15 +2,15 @@
 
 # Stable container for Telescopic Camera
 
-import cv2,sys,os
+import cv2
 
-dir_path = os.path.abspath("")
-if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
-sys.path.append(dir_path)
-from fun_colors import *
+try:
+    from helper_functions import *
+    from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
+except:
+    from Py_Modules.helper_functions import *
+    from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
 
-#needs to be manually set
-from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW
 
 
 
