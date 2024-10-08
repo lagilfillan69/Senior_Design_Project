@@ -4,14 +4,35 @@
 
 import cv2
 
+try:
+    from helper_functions import *
+    from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
+except:
+    from Py_Modules.helper_functions import *
+    from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
+
+
 
 
 class TeleCAM():
-    def __init__(self, index):
+    def __init__(self, index=TELECAM_PORT,
+                 GND_Height=TELECAM_GND_HEIGHT,
+                 H_DegView=TELECAM_HORZ_DEG_VIEW,
+                 V_DegView=TELECAM_VERT_DEG_VIEW):
+        self.GND_Height = GND_Height
+        self.H_DegView = H_DegView
+        self.V_DegView = V_DegView
+        
         self.capture = cv2.VideoCapture(index)
+        
+        #get shape
+        t_frame = self.get_feed()
+        self.height,self.width,self.layers = t_frame.shape
+        prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+        print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
     
     #---------------------------------------------------------------------
-        
+    
     def get_feed(self):
         ret, frame = self.capture.read()
         if not ret: raise KeyError("Can't receive frame (stream end?)")
@@ -24,9 +45,32 @@ class TeleCAM():
             # Press 'q' to exit
             if cv2.waitKey(1) == ord('q'): break
     
+    
     #---------------------------------------------------------------------
-    def get_relativeANGLE(self, PIXEL_x,PIXEL_y):
-        pass
+    
+    #helper func for get_relativePOSITION and get_size
+    def get_relativeANGLEX(self, coord):
+        mid = self.width/2
+        diff = mid - coord[0]
+        
+        #left
+        if diff>0: return (1-(diff/mid)) * self.H_DegView/2
+        #right
+        elif diff<0: return (diff/mid) * self.H_DegView/2
+        #middle
+        else: return 0
+    
+    #Not sure if we'll use
+    def get_relativeANGLEY(self, coord):
+        mid = self.height/2
+        diff = mid - coord[1]
+        
+        #left
+        if diff>0: return (1-(diff/mid)) * self.V_DegView/2
+        #right
+        elif diff<0: return (diff/mid) * self.V_DegView/2
+        #middle
+        else: return 0
 
 
 #==========================================================
@@ -68,5 +112,6 @@ if __name__ == "__main__":
     available_ports,working_ports,non_working_ports=list_ports()
     print(available_ports,working_ports,non_working_ports)
     
-    Tele_camera = TeleCAM(working_ports[0])
+    # Tele_camera = TeleCAM(working_ports[0])
+    Tele_camera = TeleCAM(1)
     Tele_camera.display_feed()

@@ -14,7 +14,7 @@ def prLightGray(skk): print("\033[97m{}\033[00m" .format(skk))
 def prBlack(skk): print("\033[98m{}\033[00m" .format(skk))
 
 
-#mine
+#logging, graphing
 def prALERT(skk):print(Back.RED+skk+Style.RESET_ALL)
 def gdFL(fl): return f"{'{:.2f}'.format(float( fl ))}"
 
@@ -66,40 +66,9 @@ def mean(arr):
     for i in arr:tot+=i
     return tot/len(arr)
 
-def csv_size(filepath):
-    try:
-        df_iter = pandas.read_csv(filepath)
-        return df_iter.shape[0]
-    except Exception as e:
-        prALERT('csv_size\n'+e)
-        sze=0
-        df_iter = pandas.read_csv(filepath, iterator=True, chunksize=1)
-        while True:
-            try:
-                df = next(df_iter)
-                sze+=1
-            except StopIteration:
-                break
-        return sze
-
        
 #===================
-import os,cv2
-#find latest YOLOv8 file from a folder or then latest best.pt in subfolders
-def YOLOv8_find_latest(folder_path):
-    folder_list = os.listdir(folder_path)
-    file_list = [ i for i in folder_list if i[-3:] == '.pt']
-    folder_list.reverse()
-    file_list.reverse()
-    # print( folder_list )
-    # print( file_list )
-
-    if file_list: return f'{folder_path}/{file_list[0]}'
-
-    for folder in folder_list:
-        if os.path.isfile(f'{folder_path}/{folder}/weights/best.pt'): return f'{folder_path}/{folder}/weights/best.pt'
-    return None
-
+import cv2
 
 def reduce_found_obj(file_path, coords, output_path, Expan_rate=0.7, Compress_rate=10):
     #read
@@ -114,38 +83,7 @@ def reduce_found_obj(file_path, coords, output_path, Expan_rate=0.7, Compress_ra
     decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
     
     cv2.imwrite(output_path, decoded_img )
-    
+
+#coords= [ [x1y1],[x2,y2] ]
 def find_center(coords):
     return [     abs(coords[0][0]-coords[1][0]),  abs(coords[0][1]-coords[1][1])      ]
-    
-
-#==============
-#funcs for onnx
-import numpy as np
-def simular_boxes(box1,box2,tolerance=10):
-    # print('a',box1,box2)
-    check = abs(box1[0] - box2[0])<= tolerance
-    check *= abs(box1[1] - box2[1])<= tolerance
-    check *= abs(box1[2] - box2[2])<= tolerance
-    check *= abs(box1[3] - box2[3])<= tolerance
-    return check
-
-def reduce_list(work,tolerance=10):
-    working=work.tolist()
-    # print(working)
-    cnt=0;cnt2=cnt+1
-    while cnt<len(working):
-        while cnt2<len(working):
-            if simular_boxes(   working[cnt], working[cnt2], tolerance   ):
-                # print(f'ye: {cnt},{cnt2}')
-                working.pop(cnt2)
-            else: cnt2+=1
-        cnt+=1;cnt2=cnt+1
-    return working
-
-#find list in list of lists
-def find_list_in_LoL(LoL,targ):
-    for i, row in enumerate(LoL):
-        if np.array_equal(row, targ):
-            return i
-    return -1
