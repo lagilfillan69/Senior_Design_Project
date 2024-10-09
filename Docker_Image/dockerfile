@@ -9,15 +9,28 @@ WORKDIR /
 RUN mkdir -p ${WORKSPACE}/src
 
 
-# setup entrypoint
-# COPY ./ros_entrypoint.sh /ros_entrypoint.sh
-# RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> .bashrc
-# ENTRYPOINT ["/ros_entrypoint.sh"]
-# CMD ["bash"]
+RUN  source /opt/ros/humble/install/setup.bash \
+&& git clone https://github.com/ros/angles.git \
+&& cd angles/angles \
+&& mkdir build && cd build/ && cmake ../ && make \
+&& make \
+&& sudo make install 
 
-RUN  source /opt/ros/humble/install/setup.bash
+
+## add opencv here 
+RUN pip install opencv-python
+
+RUN  source /opt/ros/humble/install/setup.bash \
 && mkdir ros2_ws && cd ros2_ws \
+&& ros2 pkg create --build-type ament_camke disparity_sub \ 
 && git clone --recurse-submodules https://github.com/carnegierobotics/multisense_ros2 src \
-&& git clone -b dashing-devel https://github.com/ros/xacro.git \
+&& git clone -b dashing-devel https://github.com/ros/xacro.git 
+
+COPY Disparity/src/Camera_Ros.py ros2_ws/src/disparity_sub/src
+COPY Disparity/CMakeLists.txt ros2_ws/src/disparity_sub/
+
+RUN source /opt/ros/humble/install/setup.bash \
+&& cd ros2_ws \
 && colcon build \
-&& source install/setup.bash
+&& source install/setup.bash \ 
+&& ros2  launch multisense_ros2 multisense_launch.py 
