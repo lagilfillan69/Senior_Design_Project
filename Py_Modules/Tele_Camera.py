@@ -73,6 +73,8 @@ class TeleCAM():
         else: return 0
 
 
+
+prGreen("TeleCAM: Class Definition Success")
 #==========================================================
 
 #https://stackoverflow.com/questions/57577445/list-available-cameras-opencv-python
@@ -109,9 +111,9 @@ def list_ports():
 
 
 if __name__ == "__main__":
-    available_ports,working_ports,non_working_ports=list_ports()
-    print(available_ports,working_ports,non_working_ports)
+    # available_ports,working_ports,non_working_ports=list_ports()
+    # print(available_ports,working_ports,non_working_ports)
     
     # Tele_camera = TeleCAM(working_ports[0])
-    Tele_camera = TeleCAM(1)
+    Tele_camera = TeleCAM(0)
     Tele_camera.display_feed()

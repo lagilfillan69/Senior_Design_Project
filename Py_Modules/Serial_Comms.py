@@ -35,3 +35,13 @@ class Serial_ESP32:
         self.send_message(f"BLUETOOTH\t{mes}")  #The exact framing of this message is still TBD
         pass
 
+
+
+prGreen("Serial_ESP32: Class Definition Success")
+#===============================================================================
+
+
+
+if __name__ == "__main__":
+    pass
+

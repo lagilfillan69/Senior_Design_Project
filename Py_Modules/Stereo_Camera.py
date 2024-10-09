@@ -157,3 +157,13 @@ class Stereo_Camera:
                     (semiperimeter - c) * 
                     (semiperimeter - d)
                     )
+
+
+
+prGreen("Stereo_Camera: Class Definition Success")
+#===============================================================================
+
+
+
+if __name__ == "__main__":
+    pass
