@@ -3,62 +3,117 @@
 # Stable container for Depth Camera from Carnegie Robotics
 
 import math
-from fun_colors import *
 
-#needs to be manually set
-DISTANCE_CAM_TO_GND = 0
+try:
+    from helper_functions import *
+    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+except:
+    from Py_Modules.helper_functions import *
+    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 
 
-class Depth_Camera:
-    def __init__(self, IP_address=None, Port=None):
+
+
+class Stereo_Camera:
+    def __init__(self, IP_address=None, Port=None,
+                 GND_Height=STEREOCAM_GND_HEIGHT,
+                 H_DegView=STEREOCAM_HORZ_DEG_VIEW,
+                 V_DegView=STEREOCAM_VERT_DEG_VIEW):
         self.IP_address = None
         self.port = None
         self.Depth_Map = None
+        self.GND_Height = GND_Height
+        self.H_DegView = H_DegView
+        self.V_DegView = V_DegView
+        
+        if not  self.establish_connection(): raise KeyError("Could not establish connection")
+        if not self.check_connection(): raise KeyError("Could not check connection")
+        
+        #get shape
+        t_frame = self.get_feed()
+        self.height,self.width,self.layers = t_frame.shape
+        prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+        print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
         pass
+    
+    #---------------------------------------------------------------------
     
     def establish_connection(self):
         #return T/F if able to connect
+        #NOTE: need actual functionality to figure out
         return False
     
     def check_connection(self):
         #return T/F if able to connect
+        #NOTE: need actual functionality to figure out
         return False
     
     
     #---------------------------------------------------------------------
     
+    #return camera feed
     def get_feed(self):
         #return camera feed
+        if not self.check_connection(): raise KeyError("Could not check connection")
+        #NOTE: need actual functionality to figure out
         pass
     
+    #set internal object
     def get_depthmap(self):
-        #set internal object
+        if not self.check_connection(): raise KeyError("Could not check connection")
+        #NOTE: need actual functionality to figure out
         self.Depth_Map = None
         pass
     
     
     #---------------------------------------------------------------------
-    #helper func for get_relativePOSITION and get_size
-    def get_depthPOINT(self, PIXEL_x,PIXEL_y):
-        pass
     
     #helper func for get_relativePOSITION and get_size
-    def get_relativeANGLE(self, PIXEL_x,PIXEL_y):
+    def get_depthPOINT(self, coord):
+        #NOTE: need actual functionality to figure out
+        self.get_depthmap()
         pass
+    
+    
+    #---------------------------------------------------------------------
+    
+    #helper func for get_relativePOSITION and get_size
+    def get_relativeANGLEX(self, coord):
+        mid = self.width/2
+        diff = mid - coord[0]
+        
+        #left
+        if diff>0: return (1-(diff/mid)) * self.H_DegView/2
+        #right
+        elif diff<0: return (diff/mid) * self.H_DegView/2
+        #middle
+        else: return 0
+    
+    #Not sure if we'll use
+    def get_relativeANGLEY(self, coord):
+        mid = self.height/2
+        diff = mid - coord[1]
+        
+        #left
+        if diff>0: return (1-(diff/mid)) * self.V_DegView/2
+        #right
+        elif diff<0: return (diff/mid) * self.V_DegView/2
+        #middle
+        else: return 0
     
     
     #=====================================================================
     
     #get relative position in COORDINATES given a point from center of bounding box from the YOLO Model
-    def get_relativePOSITION(self, PIXEL_x,PIXEL_y):
+    def get_relativePOSITION(self, coord):
         
         #current postiion is [0,0]
         #telling how far it is from the robots current position
         
-        angle = self.get_relativeANGLE(PIXEL_x,PIXEL_y)
-        depth = self.get_depthPOINT(PIXEL_x,PIXEL_y)
+        angle = self.get_relativeANGLEX(coord[0],coord[1])
+        depth = self.get_depthPOINT(coord[0],coord[1])
         
-        distance = math.sqrt(   depth**2 - DISTANCE_CAM_TO_GND**2   )
+        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         if angle == 0: return [distance,0]
         else:
@@ -67,12 +122,12 @@ class Depth_Camera:
             return [x_dist,y_dist]
         
     #realtive position with current angle and current position
-    def get_relativePOSITION(self, PIXEL_x,PIXEL_y, currPOS, currANG):
+    def get_relativePOSITION(self, coord, currPOS, currANG):
         
-        angle = self.get_relativeANGLE(PIXEL_x,PIXEL_y) + currANG
-        depth = self.get_depthPOINT(PIXEL_x,PIXEL_y)
+        angle = self.get_relativeANGLEX(coord[0],coord[1]) + currANG
+        depth = self.get_depthPOINT(coord[0],coord[1])
         
-        distance = math.sqrt(   depth**2 - DISTANCE_CAM_TO_GND**2   )
+        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         if angle == 0: return [currPOS[0]+distance,   currPOS[1]]
         else:
