@@ -2,14 +2,14 @@
 
 # Stable container for Telescopic Camera
 
-import cv2
+import cv2,math
 
 try:
     from helper_functions import *
-    from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
+    from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
 except:
     from Py_Modules.helper_functions import *
-    from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
+    from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
 
 
 
@@ -17,11 +17,10 @@ except:
 class TeleCAM():
     def __init__(self, index=TELECAM_PORT,
                  GND_Height=TELECAM_GND_HEIGHT,
-                 H_DegView=TELECAM_HORZ_DEG_VIEW,
-                 V_DegView=TELECAM_VERT_DEG_VIEW):
+                 FocalLength=TELECAM_FOCAL_LENGTH):
         self.GND_Height = GND_Height
-        self.H_DegView = H_DegView
-        self.V_DegView = V_DegView
+        self.H_DegView = 2*math.atan(  22.3/(2*1.6*FocalLength) )
+        self.V_DegView = 2*math.atan(  14.9/(2*1.6*FocalLength) )
         
         self.capture = cv2.VideoCapture(index)
         

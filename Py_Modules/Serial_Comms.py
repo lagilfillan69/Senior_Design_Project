@@ -12,6 +12,7 @@ except:
     from Py_Modules.helper_functions import *
     from Py_Modules.SD_constants import ESP32_PORT #needs to be manually set
 
+#WERE DOING ARDUINO NOW PYFRIMATA
 
 
 
