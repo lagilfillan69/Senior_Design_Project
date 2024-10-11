@@ -3,7 +3,7 @@ project(disparity_retrieve)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclpy REQUIRED)
-find_package(OpenCv REQUIRED)
+find_package(opencv-python REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(multisense_ros REQUIRED)
@@ -11,7 +11,7 @@ find_package(multisense_ros REQUIRED)
 ament_target_dependencies(disparity_retrieve
 cv_bridge
 sensor_msgs
-OpenCv
+opencv-python
 multisense_ros)
 
 
