@@ -2,14 +2,14 @@
 
 # Stable container for Telescopic Camera
 
-import cv2
+import cv2,math
 
 try:
     from helper_functions import *
-    from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
+    from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
 except:
     from Py_Modules.helper_functions import *
-    from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_HORZ_DEG_VIEW,TELECAM_VERT_DEG_VIEW #needs to be manually set
+    from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
 
 
 
@@ -17,11 +17,10 @@ except:
 class TeleCAM():
     def __init__(self, index=TELECAM_PORT,
                  GND_Height=TELECAM_GND_HEIGHT,
-                 H_DegView=TELECAM_HORZ_DEG_VIEW,
-                 V_DegView=TELECAM_VERT_DEG_VIEW):
+                 FocalLength=TELECAM_FOCAL_LENGTH):
         self.GND_Height = GND_Height
-        self.H_DegView = H_DegView
-        self.V_DegView = V_DegView
+        self.H_DegView = 2*math.atan(  22.3/(2*1.6*FocalLength) )
+        self.V_DegView = 2*math.atan(  14.9/(2*1.6*FocalLength) )
         
         self.capture = cv2.VideoCapture(index)
         
@@ -73,6 +72,8 @@ class TeleCAM():
         else: return 0
 
 
+
+prGreen("TeleCAM: Class Definition Success")
 #==========================================================
 
 #https://stackoverflow.com/questions/57577445/list-available-cameras-opencv-python
@@ -109,9 +110,9 @@ def list_ports():
 
 
 if __name__ == "__main__":
-    available_ports,working_ports,non_working_ports=list_ports()
-    print(available_ports,working_ports,non_working_ports)
+    # available_ports,working_ports,non_working_ports=list_ports()
+    # print(available_ports,working_ports,non_working_ports)
     
     # Tele_camera = TeleCAM(working_ports[0])
-    Tele_camera = TeleCAM(1)
+    Tele_camera = TeleCAM(0)
     Tele_camera.display_feed()

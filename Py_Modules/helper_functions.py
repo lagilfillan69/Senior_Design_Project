@@ -70,7 +70,8 @@ def mean(arr):
 #===================
 import cv2
 
-def reduce_found_obj(file_path, coords, output_path, Expan_rate=0.7, Compress_rate=10):
+def reduce_found_obj(file_path, coords, output_path, Expan_rate=0.3, Compress_rate=10):
+    Expan_rate=1-Expan_rate
     #read
     img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
     

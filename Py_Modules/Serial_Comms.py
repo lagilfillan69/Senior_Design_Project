@@ -12,6 +12,7 @@ except:
     from Py_Modules.helper_functions import *
     from Py_Modules.SD_constants import ESP32_PORT #needs to be manually set
 
+#WERE DOING ARDUINO NOW PYFRIMATA
 
 
 
@@ -34,4 +35,14 @@ class Serial_ESP32:
     def Bluetooth(self,mes):
         self.send_message(f"BLUETOOTH\t{mes}")  #The exact framing of this message is still TBD
         pass
+
+
+
+prGreen("Serial_ESP32: Class Definition Success")
+#===============================================================================
+
+
+
+if __name__ == "__main__":
+    pass
 

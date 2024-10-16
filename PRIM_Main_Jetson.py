@@ -11,7 +11,7 @@ sys.path.append(dir_path)
 
 #------------------------
 from Py_Modules.helper_functions import *
-from Py_Modules.JEB382_YOLOv8_CONTv1 import YOLO_model_v1
+from Py_Modules.JEB382_YOLOv8 import YOLO_model_v1
 from Py_Modules.Stereo_Camera import Stereo_Camera
 from Py_Modules.Tele_Camera  import TeleCAM
 from Py_Modules.Serial_Comms import Serial_ESP32
