@@ -14,7 +14,7 @@ from Py_Modules.helper_functions import *
 from Py_Modules.JEB382_YOLOv8 import YOLO_model_v1
 from Py_Modules.Stereo_Camera import Stereo_Camera
 from Py_Modules.Tele_Camera  import TeleCAM
-from Py_Modules.Serial_Comms import Serial_ESP32
+from Py_Modules.Serial_Comms import Serial_Ard
 from Py_Modules.SD_constants import STEREOCAM_MODELPATH,TELECAM_MODELPATH,CROPCOMPR_FILEPATH
 prGreen("PRIMARY MAIN Jetson: Import Success")
 
@@ -61,7 +61,7 @@ class PRIM_Main_Jetson():
         #Serial Communication to ESP32
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("Serial Communication initialization")
-        self.SerialComms = Serial_ESP32()
+        self.SerialComms = Serial_Ard()
         
         
         

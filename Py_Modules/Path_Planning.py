@@ -2,7 +2,12 @@
 
 # Convert GPS coordinates to Rectangle Path Plan for Robot
 
-from GPStoXY import GPStoXY
+
+try:
+    from helper_functions import GPStoXY
+except:
+    from Py_Modules.helper_functions import GPStoXY
+
 import math
 import numpy as np
 
@@ -102,3 +107,35 @@ def PathPlan(cords):
     return path
 
 
+if __name__ == "__main__":
+    
+    #definition of main
+    def main():
+        print("Testing Path Planning")
+
+        # lat = input("Please enter GPS Lat Cord 1:")
+
+        # lat_dig = float(lat)
+
+        # long = input("Please enter GPS Long Cord 1:")
+        # long_dig = float(long)
+
+        # lat_2 = input("Please enter GPS Lat Cord 2:")
+
+        # lat_dig2 = float(lat_2)
+
+        # long2 = input("Please enter GPS Long Cord 2:")
+        # long_dig2 = float(long2)
+
+
+
+        # print("Calculating Path......\n")
+
+        # PP.PathPlan([lat_dig,long_dig,lat_dig2,long_dig2])
+
+        PathPlan([40.35729,-79.93397,40.35604,-79.93218])
+
+        return 0
+    
+    main()
+    exit(0)
