@@ -25,6 +25,7 @@ Types of __Python__ -> Arduino messages
 
 Types of __Arduino__ -> Python
 - check if message from wireless, then send message over serial     [f"RECV\t{message}]"
+- recieve current position from Motor Driver [f"CPOS\t{cord}]"
 '''
 
 
