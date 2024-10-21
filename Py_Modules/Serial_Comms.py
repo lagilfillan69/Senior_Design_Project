@@ -18,13 +18,22 @@ except:
 '''
 Types of __Python__ -> Arduino messages
 - Search: Relative Position Array     [f"SRCH\t{cord}"]
-  - Move to point
+  - Move to point and spin in a circle
 - Collect: Relative Position Array     [f"COLL\t{cord}"]
   - Move to point, turn on vaccum
 - Send message over wireless: Message     [f"WIRE\t{message}"]
+- 
 
 Types of __Arduino__ -> Python
 - check if message from wireless, then send message over serial     [f"RECV\t{message}]"
+- recieve current position from Motor Driver [f"CPOS\t{cord}]"
+- arrived at directed PT and Seraching from Motor Driver f"ARSR\t{cord}]"
+- arrived at directed PT and Vaccuming f"ARSR\t{cord}]"
+- start message from UI [f"STAR\t{cord}]
+- stop messaafe from UI [f"STOP\t]
+- pause messafe from UI [f"PAUS\t]
+- approval to pickup object [f"OKAY\t]
+- no approval to pickup object [f"NKAY\t]
 '''
 
 
@@ -142,4 +151,3 @@ if __name__ == "__main__":
     # print(Tester.read_message())
     time.sleep(1)
     print(Tester.read_message())
-

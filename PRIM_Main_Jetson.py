@@ -5,6 +5,7 @@
 #   - see Serial_Comms
 
 import os,sys
+import time
 dir_path = os.path.abspath("").replace('\\','/')
 if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
@@ -75,6 +76,15 @@ class PRIM_Main_Jetson():
         
         
     def MainProject_Loop(self):
+        Preivous_State = 0
+        State = 0
+        Current_Cordinate = []
+        Path_Index = -2
+        Current_Location = [0,0]
+        Trash_Detected_Locations = []
+        Trash_Collected_Locations = []
+        Trash_Index = -1
+       
         while True:
             if cv2.waitKey(1) == ord('q'):
                 prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT")
@@ -83,12 +93,15 @@ class PRIM_Main_Jetson():
             #get message if there is
             message = self.SerialComms.read_message()            
             
-            #stoppage
+            #STOP STATE 
             if message == "STOP_MESSAGE":   #NOTE: This is temp code, the actual message for Stopping would be different
                 raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
+                State = 0
+                Path_Index = -2
             
-            #pausing
+            #PAUSE STATE (2) 
             elif message == "PAUSE_MESSAGE":   #NOTE: This is temp code, the actual message for Pausing would be different
+                State = 2 #not necessairy but for redundancy
                 prALERT("PAUSING PRIMARY JETSON MAIN: PAUSE MESSAGE")
                 while True:
                     if cv2.waitKey(1) == ord('q'):
@@ -98,43 +111,101 @@ class PRIM_Main_Jetson():
                     message = self.SerialComms.read_message()
                     if message == "RESUME MESSAGE":
                         prALERT("RESUME PRIMARY JETSON MAIN")
+                        Previous_State = 2
                         break
+            
+            #### Update location -- not a state
+            elif message == "LOC MESSAGE":
+                Current_Location = message
+
+            ### START STATE ###
+            elif message == "START_MSG" and (State == 0 or State == 2) :
+                Detect_Boundaries = message
+                Previous_State = State
+                State = 1
+            
+            ### WAITING FOR APPROVAL STATE
+            elif message == "APPROVAL MESSAGE " and State == 5 :
+                Preivous_State = 5
+                State = 6
+    
+            elif message == "DISAPPROVAL MESSAGE " and State == 5 :
+                Preivous_State = 5
+                State = 6
+
+            ### Waiting to arrive at precise location state (STATE 7)
+            elif message == "ARRIVED AT TRASH MESSAGE" and State == 7:
+                Serial_Ard.send_message("To bluetooth : Trash Picked Up")
+                Serial_Ard.send_message("Return to this cord")
+                Preivous_State = 7
+                Current_State = 8
+            
+
+                
             
             #regular run
             else:
-                #NOTE: FSM WORK HERE !!!!!!!!!!!!!!!!!!!!!!
-                #NOTE: need actual functionality to figure out; current work showed is an example of some nessecary code that'd be in the FSM, not any complete functionality
                 
+                #READY TO START
+                if State == 0: 
+                    continue
                 
-                #----------------------------- 
-                #NOTE: !!! There'd be some loop (#1) here of scanning area with search pattern
+                #START 
+                elif(State == 1):
+                    Path = PathPlan(Detect_Boundaries)
+                    Path_Index = -1 
+                    Previous_State = 1
+                    State = 3
+    
+
+                #Go to Next Path Index
+                elif(State == 3):    
+                    #edge case, try to travel with no path
+                    if(Path_Index == -2):
+                        State = 0
+                    else :
+                        Path_Index += 1
+                        if(Path_Index > Path.size()-1):
+                            Path_Index = -2 
+                            State = 0
+                        elif (Current_Location == Path[Path_Index]):
+                            State = 4
+                        else : 
+                            State = 3
+                    Preivous_State = 3
+
+                #Detect Objects
+                elif(State == 4):
+                    if Preivous_State != 4:
+                        start_time = time.time()
+                    if self.detect_Tele(): 
+                        State = 5 
+                        Serial_Ard.send_message("OBJ FOUND")
+                    elif (time.time() - start_time > 60):
+                        State = 3 # go to next point, nothing is detected here
+                    else :
+                        State = 4
+                    Previous_State = 4
+
+                #Object Located (Notify Officals)
+                elif(State == 5):
+                    #Dead state while waiting for officals
+                    Previous_State = 5
+
+                #Drive to Object (relative)
+                elif(State == 6):
+                    ### TODO @Jonah add in ur piece to this 
+                    #Will stay in this state until there is a precise location found or object is lost
+                     #what will we deam a lost object? 
+                    if self.detect_Stereo() : 
+                        State = 7 
+                        Serial_Ard.send_message("OBJ FOUND @ PRECISE LOCATION")
+                    else :
+                        Serial_Ard.send_message("OBJ FOUND @ RELATIVE LOCATION")
+                        State = 6
+                        Previous_State = 6            
                 
-                
-                #----------------------------- 
-                #NOTE: this would be in previous mentioned loop (#1)
-                #check telescopic camera for objects
-                #   sets self.Tele_angles: list of relative angles
-                #   returns if theres any detections
-                if not self.detect_Tele(): continue   #if theres no trash, go to begining on While Loop
                
-                
-                #----------------------------- 
-                #NOTE: !!! There'd be some loop (#2) and logic here about following angles of objects from self.Tele_angles
-                #   then finer searching with Stereo camera
-                
-                
-                #-----------------------------
-                #NOTE: this would be in previous mentioned loop (#2)
-                #check Stereo Camera for objects and their relative positions
-                #   sets self.Stereo_Pos: list of relative posititions
-                #   returns if theres any detections
-                if not self.detect_Stereo(): continue   #if theres no trash, go to begining on While Loop
-                
-                
-                #----------------------------- 
-                #NOTE: this would be in previous mentioned loop (#2)
-                #NOTE: !!! There'd be some loop and logic here about following to detected trash from self.Stereo_Pos, then picking it up
-                
             pass
         
     def detect_Tele(self):

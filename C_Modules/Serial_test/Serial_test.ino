@@ -40,7 +40,8 @@ void loop() {
       float x = Data.substring(0, Data.indexOf(', ')).toFloat();
       float y = Data.substring(Data.indexOf(', ')+1).toFloat();
       
-      Serial.print("SRCH: ");Serial.print(x);Serial.print(", ");Serial.print(y);Serial.println("");
+      // Serial.print("SRCH: ");Serial.print(x);Serial.print(", ");Serial.print(y);Serial.println("");
+      Serial.print("Commanded to Search: @");Serial.print(x);Serial.print(", ");Serial.print(y);Serial.println("");
 
 
       //------------------------------
@@ -56,7 +57,8 @@ void loop() {
       float x = Data.substring(0, Data.indexOf(', ')).toFloat();
       float y = Data.substring(Data.indexOf(', ')+1).toFloat();
       
-      Serial.print("COLL: ");Serial.print(x);Serial.print(", ");Serial.print(y);Serial.println("");
+      // Serial.print("COLL: ");Serial.print(x);Serial.print(", ");Serial.print(y);Serial.println("");
+      Serial.print("Commanded to Collect: @");Serial.print(x);Serial.print(", ");Serial.print(y);Serial.println("");
 
 
       //------------------------------
@@ -70,6 +72,10 @@ void loop() {
 
       //------------------------------
       // Chad your code goes here
+    }
+    else
+    {
+      Serial.println(incomingString);
     }
 
 
