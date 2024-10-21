@@ -3,7 +3,7 @@
 # Stable container for Serial Communication from Jettson to ESP32
 
 #going to be using these libraries, but until can start working with ESP32 not sure exactly how
-import serial, pyfirmata2
+import serial
 
 try:
     from helper_functions import *

@@ -19,8 +19,8 @@ class TeleCAM():
                  GND_Height=TELECAM_GND_HEIGHT,
                  FocalLength=TELECAM_FOCAL_LENGTH):
         self.GND_Height = GND_Height
-        self.H_DegView = 2*math.atan(  22.3/(2*1.6*FocalLength) )
-        self.V_DegView = 2*math.atan(  14.9/(2*1.6*FocalLength) )
+        self.H_DegView = math.degrees(2*math.atan(  22.3/(2*FocalLength) ))#prev:FL*16 (realistic? was not)
+        self.V_DegView = math.degrees(2*math.atan(  14.9/(2*FocalLength) ))
         
         self.capture = cv2.VideoCapture(index)
         
@@ -48,14 +48,16 @@ class TeleCAM():
     #---------------------------------------------------------------------
     
     #helper func for get_relativePOSITION and get_size
+    #pos: angle to the right
+    #neg: angle to the left
     def get_relativeANGLEX(self, coord):
         mid = self.width/2
         diff = mid - coord[0]
         
         #left
-        if diff>0: return (1-(diff/mid)) * self.H_DegView/2
+        if diff>0: return -abs(diff) * self.H_DegView/self.width
         #right
-        elif diff<0: return (diff/mid) * self.H_DegView/2
+        elif diff<0: return abs(diff) * self.H_DegView/self.width
         #middle
         else: return 0
     
@@ -65,9 +67,9 @@ class TeleCAM():
         diff = mid - coord[1]
         
         #left
-        if diff>0: return (1-(diff/mid)) * self.V_DegView/2
+        if diff>0: return -abs(diff) * self.V_DegView/self.height
         #right
-        elif diff<0: return (diff/mid) * self.V_DegView/2
+        elif diff<0: return abs(diff) * self.V_DegView/self.height
         #middle
         else: return 0
 
