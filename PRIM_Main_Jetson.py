@@ -76,8 +76,21 @@ class PRIM_Main_Jetson():
         
         
     def MainProject_Loop(self):
-        Preivous_State = 0
-        State = 0
+        # State Legend
+        # 0 - Stop
+        # 1 - Start
+        # 2 - Pause
+        # 3 - Drive to next path coorindates
+        # 4 - Detect Objects
+        # 5 - Object Located (waiting)
+        # 6 - Drive to Object (relative)
+        # 7 - Drive to Object (precise)
+        # 8 - Vaccum Object
+        # 9 - Return to Path Cord
+
+
+        Previous_State = 0
+        Curr_State = 0
         Current_Cordinate = []
         Path_Index = -2
         Current_Location = [0,0]
@@ -91,17 +104,18 @@ class PRIM_Main_Jetson():
                 return
             
             #get message if there is
-            message = self.SerialComms.read_message()            
+            # message = self.SerialComms.read_message()
+            message = input(">")      
             
             #STOP STATE 
             if message == "STOP_MESSAGE":   #NOTE: This is temp code, the actual message for Stopping would be different
-                raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
-                State = 0
+                Curr_State = 0
                 Path_Index = -2
+                raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
             
             #PAUSE STATE (2) 
             elif message == "PAUSE_MESSAGE":   #NOTE: This is temp code, the actual message for Pausing would be different
-                State = 2 #not necessairy but for redundancy
+                Curr_State = 2 #not necessairy but for redundancy
                 prALERT("PAUSING PRIMARY JETSON MAIN: PAUSE MESSAGE")
                 while True:
                     if cv2.waitKey(1) == ord('q'):
@@ -119,26 +133,28 @@ class PRIM_Main_Jetson():
                 Current_Location = message
 
             ### START STATE ###
-            elif message == "START_MSG" and (State == 0 or State == 2) :
+            elif message == "START_MSG" and (Curr_State == 0 or Curr_State == 2) :
                 Detect_Boundaries = message
-                Previous_State = State
-                State = 1
+                Previous_State = Curr_State
+                Curr_State = 1
             
             ### WAITING FOR APPROVAL STATE
-            elif message == "APPROVAL MESSAGE " and State == 5 :
-                Preivous_State = 5
-                State = 6
+            elif message == "APPROVAL MESSAGE " and Curr_State == 5 :
+                Previous_State = Curr_State
+                Curr_State = 6
     
-            elif message == "DISAPPROVAL MESSAGE " and State == 5 :
-                Preivous_State = 5
-                State = 6
+            elif message == "DISAPPROVAL MESSAGE " and Curr_State == 5 : #Object Located (waiting)
+                #original point state, goes to next point in path
+                # Previous_State = Curr_State
+                # Curr_State = 6
+                Path_Index+=1
 
             ### Waiting to arrive at precise location state (STATE 7)
-            elif message == "ARRIVED AT TRASH MESSAGE" and State == 7:
+            elif message == "ARRIVED AT TRASH MESSAGE" and Curr_State == 7:
                 Serial_Ard.send_message("To bluetooth : Trash Picked Up")
                 Serial_Ard.send_message("Return to this cord")
-                Preivous_State = 7
-                Current_State = 8
+                Previous_State = Curr_State
+                Curr_State = 8
             
 
                 
@@ -147,63 +163,63 @@ class PRIM_Main_Jetson():
             else:
                 
                 #READY TO START
-                if State == 0: 
+                if Curr_State == 0: 
                     continue
                 
                 #START 
-                elif(State == 1):
+                elif(Curr_State == 1):
                     Path = PathPlan(Detect_Boundaries)
                     Path_Index = -1 
-                    Previous_State = 1
-                    State = 3
+                    Previous_State = Curr_State
+                    Curr_State = 3
     
 
                 #Go to Next Path Index
-                elif(State == 3):    
+                elif(Curr_State == 3):    
                     #edge case, try to travel with no path
                     if(Path_Index == -2):
-                        State = 0
+                        Curr_State = 0
                     else :
                         Path_Index += 1
                         if(Path_Index > Path.size()-1):
                             Path_Index = -2 
-                            State = 0
+                            Curr_State = 0
                         elif (Current_Location == Path[Path_Index]):
-                            State = 4
+                            Curr_State = 4
                         else : 
-                            State = 3
-                    Preivous_State = 3
+                            Curr_State = 3
+                    Previous_State = 3
 
                 #Detect Objects
-                elif(State == 4):
-                    if Preivous_State != 4:
+                elif(Curr_State == 4):
+                    if Previous_State != 4:
                         start_time = time.time()
                     if self.detect_Tele(): 
-                        State = 5 
+                        Curr_State = 5 
                         Serial_Ard.send_message("OBJ FOUND")
                     elif (time.time() - start_time > 60):
-                        State = 3 # go to next point, nothing is detected here
+                        Curr_State = 3 # go to next point, nothing is detected here
                     else :
-                        State = 4
+                        Curr_State = 4
                     Previous_State = 4
 
                 #Object Located (Notify Officals)
-                elif(State == 5):
+                elif(Curr_State == 5):
                     #Dead state while waiting for officals
-                    Previous_State = 5
+                    Previous_State = Curr_State
 
                 #Drive to Object (relative)
-                elif(State == 6):
+                elif(Curr_State == 6):
                     ### TODO @Jonah add in ur piece to this 
                     #Will stay in this state until there is a precise location found or object is lost
                      #what will we deam a lost object? 
                     if self.detect_Stereo() : 
-                        State = 7 
+                        Curr_State = 7 
                         Serial_Ard.send_message("OBJ FOUND @ PRECISE LOCATION")
                     else :
                         Serial_Ard.send_message("OBJ FOUND @ RELATIVE LOCATION")
-                        State = 6
-                        Previous_State = 6            
+                        Curr_State = 6
+                        Previous_State = 6           
                 
                
             pass
