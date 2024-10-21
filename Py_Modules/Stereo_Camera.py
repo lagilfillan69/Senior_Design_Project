@@ -18,20 +18,25 @@ class Stereo_Camera:
     def __init__(self, IP_address=None, Port=None,
                  GND_Height=STEREOCAM_GND_HEIGHT,
                  H_DegView=STEREOCAM_HORZ_DEG_VIEW,
-                 V_DegView=STEREOCAM_VERT_DEG_VIEW):
+                 V_DegView=STEREOCAM_VERT_DEG_VIEW,
+                 Real=True):
         self.IP_address = None
         self.port = None
         self.Depth_Map = None
         self.GND_Height = GND_Height
         self.H_DegView = H_DegView
         self.V_DegView = V_DegView
+        self.Real=Real
         
-        if not  self.establish_connection(): raise KeyError("Could not establish connection")
-        if not self.check_connection(): raise KeyError("Could not check connection")
+        if self.Real:
+            if not  self.establish_connection(): raise KeyError("Could not establish connection")
+            if not self.check_connection(): raise KeyError("Could not check connection")
         
         #get shape
-        t_frame = self.get_feed()
-        self.height,self.width,self.layers = t_frame.shape
+        if self.Real:
+            t_frame = self.get_feed()
+            self.height,self.width,self.layers = t_frame.shape
+        else: self.height,self.width,self.layers = 1188,1920,3
         prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
         pass
@@ -54,13 +59,13 @@ class Stereo_Camera:
     #return camera feed
     def get_feed(self):
         #return camera feed
-        if not self.check_connection(): raise KeyError("Could not check connection")
+        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
         #NOTE: need actual functionality to figure out
         pass
     
     #set internal object
     def get_depthmap(self):
-        if not self.check_connection(): raise KeyError("Could not check connection")
+        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
         #NOTE: need actual functionality to figure out
         self.Depth_Map = None
         pass

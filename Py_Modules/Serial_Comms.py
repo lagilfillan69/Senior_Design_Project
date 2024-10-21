@@ -71,6 +71,19 @@ class Serial_Ard:
 prGreen("Serial_ESP32: Class Definition Success")
 #===============================================================================
 
+
+#Fake Version for FSM Debug
+class Serial_Ard_FAKE:
+    def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
+        print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
+    
+    def read_message(self):
+        return input(">")
+    
+    def send_message(self,data):
+        prYellow(f"[FSM TESTING]  Ard Send:   <{data}>")
+#===============================================================================
+
 #test funcs
 def Backforth():
     ser = serial.Serial('COM3', 9600)

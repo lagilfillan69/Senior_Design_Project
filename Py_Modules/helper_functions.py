@@ -93,7 +93,7 @@ def find_center(coords):
 
 #lauren
 import math
-def GPStoXY(cords):
+def GPStoXY(cords,verbose=False):
     # Convert degrees to radians
     lat1 = math.radians(cords[0])
     lon1 = math.radians(cords[1])
@@ -106,6 +106,6 @@ def GPStoXY(cords):
     # Calculate relative x and y coordinates
     x = R * (lon2 - lon1) * math.cos((lat1 + lat2) / 2)
     y = R * (lat2 - lat1)
-    print(" X : ", x, " Y : ", y)
+    if verbose: print(" X : ", x, " Y : ", y)
 
     return (x, y)
