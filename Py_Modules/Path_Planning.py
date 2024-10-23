@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
         # PP.PathPlan([lat_dig,long_dig,lat_dig2,long_dig2])
 
-        PathPlan([40.35729,-79.93397,40.35604,-79.93218])
+        PathPlan([40.35729,-79.93397,40.35604,-79.93218],verbose=True)
 
         return 0
     

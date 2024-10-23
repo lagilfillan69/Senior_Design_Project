@@ -90,8 +90,12 @@ class PRIM_Main_Jetson():
         # 7 - Drive to Object (precise)
         # 8 - Vaccum Object
         # 9 - Return to Path Cord
+        
+        #-----
+        self.Tele_angles = None
+        self.Stereo_Pos = None
 
-
+        #-----
         Previous_State = 0
         Curr_State = 0
         Current_Cordinate = []  #use??????
@@ -101,9 +105,12 @@ class PRIM_Main_Jetson():
         Runway_Boundaries=None
         Trash_Collected_Locations = []  #use??????
         Trash_Index = -1
-       
+        
+        #====================================================================
         while True:
-            if not self.Real: prCyan(f"Curr,Prev,DetBound,PathIdx,PathLen\t\t[{Curr_State}, {Previous_State}, {Runway_Boundaries}, {Path_Index}, {len(Path)}]")
+            if not self.Real:
+                prCyan(f"Curr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Pos[Trash_Index] if self.Stereo_Pos is not None else None}]")
+
             
             if cv2.waitKey(1) == ord('q'):
                 prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT")
@@ -136,12 +143,14 @@ class PRIM_Main_Jetson():
                         break
             
             #### Update location -- not a state
+            #structure: 'LOC_MESSAGE\t[  4 floating point values  ]
+            #   ex (do own tab):   LOC_MESSAGE\t[3, 12]
             elif message.split('\t')[0] == "LOC_MESSAGE":
                 Current_Location = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]#message  #TODO: Decode
 
             ### START STATE ###
             #structure: 'START_MSG\t[  4 floating point values  ]
-            #   ex:   START_MSG\t[40.35729, -79.93397, 40.35604, -79.93218]
+            #   ex (do own tab):   START_MSG\t[40.35729, -79.93397, 40.35604, -79.93218]
             elif message.split('\t')[0] == "START_MSG" and (Curr_State == 0 or Curr_State == 2) :
                 Runway_Boundaries = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
                 Previous_State = Curr_State
@@ -250,6 +259,7 @@ class PRIM_Main_Jetson():
             #===========================================================
             #Drive to Object (precise)
             elif(Curr_State == 7):
+                if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 self.SerialComms.send_message("To Motor Driver : Drive to [X,Y] location")
 
                 # will stay in this state until we are at set locations
@@ -261,14 +271,17 @@ class PRIM_Main_Jetson():
 
             #Vaccum Object
             elif(Curr_State == 8):
+                if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 print("Turn on Vaccum, wait 30 seconds, turn off vaccum")
+                Trash_Collected_Locations.append(Current_Location)
                 Curr_State = 9
                 Previous_State = Curr_State
             
             # 9 - Return to Path Cord
             elif(Curr_State == 9):
+                if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 #will stay in this stay in this state until cordinates are reached
-                if(Current_Location == Path[Path_Index]):
+                if (Current_Location[0] == Path[Path_Index][0]) or (Current_Location[1] == Path[Path_Index][1]):
                     Curr_State = 4
                 else :
                     Curr_State = 9
