@@ -18,20 +18,25 @@ class Stereo_Camera:
     def __init__(self, IP_address=None, Port=None,
                  GND_Height=STEREOCAM_GND_HEIGHT,
                  H_DegView=STEREOCAM_HORZ_DEG_VIEW,
-                 V_DegView=STEREOCAM_VERT_DEG_VIEW):
+                 V_DegView=STEREOCAM_VERT_DEG_VIEW,
+                 Real=True):
         self.IP_address = None
         self.port = None
         self.Depth_Map = None
         self.GND_Height = GND_Height
         self.H_DegView = H_DegView
         self.V_DegView = V_DegView
+        self.Real=Real
         
-        if not  self.establish_connection(): raise KeyError("Could not establish connection")
-        if not self.check_connection(): raise KeyError("Could not check connection")
+        if self.Real:
+            if not  self.establish_connection(): raise KeyError("Could not establish connection")
+            if not self.check_connection(): raise KeyError("Could not check connection")
         
         #get shape
-        t_frame = self.get_feed()
-        self.height,self.width,self.layers = t_frame.shape
+        if self.Real:
+            t_frame = self.get_feed()
+            self.height,self.width,self.layers = t_frame.shape
+        else: self.height,self.width,self.layers = 1188,1920,3
         prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
         pass
@@ -54,13 +59,13 @@ class Stereo_Camera:
     #return camera feed
     def get_feed(self):
         #return camera feed
-        if not self.check_connection(): raise KeyError("Could not check connection")
+        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
         #NOTE: need actual functionality to figure out
         pass
     
     #set internal object
     def get_depthmap(self):
-        if not self.check_connection(): raise KeyError("Could not check connection")
+        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
         #NOTE: need actual functionality to figure out
         self.Depth_Map = None
         pass
@@ -78,26 +83,28 @@ class Stereo_Camera:
     #---------------------------------------------------------------------
     
     #helper func for get_relativePOSITION and get_size
+    #pos: angle to the right
+    #neg: angle to the left
     def get_relativeANGLEX(self, coord):
         mid = self.width/2
-        diff = mid - coord[0]
+        diff = mid - coord
         
         #left
-        if diff>0: return (1-(diff/mid)) * self.H_DegView/2
+        if diff>0: return -abs(diff) * self.H_DegView/self.width
         #right
-        elif diff<0: return (diff/mid) * self.H_DegView/2
+        elif diff<0: return abs(diff) * self.H_DegView/self.width
         #middle
         else: return 0
     
     #Not sure if we'll use
     def get_relativeANGLEY(self, coord):
         mid = self.height/2
-        diff = mid - coord[1]
+        diff = mid - coord
         
         #left
-        if diff>0: return (1-(diff/mid)) * self.V_DegView/2
+        if diff>0: return -abs(diff) * self.V_DegView/self.height
         #right
-        elif diff<0: return (diff/mid) * self.V_DegView/2
+        elif diff<0: return abs(diff) * self.V_DegView/self.height
         #middle
         else: return 0
     
@@ -110,30 +117,30 @@ class Stereo_Camera:
         #current postiion is [0,0]
         #telling how far it is from the robots current position
         
-        angle = self.get_relativeANGLEX(coord[0],coord[1])
+        angle = self.get_relativeANGLEX(coord[0])
         depth = self.get_depthPOINT(coord[0],coord[1])
         
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         if angle == 0: return [distance,0]
         else:
-            x_dist = distance * math.sin(angle)
-            y_dist = distance * math.cos(angle)
+            x_dist = distance * math.sin(math.radians(angle))
+            y_dist = math.sqrt(   distance**2 - x_dist**2   )#distance * math.cos(angle)
             return [x_dist,y_dist]
         
     #realtive position with current angle and current position
     def get_relativePOSITION(self, coord, currPOS, currANG):
         
-        angle = self.get_relativeANGLEX(coord[0],coord[1]) + currANG
+        angle = self.get_relativeANGLEX(coord) + currANG
         depth = self.get_depthPOINT(coord[0],coord[1])
         
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         if angle == 0: return [currPOS[0]+distance,   currPOS[1]]
         else:
-            x_dist = distance * math.sin(angle)
-            y_dist = distance * math.cos(angle)
-            return [currPOS[0]+x_dist,   currPOS[1]+y_dist]
+            x_dist = distance * math.sin(math.radians(angle))
+            y_dist = math.sqrt(   distance**2 - x_dist**2   )#distance * math.cos(angle)
+            return [x_dist,y_dist]
     
     #=====================================================================
     

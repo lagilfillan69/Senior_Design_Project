@@ -3,7 +3,7 @@
 # Stable container for Serial Communication from Jettson to ESP32
 
 #going to be using these libraries, but until can start working with ESP32 not sure exactly how
-import serial, pyfirmata2
+import serial
 
 try:
     from helper_functions import *
@@ -18,14 +18,22 @@ except:
 '''
 Types of __Python__ -> Arduino messages
 - Search: Relative Position Array     [f"SRCH\t{cord}"]
-  - Move to point
+  - Move to point and spin in a circle
 - Collect: Relative Position Array     [f"COLL\t{cord}"]
   - Move to point, turn on vaccum
 - Send message over wireless: Message     [f"WIRE\t{message}"]
+- 
 
 Types of __Arduino__ -> Python
 - check if message from wireless, then send message over serial     [f"RECV\t{message}]"
 - recieve current position from Motor Driver [f"CPOS\t{cord}]"
+- arrived at directed PT and Seraching from Motor Driver f"ARSR\t{cord}]"
+- arrived at directed PT and Vaccuming f"ARSR\t{cord}]"
+- start message from UI [f"STAR\t{cord}]
+- stop messaafe from UI [f"STOP\t]
+- pause messafe from UI [f"PAUS\t]
+- approval to pickup object [f"OKAY\t]
+- no approval to pickup object [f"NKAY\t]
 '''
 
 
@@ -61,6 +69,19 @@ class Serial_Ard:
 
 
 prGreen("Serial_ESP32: Class Definition Success")
+#===============================================================================
+
+
+#Fake Version for FSM Debug
+class Serial_Ard_FAKE:
+    def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
+        print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
+    
+    def read_message(self):
+        return input(">")
+    
+    def send_message(self,data):
+        prYellow(f"[FSM TESTING]  Ard Send:   <{data}>")
 #===============================================================================
 
 #test funcs
@@ -143,4 +164,3 @@ if __name__ == "__main__":
     # print(Tester.read_message())
     time.sleep(1)
     print(Tester.read_message())
-
