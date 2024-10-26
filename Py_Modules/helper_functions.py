@@ -91,21 +91,37 @@ def find_center(coords):
 
 
 
-#lauren
+
 import math
-def GPStoXY(cords):
-    # Convert degrees to radians
-    lat1 = math.radians(cords[0])
-    lon1 = math.radians(cords[1])
-    lat2 = math.radians(cords[2])
-    lon2 = math.radians(cords[3])
+def haversine_distance(lat1, lon1, lat2, lon2):
+    """Calculate the great-circle distance between two points on Earth."""
+    R = 6371000  # Earth radius in meters
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
 
-    # Earth's radius in meters
-    R = 6371000  
+def gps_to_xy(lat1, lon1, lat2, lon2):
+    """Convert GPS coordinates to local Cartesian coordinates using equirectangular approximation."""
+    R = 6371000  # Earth radius in meters
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1) * math.cos(math.radians(lat1))  # Adjust for latitude
+    x = R * dlon
+    y = R * dlat
+    return x, y
 
-    # Calculate relative x and y coordinates
-    x = R * (lon2 - lon1) * math.cos((lat1 + lat2) / 2)
-    y = R * (lat2 - lat1)
-    print(" X : ", x, " Y : ", y)
+def interpolate_points(start, end, step):
+    """Generate points along the line segment between start and end."""
+    x1, y1 = start
+    x2, y2 = end
+    distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    num_points = int(distance // step)
 
-    return (x, y)
+    points = []
+    for i in range(num_points + 1):
+        t = i / num_points
+        x = x1 + t * (x2 - x1)
+        y = y1 + t * (y2 - y1)
+        points.append((x, y))
+    return points

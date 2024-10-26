@@ -5,16 +5,20 @@
 
 try:
     from helper_functions import GPStoXY
+    from helper_functions import haversine_distance
+    from helper_functions import interpolate_points
 except:
-    from Py_Modules.helper_functions import GPStoXY
+    from Py_Modules.helper_functions import haversine_distance
+    from Py_Modules.helper_functions import gps_to_xy
+    from Py_Modules.helper_functions import interpolate_points
 
 import math
 import numpy as np
 
 #Max seeing distance of the bot in height and width in meters
-RANGE_WIDTH = 10.0
-RANGE_HEIGHT= 10.0 
-START = [0,0]
+RANGE_WIDTH = 5.0
+RANGE_HEIGHT= 5.0 
+
 #based on the input coordinates we make assumptions on how we are gonna layout our path. 
 #the shorter side will always be considered the height, while the longer side will be our width
                                     # (Boundary,Boundary)
@@ -24,118 +28,23 @@ START = [0,0]
 # |                 width v              |
 # |--------------------------------------|
 # (0,0)
-def PathPlan(cords):
-    boundary = GPStoXY(cords)
-    print("X Y Coordinates",boundary)
+def generate_path(p1, p2, p3, step=5):
+    """Generate a path around the rectangle formed by the three GPS points."""
+    # Convert GPS to Cartesian coordinates
+    origin = (0, 0)
+    x2, y2 = gps_to_xy(*p1, *p2)  # From p1 to p2
+    x3, y3 = gps_to_xy(*p1, *p3)  # From p1 to p3
 
-    if(abs(boundary[0]) > abs(boundary[1])):
-        width = boundary[0]
-        height = boundary[1]
-    else :
-        width = boundary[0]
-        height = boundary[1]
+    # Define the four corners of the rectangle
+    corners = [origin, (x2, y2), (x2 + x3, y2 + y3), (x3, y3)]
 
-    # width = 105
-    # height = 55
+    # Generate path along the rectangle edges
+    path = []
+    for i in range(4):
+        start = corners[i]
+        end = corners[(i + 1) % 4]
+        path += interpolate_points(start, end, step)
 
-    
-    max_width_points = math.ceil(abs(width)/RANGE_WIDTH)
-    max_height_points = math.ceil(abs(height)/RANGE_HEIGHT)
-    num_points = 2*max_width_points+2*max_height_points + 1
-    path = np.zeros((num_points,2))
-
-    #establish four edge points
-    path[max_width_points,0] = width
-    path[max_height_points + max_width_points,0] = width
-    path[max_height_points + max_width_points,1] = height
-    path[max_height_points + max_width_points + max_width_points,1] = height
-
-
-    #populating points 
-    for i in range(1,num_points) :
-        if(i <= max_width_points):
-            path[i,1] = path[i-1,1]
-            if(width < 0):
-                if(path[i-1,0] - RANGE_WIDTH < width):
-                    path[i,0] = width
-                else:
-                    path[i,0] = path[i-1,0] - RANGE_WIDTH
-            elif(width > 0):
-                if(path[i-1,0] + RANGE_WIDTH > width):
-                    path[i,0] = width
-                else:
-                    path[i,0] = path[i-1,0] +RANGE_WIDTH
-        elif(max_width_points < i <= max_width_points + max_height_points ):
-            path[i,0] = path[i-1,0]
-            if(height > 0):
-                if (path[i-1,1] + RANGE_HEIGHT) > height:
-                    path[i,1] = height
-                else:
-                    path[i,1] = path[i-1,1] + RANGE_HEIGHT
-            else : 
-                if (path[i-1,1] - RANGE_HEIGHT) < height:
-                    path[i,1] = height
-                else:
-                    path[i,1] = path[i-1,1] - RANGE_HEIGHT
-        elif(max_width_points + max_height_points < i <=  2*max_width_points + max_height_points):
-            path[i,1] = path[i-1,1]
-            if(width > 0):
-                if (path[i-1,0] - RANGE_WIDTH < 0):
-                    path[i,0] = 0
-                else:
-                    path[i,0] = path[i-1,0] - RANGE_WIDTH
-            else:
-                if (path[i-1,0] + RANGE_WIDTH > 0):
-                    path[i,0] = 0
-                else:
-                    path[i,0] = path[i-1,0] + RANGE_WIDTH
-            
-        elif(i >= 2*max_width_points + max_height_points):
-            path[i,0] = path[i-1,0]
-            if(height > 0):
-                if path[i-1,1] - RANGE_HEIGHT < 0:
-                    path[i,1] = 0
-                else:
-                    path[i,1] = path[i-1,1] - RANGE_HEIGHT
-            else : 
-                if path[i-1,1] + RANGE_HEIGHT > 0:
-                    path[i,1] = 0
-                else:
-                    path[i,1] = path[i-1,1] + RANGE_HEIGHT
-            
-    print("Path : ", path)
+    # Return path back to origin
+    path.append(origin)
     return path
-
-
-if __name__ == "__main__":
-    
-    #definition of main
-    def main():
-        print("Testing Path Planning")
-
-        # lat = input("Please enter GPS Lat Cord 1:")
-
-        # lat_dig = float(lat)
-
-        # long = input("Please enter GPS Long Cord 1:")
-        # long_dig = float(long)
-
-        # lat_2 = input("Please enter GPS Lat Cord 2:")
-
-        # lat_dig2 = float(lat_2)
-
-        # long2 = input("Please enter GPS Long Cord 2:")
-        # long_dig2 = float(long2)
-
-
-
-        # print("Calculating Path......\n")
-
-        # PP.PathPlan([lat_dig,long_dig,lat_dig2,long_dig2])
-
-        PathPlan([40.35729,-79.93397,40.35604,-79.93218])
-
-        return 0
-    
-    main()
-    exit(0)
