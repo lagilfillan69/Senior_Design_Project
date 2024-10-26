@@ -317,7 +317,9 @@ class PRIM_Main_Jetson():
                 #outputs cropped & compressed pictures of trash
                 if save_image:
                     for index,res in enumerate(Stereo_results):
-                        reduce_found_obj( Stereo_photo,res[1],f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
+                        reduce_ImgObj( img= Stereo_photo,
+                                       box=res[1],
+                                       output_path=f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
                 return True
             else:
                 self.Stereo_Pos = None
