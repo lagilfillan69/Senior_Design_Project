@@ -3,7 +3,7 @@
 # Stable container for Serial Communication from Jettson to ESP32
 
 #going to be using these libraries, but until can start working with ESP32 not sure exactly how
-import serial, pyfirmata2
+import serial
 
 try:
     from helper_functions import *
@@ -69,6 +69,19 @@ class Serial_Ard:
 
 
 prGreen("Serial_ESP32: Class Definition Success")
+#===============================================================================
+
+
+#Fake Version for FSM Debug
+class Serial_Ard_FAKE:
+    def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
+        print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
+    
+    def read_message(self):
+        return input(">")
+    
+    def send_message(self,data):
+        prYellow(f"[FSM TESTING]  Ard Send:   <{data}>")
 #===============================================================================
 
 #test funcs
@@ -151,4 +164,3 @@ if __name__ == "__main__":
     # print(Tester.read_message())
     time.sleep(1)
     print(Tester.read_message())
-
