@@ -1,30 +1,32 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from sensor_msgs.msg import Image \ 
+from 
 
-
-class MinimalSubscriber(Node):
+class DisparitySubscriber(Node):
 
     def __init__(self):
-        super().__init__('minimal_subscriber')
+        ###fix QOS policy
+        super().__init__('disparity_subscriber')
         self.subscription = self.create_subscription(
-            String,
-            'topic',
-            self.listener_callback,
+            sensor_msgs.msg.Image,
+            '/multisense/left/disparity',
+            self.jonah_code,
+            Relability="keep last",
             10)
         self.subscription  # prevent unused variable warning
 
-    def listener_callback(self, msg):
-        self.get_logger().info('I heard: "%s"' % msg.data)
+    def jonah_code(self, msg):
+        print("hello_world")
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    minimal_subscriber = MinimalSubscriber()
+    minimal_subscriber = DisparitySubscriber()
 
-    rclpy.spin(minimal_subscriber)
+    rclpy.spin(disparity_subscriber)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
