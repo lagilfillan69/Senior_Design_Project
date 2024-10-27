@@ -4,8 +4,7 @@
 # Primary Main: Responsible for decision making process, tells ESP32 what to do through serial
 #   - see Serial_Comms
 
-import os,sys
-import time
+import os,sys,platform,time
 dir_path = os.path.abspath("").replace('\\','/')
 if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
@@ -34,7 +33,10 @@ class PRIM_Main_Jetson():
                  TeleCamera_ModelPath=TELECAM_MODELPATH,
                  Real=True
                  ):
-        self.Real = Real
+        
+        
+        if platform.system() != 'Linux': self.Real=False
+        else: self.Real=Real
         
         #-----------------------------
         #Telescopic Camera
