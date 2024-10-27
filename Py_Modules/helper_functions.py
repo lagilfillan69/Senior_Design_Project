@@ -70,24 +70,46 @@ def mean(arr):
 #===================
 import cv2
 
-def reduce_found_obj(file_path, coords, output_path, Expan_rate=0.3, Compress_rate=10):
-    Expan_rate=1-Expan_rate
+def reduce_filepath(file_path, coords, output_path, Expan_rate=0.3, Compress_rate=10):
     #read
     img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
     
-    #crop
-    img = img[ int(coords[0][1]*Expan_rate):int( img.shape[0]-(img.shape[0]-coords[1][1])*Expan_rate ),  int(coords[0][0]*Expan_rate):int( img.shape[1]-(img.shape[1]-coords[1][0])*Expan_rate )  ]
+    #crop with expansion
+    if Expan_rate>1: Expan_rate=Expan_rate/100 #if not floating, assume is percent
+    I_height,I_width = img.shape[:2]
+    Exp = abs(coords[1][0]-coords[0][0]) * Expan_rate//2 #RAW space between new_box and old
+    #Temper Expansion, find smallest infraction; if none then min is regExpand
+    Exp = min(  Exp, coords[0][0], coords[0][1], I_width-coords[1][0], I_height-coords[1][1]  )
+    # Adjust the bounding box coordinates to expand the box
+    img = img[    int( coords[0][1]-Exp ):int( coords[1][1]+Exp ),  int( coords[0][0]-Exp ):int( coords[1][0]+Exp )    ]
     
     #compress
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), Compress_rate]
     _, encimg = cv2.imencode('.jpg', img, encode_param)
     decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
     
-    cv2.imwrite(output_path, decoded_img )
+    cv2.imwrite( output_path, decoded_img )
+    
+def reduce_ImgObj(img, coords, output_path, Expan_rate=0.3, Compress_rate=10):
+    #crop with expansion
+    if Expan_rate>1: Expan_rate=Expan_rate/100 #if not floating, assume is percent
+    I_height,I_width = img.shape[:2]
+    Exp = abs(coords[1][0]-coords[0][0]) * Expan_rate//2 #RAW space between new_box and old
+    #Temper Expansion, find smallest infraction; if none then min is regExpand
+    Exp = min(  Exp, coords[0][0], coords[0][1], I_width-coords[1][0], I_height-coords[1][1]  )
+    # Adjust the bounding box coordinates to expand the box
+    img = img[    int( coords[0][1]-Exp ):int( coords[1][1]+Exp ),  int( coords[0][0]-Exp ):int( coords[1][0]+Exp )    ]
+    
+    #compress
+    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), Compress_rate]
+    _, encimg = cv2.imencode('.jpg', img, encode_param)
+    decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
+    
+    cv2.imwrite( output_path, decoded_img )
 
-#coords= [ [x1y1],[x2,y2] ]
+#coords= [ [x1y1],[x2,y2] ]; assume x2y2>x1y1
 def find_center(coords):
-    return [     abs(coords[0][0]-coords[1][0]),  abs(coords[0][1]-coords[1][1])      ]
+    return [     coords[1][0]-coords[0][0], coords[1][1]-coords[0][1]     ]
 
 
 

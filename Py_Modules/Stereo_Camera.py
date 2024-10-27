@@ -2,13 +2,21 @@
 
 # Stable container for Depth Camera from Carnegie Robotics
 
-import math
+import math, platform, subprocess,os,time
 
+#ROS
+import rclpy, threading
+from rclpy.node import Node
+from sensor_msgs.msg import Image
+
+#Other Module Imports
 try:
     from helper_functions import *
+    from Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 except:
     from Py_Modules.helper_functions import *
+    from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 
 
@@ -26,58 +34,106 @@ class Stereo_Camera:
         self.GND_Height = GND_Height
         self.H_DegView = H_DegView
         self.V_DegView = V_DegView
-        self.Real=Real
+        if platform.system() != 'Linux': self.Real=False
+        else: self.Real=Real
         
+        #Start up Depth Camera; also boots Ros subscribers
         if self.Real:
-            if not  self.establish_connection(): raise KeyError("Could not establish connection")
-            if not self.check_connection(): raise KeyError("Could not check connection")
-        
-        #get shape
-        if self.Real:
+            #Start up Depth Camera; also boots Ros subscribers
+            self.establish_connection()
+            print(Back.GREEN+"SUCCESS: ROS ESTABLISHED"+Style.RESET_ALL)
+            #get shape
             t_frame = self.get_feed()
             self.height,self.width,self.layers = t_frame.shape
-        else: self.height,self.width,self.layers = 1188,1920,3
+        else:
+            prRed("Not real StereoCam, so don't expect ROS")
+            self.height,self.width,self.layers = 1188,1920,3
         prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
         pass
     
     #---------------------------------------------------------------------
+        
+    def __del__(self):
+        prALERT(f'Stereo_Camera Destructor:\tKilling ROS Node\n{"="*12}')
+        if not self.Disparity_sub is None: self.Disparity_sub.destroy_node()
+        if not self.ColorImg_sub is None: self.ColorImg_sub.destroy_node()
+        rclpy.shutdown()
+        prALERT("ROS Killed")
     
+    #---------------------------------------------------------------------
+    
+    #start up Stereo Camera
+    #start ROS
     def establish_connection(self):
-        #return T/F if able to connect
-        #NOTE: need actual functionality to figure out
-        return False
+        self.Disparity_sub = None
+        self.ColorImg_sub = None
+        if self.Real:
+            '''
+            cd
+            cd ros2_ws
+            source /opt/ros/humble/setup.bash
+            source install/setup.bash
+            ros2 launch multisense_ros multisense_language.py
+            '''
+            #NOTE: !!!!!!!!!!!! MAY need to edit the FILEPATH to shell script
+            result = subprocess.call(['sh', './Py_Modules/MS_startup.sh'])
+            time.sleep(1)
+            if result !=0: raise KeyError(f"Could not establish connection\tresult: {result}")
+            
+            #Start up ROS
+            rclpy.init()
+            # self.Disparity_sub = self.create_subscription(sensor_msgs.msg.Image, '/multisense/left/disparity', self.callback1, 10, Relability="keep last")
+            # self.ColorImg_sub = self.create_subscription(sensor_msgs.msg.Image, '/multisense/left/image_color', self.callback2, 10, Relability="keep last")
+            self.Disparity_sub = DisparitySubscriber()
+            self.ColorImg_sub = ColorImgSubscriber()
+            # rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
+            # rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
+            self.check_connection_DISPAR()
+            self.check_connection_CLRIMG()
+            
+            return result == 0
     
+    #return T/F if able to connect
+    #Both Connections
     def check_connection(self):
-        #return T/F if able to connect
-        #NOTE: need actual functionality to figure out
-        return False
+        #get current last update times        
+        time_dis= self.Disparity_sub.lastupdate
+        time_img= self.ColorImg_sub.lastupdate
+        rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
+        rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
+        return (time_dis!=self.Disparity_sub.lastupdate) and (time_img!=self.ColorImg_sub.lastupdate)
+    
+    #return T/F if able to connect
+    #also spins the node once
+    #!!!! Use this to update the node, then extract Node.want
+    def check_connection_DISPAR(self):
+        #get current last update times
+        time_chk= self.Disparity_sub.lastupdate
+        rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
+        if (time_chk==self.Disparity_sub.lastupdate): raise KeyError("Disparity_sub:\tCould not check connection")
+    
+    #return T/F if able to connect
+    #also spins the node once
+    #!!!! Use this to update the node, then extract Node.want
+    def check_connection_CLRIMG(self):
+        #get current last update time
+        time_chk= self.ColorImg_sub.lastupdate
+        rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
+        if (time_chk==self.ColorImg_sub.lastupdate): raise KeyError("ColorImg_sub:\tCould not check connection")
     
     
     #---------------------------------------------------------------------
     
-    #return camera feed
-    def get_feed(self):
-        #return camera feed
-        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
-        #NOTE: need actual functionality to figure out
-        pass
-    
-    #set internal object
-    def get_depthmap(self):
-        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
-        #NOTE: need actual functionality to figure out
-        self.Depth_Map = None
-        pass
-    
-    
-    #---------------------------------------------------------------------
+    #return camera feed (colored rectified image)
+    def get_feed(self,new=True):
+        if new: self.check_connection_CLRIMG() #update
+        return self.ColorImg_sub.want
     
     #helper func for get_relativePOSITION and get_size
-    def get_depthPOINT(self, coord):
-        #NOTE: need actual functionality to figure out
-        self.get_depthmap()
-        pass
+    def get_depthPOINT(self, coordX, coordY, new=True):
+        if new: self.check_connection_DISPAR() #update
+        return self.Disparity_sub.want[coordX, coordY]
     
     
     #---------------------------------------------------------------------
