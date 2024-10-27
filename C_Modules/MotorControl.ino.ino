@@ -3,10 +3,8 @@
     commands for our WALLE bot.
 */
 #include <Servo.h>
-#include <ArduinoSTL.h>
 #include <Vector.h>
-#include <algorithm>
-#include <cmath>
+
 
 // Servo and motor control pins
 Servo steeringServo;
@@ -23,12 +21,15 @@ struct TestRun {
   int speed;
 };
 
-std::vector<TestRun> testData = {
-  //{distance, iterations, speed}
+// Define a static-sized array instead of Vector
+TestRun testData[] = {
   {10.0, 300, 1500},
   {5.0, 150, 1200},
   {1.0, 30, 1100}
 };
+
+// Calculate the size of the array
+const int testDataSize = sizeof(testData) / sizeof(testData[0]);
 
 // Steering functions
 void center() {
@@ -83,22 +84,48 @@ void fwd2(int it, int speed) {
   writePWM(escPin, 0);  // Stop after iterations
 }
 
-int getIterationsForDistanceAndSpeed(float distance, int& speed) {
-  for (const auto& test : testData) {
-    if (test.distance == distance) {
-      speed = test.speed;
-      return test.iterations;
+void quickSortByDistance(TestRun arr[], int low, int high) {
+  if (low < high) {
+    // Partition the array and get the pivot index
+    int pivotIndex = partition(arr, low, high);
+
+    // Recursively sort elements before and after the partition
+    quickSortByDistance(arr, low, pivotIndex - 1);
+    quickSortByDistance(arr, pivotIndex + 1, high);
+  }
+}
+
+int partition(TestRun arr[], int low, int high) {
+  float pivot = arr[high].distance;  // Taking the last element as pivot
+  int i = low - 1;
+
+  for (int j = low; j < high; j++) {
+    if (arr[j].distance < pivot) {
+      i++;
+      // Swap arr[i] and arr[j]
+      TestRun temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
     }
   }
+  
+  // Swap arr[i + 1] and arr[high] (the pivot element)
+  TestRun temp = arr[i + 1];
+  arr[i + 1] = arr[high];
+  arr[high] = temp;
+  
+  return i + 1;  // Return the partition index
+}
 
-  // Sorting the test data based on distance to find the lower and upper bounds
-  std::sort(testData.begin(), testData.end(), [](const TestRun& a, const TestRun& b) {
-    return a.distance < b.distance;
-  });
 
-  TestRun lower = testData.front();
-  TestRun upper = testData.back();
-  for (size_t i = 0; i < testData.size() - 1; i++) {
+
+int getIterationsForDistanceAndSpeed(float distance, int& speed) {
+  // Sort the test data based on distance using Quick Sort
+  quickSortByDistance(testData, 0, testDataSize - 1);
+
+  TestRun lower = testData[0];
+  TestRun upper = testData[testDataSize - 1];
+  for (size_t i = 0; i < testDataSize - 1; i++) {
     if (testData[i].distance <= distance && testData[i + 1].distance >= distance) {
       lower = testData[i];
       upper = testData[i + 1];
@@ -116,6 +143,8 @@ int getIterationsForDistanceAndSpeed(float distance, int& speed) {
 
   return -1;
 }
+
+
 
 void navigateToDistance(float distance) {
   int speed;
@@ -197,8 +226,8 @@ void setup() {
 void loop() {
   if (!bumperTriggered) {
     // Assuming distance and angle values are updated by an external camera system
-    float distanceToDrive = 10;  // Hypothetical function to get distance
-    int angleToSteer = 6;          // Hypothetical function to get angle
+    float distanceToDrive = 10;   //example values
+    int angleToSteer = 6;         // ""
 
     navigateToDistanceAndAngle(distanceToDrive, angleToSteer);  // Navigate based on camera input
   } else {
