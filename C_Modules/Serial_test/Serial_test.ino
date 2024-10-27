@@ -1,8 +1,11 @@
+#include <SoftwareSerial.h>
 
+SoftwareSerial btSerial(4,3);
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
+  btSerial.begin(9600); // open the bluetooth serial port
 	// Serial.setTimeout(1); 
 
 }
@@ -27,7 +30,12 @@ void loop() {
     String Data = incomingString.substring(incomingString.indexOf('\t') + 1);
 
 
-
+if(btSerial.available() > 0 ){
+	String incomingString  = btSerial.readStringUntil('\n');
+	  // Split String: {Command}\t{data}
+   	String Command = incomingString.substring(0, incomingString.indexOf('\t'));
+    	String Data = incomingString.substring(incomingString.indexOf('\t') + 1);
+}
 
     //USING GIVEN COMMAND
     if (Command == "SRCH")
@@ -66,10 +74,7 @@ void loop() {
     }
     else if (Command == "WIRE")
     {
-      //!!!!!!!!WIRELESS COMMAND: Send data
-
-
-
+     btSerial.print(incomingString)
       //------------------------------
       // Chad your code goes here
     }
