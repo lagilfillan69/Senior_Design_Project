@@ -123,13 +123,13 @@ class PRIM_Main_Jetson():
             # if not self.Real: prGreen(f'<{message}>')
             
             #STOP STATE 
-            if message == "STOP_MESSAGE":   #NOTE: This is temp code, the actual message for Stopping would be different
+            if message == "STOP":   #NOTE: This is temp code, the actual message for Stopping would be different
                 Curr_State = 0
                 Path_Index = -2
                 raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
             
             #PAUSE STATE (2) 
-            elif message == "PAUSE_MESSAGE":   #NOTE: This is temp code, the actual message for Pausing would be different
+            elif message == "PAUS":   #NOTE: This is temp code, the actual message for Pausing would be different
                 Curr_State = 2 #not necessairy but for redundancy
                 prALERT("PAUSING PRIMARY JETSON MAIN: PAUSE MESSAGE")
                 while True:
@@ -145,34 +145,35 @@ class PRIM_Main_Jetson():
                         break
             
             #### Update location -- not a state
-            #structure: 'LOC_MESSAGE\t[  4 floating point values  ]
-            #   ex (do own tab):   LOC_MESSAGE\t[3, 12]
-            elif message.split('\t')[0] == "LOC_MESSAGE":
-                Current_Location = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]#message  #TODO: Decode
+            #structure: 'CPOS\t[  4 floating point values  ]
+            #   ex (do own tab):   CPOS\t[3, 12]
+            elif message.split('\t')[0] == "CPOS":
+                Current_Location = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
 
             ### START STATE ###
-            #structure: 'START_MSG\t[  4 floating point values  ]
-            #   ex (do own tab):   START_MSG\t[40.35729, -79.93397, 40.35604, -79.93218]
-            elif message.split('\t')[0] == "START_MSG" and (Curr_State == 0 or Curr_State == 2) :
+            #structure: 'STAR\t[  4 floating point values  ]
+            #   ex (do own tab):   STAR\t[40.35729, -79.93397, 40.35604, -79.93218]
+            elif message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2) :
                 Runway_Boundaries = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
                 Previous_State = Curr_State
                 Curr_State = 1
             
             ### WAITING FOR APPROVAL STATE
-            elif message == "APPROVAL_MESSAGE" and Curr_State == 5 :
+            elif message == "OKAY" and Curr_State == 5 :
                 Previous_State = Curr_State
                 Curr_State = 6
     
-            elif message == "DISAPPROVAL_MESSAGE" and Curr_State == 5 : #Object Located (waiting)
+            elif message == "NKAY" and Curr_State == 5 : #Object Located (waiting)
                 #original point state, goes to next point in path
                 # Previous_State = Curr_State
                 # Curr_State = 6
                 Path_Index+=1
 
             ### Waiting to arrive at precise location state (STATE 7)
-            elif message == "ARRIVED_AT_TRASH_MESSAGE" and Curr_State == 7:
-                self.SerialComms.send_message("To bluetooth : Trash Picked Up")
-                self.SerialComms.send_message("Return to this cord")
+            elif message.split('\t')[0] == "ARSR" and Curr_State == 7:
+                Current_Location = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
+                self.SerialComms.Bluetooth("To bluetooth : Trash Picked Up")
+                # self.SerialComms.Search_GoTo("Return to this cord") #NOTE Is this not handled by other comms from other states???? Is this Search??
                 Previous_State = Curr_State
                 Curr_State = 8
             
@@ -228,7 +229,7 @@ class PRIM_Main_Jetson():
                     start_time = time.time()
                 if self.detect_Tele(): 
                     Curr_State = 5 
-                    self.SerialComms.send_message("OBJ FOUND")
+                    # self.SerialComms.send_message("OBJ FOUND") #NOTE: Is this right? Are we sending a message like this to the Arduino???????
                 elif (time.time() - start_time > 60):
                     Curr_State = 3 # go to next point, nothing is detected here
                 else :
@@ -251,18 +252,19 @@ class PRIM_Main_Jetson():
                 #precise location: Stereo Camera
                 if self.detect_Stereo(): 
                     Curr_State = 7 
-                    self.SerialComms.send_message("OBJ FOUND @ RELATIVE LOCATION")
+                    # self.SerialComms.send_message("OBJ FOUND @ RELATIVE LOCATION") #NOTE: Is this right? Are we sending a message like this to the Arduino???????
                 else:
                     #object is lost, what do we do?
                     Curr_State = 6
                     Previous_State = 6
-                    self.SerialComms.send_message("RELATIVE OBJ LOSS")
+                    # self.SerialComms.send_message("RELATIVE OBJ LOSS") #NOTE: Is this right? Are we sending a message like this to the Arduino???????
                     
             #===========================================================
             #Drive to Object (precise)
             elif(Curr_State == 7):
                 if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
-                self.SerialComms.send_message("To Motor Driver : Drive to [X,Y] location")
+                # self.SerialComms.send_message("To Motor Driver : Drive to [X,Y] location")
+                self.SerialComms.Search_GoTo(self.Stereo_Pos[Trash_Index])
 
                 # will stay in this state until we are at set locations
                 if(Current_Location == self.Stereo_Pos[Trash_Index]):
@@ -275,6 +277,9 @@ class PRIM_Main_Jetson():
             elif(Curr_State == 8):
                 if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 print("Turn on Vaccum, wait 30 seconds, turn off vaccum")
+                self.SerialComms.Vaccum()
+                time.sleep(30)
+                self.SerialComms.Vaccum()                
                 Trash_Collected_Locations.append(Current_Location)
                 Curr_State = 9
                 Previous_State = Curr_State
