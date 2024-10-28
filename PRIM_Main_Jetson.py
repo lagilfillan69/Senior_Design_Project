@@ -94,24 +94,24 @@ class PRIM_Main_Jetson():
         # 9 - Return to Path Cord
         
         #-----
-        self.Tele_angles = None
-        self.Stereo_Pos = None
+        self.Tele_angles = None #Relative Angles - 1xN, 1D
+        self.Stereo_Items = None #Relative [Angle, Depth] - 2xN, 2D
 
         #-----
         Previous_State = 0
         Curr_State = 0
-        Current_Cordinate = []  #use??????
+        Current_Cordinate = []  #use??????, is this a duplicate of Current_Location??
         Path=[]
         Path_Index = -2
         Current_Location = [0,0]
         Runway_Boundaries=None
-        Trash_Collected_Locations = []  #use??????
+        Trash_Collected_Locations = []  #use?????? set but not used, send to UI?
         Trash_Index = -1
         
         #====================================================================
         while True:
             if not self.Real:
-                prCyan(f"Curr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Pos[Trash_Index] if self.Stereo_Pos is not None else None}]")
+                prCyan(f"Curr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Items[Trash_Index] if self.Stereo_Items is not None else None}]")
 
             
             if cv2.waitKey(1) == ord('q'):
@@ -264,10 +264,10 @@ class PRIM_Main_Jetson():
             elif(Curr_State == 7):
                 if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 # self.SerialComms.send_message("To Motor Driver : Drive to [X,Y] location")
-                self.SerialComms.Search_GoTo(self.Stereo_Pos[Trash_Index])
+                self.SerialComms.Search_GoTo(self.Stereo_Items[Trash_Index])
 
                 # will stay in this state until we are at set locations
-                if(Current_Location == self.Stereo_Pos[Trash_Index]):
+                if(Current_Location == self.Stereo_Items[Trash_Index]):
                     Curr_State = 8
                 else : 
                     Curr_State = 7
@@ -297,7 +297,7 @@ class PRIM_Main_Jetson():
                
         
     def detect_Tele(self):
-        #check telescopic camera for objects
+        #check telescopic camera for objects and their relative Angle
         if self.Real:
             Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
             if Tele_results is not None:
@@ -315,28 +315,28 @@ class PRIM_Main_Jetson():
                 return False
 
     def detect_Stereo(self,save_image=False):
-        #check Stereo Camera for objects and their relative positions
+        #check Stereo Camera for objects and their relative [ Angle, Depth ]
         if self.Real:
             Stereo_photo = self.SterCam.get_feed()
             Stereo_results = self.SterCam_Model.run_model( Stereo_photo  )
             if Stereo_results is not None:
-                self.Stereo_Pos = [ self.SterCam.get_relativePOSITION( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of trash
+                self.Stereo_Items = [ self.SterCam.get_relativeAngDep( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of trash
                 #outputs cropped & compressed pictures of trash
                 if save_image:
                     for index,res in enumerate(Stereo_results):
                         reduce_ImgObj( img= Stereo_photo,
-                                       box=res[1],
+                                       coords=find_center(res[1]),
                                        output_path=f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
                 return True
             else:
-                self.Stereo_Pos = None
+                self.Stereo_Items = None
                 return False
         else:
             if input('>S>>')=='y':
-                self.Stereo_Pos = [   [6,12], [3,12]   ]
+                self.Stereo_Items = [   [6,12], [3,12]   ]
                 return True
             else:
-                self.Stereo_Pos = None
+                self.Stereo_Items = None
                 return False
 
 

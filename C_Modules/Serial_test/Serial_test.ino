@@ -16,6 +16,9 @@ void setup() {
   float CurrPos_X=0;
   float CurrPos_Y=1;
 
+  float Angle = 0;
+  float Depth = 0;
+
 }
 
 
@@ -86,8 +89,8 @@ void loop() {
       //decode data: Str to Arr Int
       Data.remove(0, 1);           // Remove the first character '['
       Data.remove(Data.length() - 1, 1);  // Remove the last character ']'
-      float Angle = Data.substring(0, Data.indexOf(', ')).toFloat();
-      float Depth = Data.substring(Data.indexOf(', ')+1).toFloat();
+      Angle = Data.substring(0, Data.indexOf(', ')).toFloat();
+      Depth = Data.substring(Data.indexOf(', ')+1).toFloat();
       // Serial.print("SRCH\t[");Serial.print(Angle);Serial.print(", ");Serial.print(Depth);Serial.println("]");
 
 
@@ -102,8 +105,8 @@ void loop() {
       //decode data: Str to Arr Int
       Data.remove(0, 1);           // Remove the first character '['
       Data.remove(Data.length() - 1, 1);  // Remove the last character ']'
-      float Angle = Data.substring(0, Data.indexOf(', ')).toFloat();
-      float Depth = Data.substring(Data.indexOf(', ')+1).toFloat();
+      Angle = Data.substring(0, Data.indexOf(', ')).toFloat();
+      Depth = Data.substring(Data.indexOf(', ')+1).toFloat();
       // Serial.print("COLL\t[");Serial.print(Angle);Serial.print(", ");Serial.print(Depth);Serial.println("]");
 
 
