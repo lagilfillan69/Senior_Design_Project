@@ -31,18 +31,26 @@ class PRIM_Main_Jetson():
     def __init__(self,
                  StereoCamera_ModelPath=STEREOCAM_MODELPATH,
                  TeleCamera_ModelPath=TELECAM_MODELPATH,
-                 Real=True
+                 Real=True,
+                 RealSystem=True
                  ):
         
         
-        if platform.system() != 'Linux': self.Real=False
-        else: self.Real=Real
+        if platform.system() != 'Linux':
+            self.Real=False
+            self.RealSystem=False
+        else:
+            self.Real=Real
+            self.RealSystem=RealSystem
+        
+        print(f"Real??\t{self.Real}")
+        print(f"Real System??\t{self.RealSystem}")
         
         #-----------------------------
         #Telescopic Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("TELESCOPIC Camera initialization")
-        self.TeleCam = TeleCAM()
+        if self.RealSystem: self.TeleCam = TeleCAM()
         
         #Telescopic YOLO Model
         prCyan("TELESCOPIC Camera **ML MODEL** initialization")
@@ -54,7 +62,7 @@ class PRIM_Main_Jetson():
         #Stereo Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("STEREO Camera initialization")
-        self.SterCam = Stereo_Camera(Real=self.Real)
+        if self.RealSystem: self.SterCam = Stereo_Camera(Real=self.Real)
         
         #Telescopic YOLO Model
         prCyan("STEREO Camera **ML MODEL** initialization")
