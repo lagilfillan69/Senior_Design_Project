@@ -10,12 +10,10 @@ import ultralytics
 from ultralytics import YOLO
 from ultralytics import settings
 #onnx
-import onnxruntime,cv2,math
-from PIL import Image
+import onnxruntime,cv2
 
 #------------------------
-import os,sys,time,shutil
-import matplotlib.pyplot as plt
+import os,shutil
 import numpy as np
 
 #------------------------
