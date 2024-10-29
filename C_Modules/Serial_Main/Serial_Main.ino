@@ -91,7 +91,11 @@ void loop() {
       Data.remove(Data.length() - 1, 1);  // Remove the last character ']'
       Angle = Data.substring(0, Data.indexOf(', ')).toFloat();
       Depth = Data.substring(Data.indexOf(', ')+1).toFloat();
-      Serial.print("SRCH\t[");Serial.print(Angle);Serial.print(", ");Serial.print(Depth);Serial.println("]");
+      // Serial.print("SRCH\t[");Serial.print(Angle);Serial.print(", ");Serial.print(Depth);Serial.println("]");
+
+
+      //--------
+      // Chad your code goes here
     }
 
     //-----------------------------------
@@ -103,7 +107,11 @@ void loop() {
       Data.remove(Data.length() - 1, 1);  // Remove the last character ']'
       Angle = Data.substring(0, Data.indexOf(', ')).toFloat();
       Depth = Data.substring(Data.indexOf(', ')+1).toFloat();
-      Serial.print("COLL\t[");Serial.print(Angle);Serial.print(", ");Serial.print(Depth);Serial.println("]");
+      // Serial.print("COLL\t[");Serial.print(Angle);Serial.print(", ");Serial.print(Depth);Serial.println("]");
+
+
+      //--------
+      // Chad your code goes here
     }
 
     //-----------------------------------
@@ -118,7 +126,6 @@ void loop() {
     {
       //--------
       // Chad your code goes here
-      Serial.println("Toggling Vaccum");
     }
 
 
@@ -143,28 +150,28 @@ void loop() {
       Data.remove(Data.length() - 1, 1);  // Remove the last character ']'
       CurrPos_X = Data.substring(0, Data.indexOf(', ')).toFloat();
       CurrPos_Y = Data.substring(Data.indexOf(', ')+1).toFloat();
-      Serial.print("bluetooth,  >");Serial.print("STAR\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
+      Serial.print("STAR\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
     }
 
     //-----------------------------------
     //STOP,PAUSE messages to App from Python
     else if (Command == "STOP" or Command == "PAUS")
     {
-      Serial.print("bluetooth,  >");Serial.println(Command) //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
+      Serial.println(Command) //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
     }
 
     //-----------------------------------
     //Send over message from Bluetooth to Python; data=Message
     else if (Command == "RECV")
     {
-      Serial.print("bluetooth,  >");Serial.print("RECV\t");Serial.print(Data); //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
+      Serial.print("RECV\t");Serial.print(Data); //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
     }
 
     //-----------------------------------
     //give current position [f"CPOS\t{cord}"]
     else if (Command == "CPOS")
     {
-      Serial.print("bluetooth,  >");Serial.print("CPOS\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
+      Serial.print("CPOS\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
     }
 
     
