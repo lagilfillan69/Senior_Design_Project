@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from tkintermapview import TkinterMapView
 
-import BLE
+import Bluetooth_Connection
 import asyncio
 
 class App(tk.Tk):
@@ -15,7 +15,7 @@ class App(tk.Tk):
 
         # Bluetooth connection status
         self.connected = False
-        self.BLE = BLE
+        self.BLE = Bluetooth_Connection.BLE()
         self.past_message = ""
 
         # Title Label
@@ -88,11 +88,12 @@ class App(tk.Tk):
             self.gps_fields.append((lat_entry, lon_entry))
 
     def start(self):
+        print("start entered")
         if(self.status_label.cget("text") == "Bluetooth: Not Connected"):
             messagebox.showerror("Error", "Bluetooth is not connected")
         else:
             message = "PATH \t".join(str(self.gps_fields)) + "\n"
-            asyncio.run(BLE.write_bluetooth(self.BLE,message))
+            asyncio.run(self.BLE.write_bluetooth(self.BLE,message))
 
     # def on_set(self):
     #     if
@@ -110,7 +111,7 @@ class App(tk.Tk):
             messagebox.showerror("Error", "Bluetooth is not connected")
         else:
             message = "PAUS \t \n"
-            asyncio.run(BLE.write_bluetooth(self.BLE, message))
+            asyncio.run(self.BLE.write_bluetooth(message))
     def set_marker(self, entries, idx):
         try:
             lat = float(entries[0].get())
@@ -120,7 +121,7 @@ class App(tk.Tk):
             messagebox.showerror("Error", "Invalid GPS coordinates")
 
     def connect_bluetooth(self):
-        sucess = asyncio.run(BLE.init_bluetooth(self.BLE))
+        sucess = asyncio.run(self.BLE.init_bluetooth())
         if(not(sucess)):
             messagebox.showerror("Error", "BLUETOOTH CONNECTION FAILED")
         else :
@@ -128,17 +129,16 @@ class App(tk.Tk):
 
 
     def continous_read_bluetooth(self):
-        print("HELLO")
         if (self.status_label.cget("text") == "Bluetooth: Not Connected"):
             pass
         else:
-            messsage = asyncio.run(BLE.read_bluetooth(self.BLE))
+            messsage = asyncio.run(self.BLE.read_bluetooth())
             if (not(messsage == self.past_message or messsage == "")):
                 response = messagebox.askyesno("Trash Detected on the Tarmac", "Do you want wall-e to pick it up?")
                 if(response == 'yes') :
-                    asyncio.run(BLE.write_bluetooth(self.BLE,"OKAY\t"))
+                    asyncio.run(self.BLE.write_bluetooth("OKAY\t"))
                 elif (response == 'no') :
-                    asyncio.run(BLE.write_bluetooth(self.BLE,"NKAY\t"))
+                    asyncio.run(self.BLE.write_bluetooth("NKAY\t"))
                 self.past_message = messsage
 
         self.after(500, self.continous_read_bluetooth)
@@ -152,5 +152,5 @@ if __name__ == "__main__":
     style.configure("TButton", font=("Arial", 16), padding=10)
 
     app = App()
-    app.continous_read_bluetooth()
+    # app.continous_read_bluetooth()
     app.mainloop()
