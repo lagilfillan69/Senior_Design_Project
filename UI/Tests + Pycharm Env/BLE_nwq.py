@@ -150,8 +150,8 @@ class BLE():
         self.client = None
         is_connected=False
     async def write(self,message):
-        if not(self.client.is_connected):
-            print("Not connected, Returning")
+        if self.client == None or not(is_connected):
+            messagebox.showerror("Bluetooth Not Connected", "Cannot write to bluetooth")
             return False
         buffer = bytes(message, "utf-8")
         try :
@@ -192,6 +192,9 @@ class BLE():
             return
         # Pick the BLE device from the scan result:
         device = await BleakScanner.find_device_by_name("lgilfillan")
+        if device == None:
+            message_variable.set('Could Not Connect...')
+            return
         name = device.name if device.name is not None else device.address
 
         # try:
@@ -227,9 +230,14 @@ class BLE():
                     print(descrip)
 
     async def read_callback(self, sender : bleak.BleakGATTCharacteristic, data : bytearray):
-        input_buffer.set(time.ctime(time.time()) + data.decode('utf-8'))
-
-
+        data = data.decode('utf-8')
+        pts = data[:8]
+        input_buffer.set(time.ctime(time.time()) + data)
+        pickup = messagebox.askyesno("Trash Detected",message="Trash was found at " + str(pts) + ". Pick it up?")
+        if pickup == True:
+            await self.write("OKAY\t")
+        else :
+            await self.write("NKAY\t")
 
     def disconnect_callback(self,client):
         """Handle disconnection.
@@ -252,10 +260,6 @@ class BLE():
             self.bt_alive()
             await asyncio.sleep(0.1)
 
-    # async def write_bluetooth(message):
-    #     if(is_connected == True):
-    #         buffer = bytes(message, "utf-8")
-    #         await client.write_gatt_char(write_uuid, buffer, response=True))
 
     def bt_alive(self):
         if(not(self.client is None) and self.client.is_connected):
@@ -266,7 +270,6 @@ class BLE():
                     message_variable.set(f'Disconnected....')
             except(BleakError, asyncio.TimeoutError):
                 pass
-
 
 
 
