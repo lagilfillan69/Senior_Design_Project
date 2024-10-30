@@ -135,6 +135,8 @@ class PRIM_Main_Jetson():
                 Curr_State = 0
                 Path_Index = -2
                 raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
+                State = 0
+                Path_Index = -2
             
             #PAUSE STATE (2) 
             elif message == "PAUS":   #NOTE: This is temp code, the actual message for Pausing would be different
