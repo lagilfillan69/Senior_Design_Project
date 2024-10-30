@@ -1,6 +1,7 @@
 import tkintermapview
 import asyncio
 import tkinter as tk
+from tkinter import messagebox
 import tkinter.ttk as ttk
 import asyncio
 import time
@@ -36,13 +37,13 @@ def build_gui():
     input_buffer = tk.StringVar()
     ####################################################
 
-    main_window.start_button = ttk.Button(control_frame, text="Start", style="TButton", command= lambda : asyncio.create_task(BLE.write("START")))
+    main_window.start_button = ttk.Button(control_frame, text="Start", style="TButton", command= lambda : asyncio.create_task(BLE.start_task()))
     main_window.start_button.grid(row=0, column=0, padx=20, pady=10, sticky="nsew", ipadx=20)
 
-    main_window.stop_button = ttk.Button(control_frame, text="Stop", style="TButton", command= lambda : asyncio.create_task(BLE.write("STOP")))
+    main_window.stop_button = ttk.Button(control_frame, text="Stop", style="TButton", command= lambda : asyncio.create_task(BLE.write("STOP\t")))
     main_window.stop_button.grid(row=0, column=2, padx=20, pady=10, sticky="nsew", ipadx=20)
 
-    main_window.pause_button = ttk.Button(control_frame, text="Pause", style="TButton", command= lambda : asyncio.create_task(BLE.write("PAUSE")))
+    main_window.pause_button = ttk.Button(control_frame, text="Pause", style="TButton", command= lambda : asyncio.create_task(BLE.write("PAUS\t")))
     main_window.pause_button.grid(row=0, column=1, padx=20, pady=10, sticky="nsew", ipadx=20)
 
     # Bluetooth Frame
@@ -63,7 +64,7 @@ def build_gui():
 
     main_window.map_widget = tkintermapview.TkinterMapView(map_frame, width=700, height=400, corner_radius=10)
     main_window.map_widget.pack()
-    main_window.map_widget.set_position(37.7749, -122.4194)  # Default to San Francisco
+    main_window.map_widget.set_position(37.7749, -122.4194)
     main_window.map_widget.set_zoom(10)
 
     # Add initial markers
@@ -92,11 +93,11 @@ def build_gui():
         lon_entry = ttk.Entry(gps_frame, width=10)
         lon_entry.grid(row=0, column=3, padx=5)
 
-        main_window.set_button = ttk.Button(gps_frame, text=f"Set {i + 1}",
-                                     command=lambda  e=(lat_entry, lon_entry), idx=i: main_window.set_marker(e, idx))
-        main_window.set_button.grid(row=0, column=4, padx=5)
-
         main_window.gps_fields.append((lat_entry, lon_entry))
+
+    main_window.set_button = ttk.Button(gps_frame, text=f"Set Coords",
+                                        command=gps_update)
+    main_window.set_button.grid(row=2, column=4, padx=5)
 
     buffer_input_frame = ttk.Frame(main_window)
     buffer_input_frame.pack(pady=20)
@@ -110,6 +111,38 @@ def build_gui():
     # We are using the asyncio event loop in 'show' to call
     # main_window.update() regularly.
 
+
+def gps_update():
+    for i, (lat_entry, lon_entry) in enumerate(main_window.gps_fields):
+        try:
+            lat = lat_entry.get()
+            lon = lon_entry.get()
+
+            if (lat == "" or lon == ""):
+                messagebox.showwarning("Error", "Some fields are empty")
+                return
+
+            lat = float(lat)
+            lon = float(lon)
+
+            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+                messagebox.showerror("Invalid latitude or longitude",message="Entries for Marker" +  str(i + 1) +  "are not valid points, please try again.")
+                return
+
+            if len(lat_entry.get().split('.')[-1]) < 4 or len(lon_entry.get().split('.')[-1]) < 4:
+                messagebox.showerror("Not Enough Precision","Coordinates for Marker" + str(i + 1) + " must have at least 4 decimal places.")
+                return
+            lat_entry.config(foreground="green")
+            lon_entry.config(foreground="green")
+
+            # Update the corresponding marker position on the map
+            marker = main_window.markers[i]
+            marker.set_position(lat, lon)
+
+
+        except ValueError as e:
+            # Show error message if the input is invalid
+            messagebox.showerror("Error", str(e))
 
 
 class BLE():
@@ -132,6 +165,25 @@ class BLE():
     async def notify_read(self):
         await self.client.start_notify('0000ffe1-0000-1000-8000-00805f9b34fb', self.read_callback)
 
+
+    async def start_task(self):
+        # add logic for if gps coorindates are not set then it will not go
+        message = "STAR \t"
+        if(self.client == None or is_connected == False):
+            messagebox.showerror("Error", "Bluetooth is not connected")
+            return
+        for i, (lat_entry, lon_entry) in enumerate(main_window.gps_fields):
+            try:
+                if (lat_entry.fg == "black" and lon_entry.fg == "black"):
+                    messagebox.showerror("Error", "GPS POINTS NOT SET TO VALID POINTS")
+                    return
+                # Retrieve and validate latitude and longitude
+                lat = float(lat_entry.get())
+                lon = float(lon_entry.get())
+                message.append(str(lat) + "," + str(lon))
+            except(ValueError):
+                messagebox.showerror("Error", "GPS POINTS NOT SET")
+        await self.write(message)
     async def connect(self):
         """Connect to or disconnect from selected/connected device."""
         if not(self.client is None) and self.client.is_connected:
@@ -177,6 +229,8 @@ class BLE():
     async def read_callback(self, sender : bleak.BleakGATTCharacteristic, data : bytearray):
         input_buffer.set(time.ctime(time.time()) + data.decode('utf-8'))
 
+
+
     def disconnect_callback(self,client):
         """Handle disconnection.
 
@@ -215,7 +269,8 @@ class BLE():
 
 
 
-    def stop_loop():
+
+    def stop_loop(self):
         """Set stop event."""
         stop.set()
 
