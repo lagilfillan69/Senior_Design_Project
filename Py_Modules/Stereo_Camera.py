@@ -2,82 +2,167 @@
 
 # Stable container for Depth Camera from Carnegie Robotics
 
-import math
+import math, platform, subprocess,os,time
 
+#ROS
+import rclpy, threading
+from rclpy.node import Node
+from sensor_msgs.msg import Image
+
+#Other Module Imports
 try:
     from helper_functions import *
+    from Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 except:
     from Py_Modules.helper_functions import *
+    from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 
 
 
 
 class Stereo_Camera:
-    def __init__(self, IP_address=None, Port=None,
+    def __init__(self,
                  GND_Height=STEREOCAM_GND_HEIGHT,
                  H_DegView=STEREOCAM_HORZ_DEG_VIEW,
                  V_DegView=STEREOCAM_VERT_DEG_VIEW,
-                 Real=True):
-        self.IP_address = None
-        self.port = None
+                 Real=True,
+                 multithread=True):
         self.Depth_Map = None
         self.GND_Height = GND_Height
         self.H_DegView = H_DegView
         self.V_DegView = V_DegView
-        self.Real=Real
+        if platform.system() != 'Linux': self.Real=False
+        else: self.Real=Real
+        self.multithread = multithread and self.Real #only multithread if real and allowed
         
+        #---------        
+        #Start up Depth Camera; also boots Ros subscribers
         if self.Real:
-            if not  self.establish_connection(): raise KeyError("Could not establish connection")
-            if not self.check_connection(): raise KeyError("Could not check connection")
-        
-        #get shape
-        if self.Real:
+            #Start up Depth Camera; also boots Ros subscribers
+            self.establish_connection()
+            print(Back.GREEN+"SUCCESS: ROS ESTABLISHED"+Style.RESET_ALL)
+            #get shape
             t_frame = self.get_feed()
             self.height,self.width,self.layers = t_frame.shape
-        else: self.height,self.width,self.layers = 1188,1920,3
+        else:
+            prRed("Not real StereoCam, so don't expect ROS")
+            self.height,self.width,self.layers = 1188,1920,3
         prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+        
+        #---------        
+        #Turning on ROS to multithread spin
+        if self.multithread:
+            prGreen("Starting ROS Subscriber threading")
+            self.t1 = threading.Thread(self.Disparity_sub.spin())
+            self.t1.daemon = True
+            self.t2 = threading.Thread(self.ColorImg_sub.spin())
+            self.t2.daemon = True
+            self.t1.start()
+            self.t2.start()
+            print(Back.GREEN+"SUCCESS: ROS THREADING PASS"+Style.RESET_ALL)
+            
+        #---- end of class    
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
-        pass
+            
+            
+    
+    #---------------------------------------------------------------------
+        
+    def __del__(self):
+        prALERT(f'Stereo_Camera Destructor:\tKilling ROS Node\n{"="*12}')
+        if not self.Disparity_sub is None: self.Disparity_sub.destroy_node()
+        if not self.ColorImg_sub is None: self.ColorImg_sub.destroy_node()
+        rclpy.shutdown()
+        prALERT("ROS Killed")
     
     #---------------------------------------------------------------------
     
+    #start up Stereo Camera
+    #start ROS
     def establish_connection(self):
-        #return T/F if able to connect
-        #NOTE: need actual functionality to figure out
-        return False
+        self.Disparity_sub = None
+        self.ColorImg_sub = None
+        if self.Real:
+            '''
+            cd
+            cd ros2_ws
+            source /opt/ros/humble/setup.bash
+            source install/setup.bash
+            ros2 launch multisense_ros multisense_language.py
+            '''
+            #NOTE: !!!!!!!!!!!! MAY need to edit the FILEPATH to shell script
+            result = subprocess.call(['sh', './Py_Modules/MS_startup.sh'])
+            time.sleep(1)
+            if result !=0: raise KeyError(f"Could not establish connection\tresult: {result}")
+            
+            #Start up ROS
+            rclpy.init()
+            # self.Disparity_sub = self.create_subscription(sensor_msgs.msg.Image, '/multisense/left/disparity', self.callback1, 10, Relability="keep last")
+            # self.ColorImg_sub = self.create_subscription(sensor_msgs.msg.Image, '/multisense/left/image_color', self.callback2, 10, Relability="keep last")
+            self.Disparity_sub = DisparitySubscriber()
+            self.ColorImg_sub = ColorImgSubscriber()
+            # rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
+            # rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
+            self.check_connection_DISPAR()
+            self.check_connection_CLRIMG()
+            
+            return result == 0
     
+    #return T/F if able to connect
+    #Both Connections
+    #unsused
     def check_connection(self):
-        #return T/F if able to connect
-        #NOTE: need actual functionality to figure out
-        return False
+        if not self.multithread:
+            #get current last update times        
+            time_dis= self.Disparity_sub.lastupdate
+            time_img= self.ColorImg_sub.lastupdate
+            rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
+            rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
+            return (time_dis!=self.Disparity_sub.lastupdate) and (time_img!=self.ColorImg_sub.lastupdate)
+        else:
+            #check that multithreads are still running
+            return self.t1.is_alive() and self.t2.is_alive()
+    
+    #return T/F if able to connect
+    #also spins the node once
+    #!!!! Use this to update the node, then extract Node.want
+    def check_connection_DISPAR(self):
+        if not self.multithread:
+            #get current last update times
+            time_chk= self.Disparity_sub.lastupdate
+            rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
+            if (time_chk==self.Disparity_sub.lastupdate): raise KeyError("Disparity_sub:\tCould not check connection")
+        else:
+            if self.t1.is_alive(): raise KeyError("Disparity_sub:\tCould not check connection;   Thread Dead")
+            if abs(self.Disparity_sub.lastupdate-time.time())<2: raise KeyError("Disparity_sub:\tCould not check connection;   Timeout>2s")
+    
+    #return T/F if able to connect
+    #also spins the node once
+    #!!!! Use this to update the node, then extract Node.want
+    def check_connection_CLRIMG(self):
+        if not self.multithread:
+            #get current last update time
+            time_chk= self.ColorImg_sub.lastupdate
+            rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
+            if (time_chk==self.ColorImg_sub.lastupdate): raise KeyError("ColorImg_sub:\tCould not check connection")
+        else:
+            if self.t2.is_alive(): raise KeyError("ColorImg_sub:\tCould not check connection;   Thread Dead")
+            if abs(self.ColorImg_sub.lastupdate-time.time())<2: raise KeyError("ColorImg_sub:\tCould not check connection;   Timeout>2s")
     
     
     #---------------------------------------------------------------------
     
-    #return camera feed
-    def get_feed(self):
-        #return camera feed
-        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
-        #NOTE: need actual functionality to figure out
-        pass
-    
-    #set internal object
-    def get_depthmap(self):
-        if self.Real and not self.check_connection(): raise KeyError("Could not check connection")
-        #NOTE: need actual functionality to figure out
-        self.Depth_Map = None
-        pass
-    
-    
-    #---------------------------------------------------------------------
+    #return camera feed (colored rectified image)
+    def get_feed(self,new=True):
+        if new or self.multithread: self.check_connection_CLRIMG() #update
+        return self.ColorImg_sub.want
     
     #helper func for get_relativePOSITION and get_size
-    def get_depthPOINT(self, coord):
-        #NOTE: need actual functionality to figure out
-        self.get_depthmap()
-        pass
+    def get_depthPOINT(self, coordX, coordY, new=True):
+        if new or self.multithread: self.check_connection_DISPAR() #update
+        return self.Disparity_sub.want[coordX, coordY]
     
     
     #---------------------------------------------------------------------
@@ -142,6 +227,30 @@ class Stereo_Camera:
             y_dist = math.sqrt(   distance**2 - x_dist**2   )#distance * math.cos(angle)
             return [x_dist,y_dist]
     
+    
+    #=====================================================================
+    
+    #get relative position in __Angle,Depth__ given a point from center of bounding box from the YOLO Model
+    def get_relativeAngDep(self, coord):
+        
+        #current postiion is [0,0]
+        #telling how far it is from the robots current position
+        
+        angle = self.get_relativeANGLEX(coord[0])
+        depth = self.get_depthPOINT(coord[0],coord[1])
+        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
+        
+        return [angle,  distance]
+        
+    #realtive __Angle,Depth__ with current angle and current position
+    def get_relativeAngDep(self, coord, currANG):
+        
+        angle = self.get_relativeANGLEX(coord) + currANG
+        depth = self.get_depthPOINT(coord[0],coord[1])
+        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
+        
+        return [angle,  distance]
+    
     #=====================================================================
     
     def get_size(self, BB_coords):
@@ -173,4 +282,11 @@ prGreen("Stereo_Camera: Class Definition Success")
 
 
 if __name__ == "__main__":
-    pass
+    cammie = Stereo_Camera()
+    
+    print("waiting...")
+    time.sleep(4)
+    print(f"wait done\n\n{'-'*24}\n")
+    
+    print(cammie.Depth_Map)
+    cv2.imshow(cammie.get_feed())

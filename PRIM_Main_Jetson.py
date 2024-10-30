@@ -4,8 +4,7 @@
 # Primary Main: Responsible for decision making process, tells ESP32 what to do through serial
 #   - see Serial_Comms
 
-import os,sys
-import time
+import os,sys,platform,time
 dir_path = os.path.abspath("").replace('\\','/')
 if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
@@ -32,15 +31,26 @@ class PRIM_Main_Jetson():
     def __init__(self,
                  StereoCamera_ModelPath=STEREOCAM_MODELPATH,
                  TeleCamera_ModelPath=TELECAM_MODELPATH,
-                 Real=True
+                 Real=True,
+                 RealSystem=True
                  ):
-        self.Real = Real
+        
+        
+        if platform.system() != 'Linux':
+            self.Real=False
+            self.RealSystem=False
+        else:
+            self.Real=Real
+            self.RealSystem=RealSystem
+        
+        print(f"Real??\t{self.Real}")
+        print(f"Real System??\t{self.RealSystem}")
         
         #-----------------------------
         #Telescopic Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("TELESCOPIC Camera initialization")
-        self.TeleCam = TeleCAM()
+        if self.RealSystem: self.TeleCam = TeleCAM()
         
         #Telescopic YOLO Model
         prCyan("TELESCOPIC Camera **ML MODEL** initialization")
@@ -52,7 +62,7 @@ class PRIM_Main_Jetson():
         #Stereo Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("STEREO Camera initialization")
-        self.SterCam = Stereo_Camera(Real=self.Real)
+        if self.RealSystem: self.SterCam = Stereo_Camera(Real=self.Real)
         
         #Telescopic YOLO Model
         prCyan("STEREO Camera **ML MODEL** initialization")
@@ -92,24 +102,24 @@ class PRIM_Main_Jetson():
         # 9 - Return to Path Cord
         
         #-----
-        self.Tele_angles = None
-        self.Stereo_Pos = None
+        self.Tele_angles = None #Relative Angles - 1xN, 1D
+        self.Stereo_Items = None #Relative [Angle, Depth] - 2xN, 2D
 
         #-----
         Previous_State = 0
         Curr_State = 0
-        Current_Cordinate = []  #use??????
+        Current_Cordinate = []  #use??????, is this a duplicate of Current_Location??
         Path=[]
         Path_Index = -2
         Current_Location = [0,0]
         Runway_Boundaries=None
-        Trash_Collected_Locations = []  #use??????
+        Trash_Collected_Locations = []  #use?????? set but not used, send to UI?
         Trash_Index = -1
         
         #====================================================================
         while True:
             if not self.Real:
-                prCyan(f"Curr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Pos[Trash_Index] if self.Stereo_Pos is not None else None}]")
+                prCyan(f"Curr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Items[Trash_Index] if self.Stereo_Items is not None else None}]")
 
             
             if cv2.waitKey(1) == ord('q'):
@@ -121,7 +131,7 @@ class PRIM_Main_Jetson():
             # if not self.Real: prGreen(f'<{message}>')
             
             #STOP STATE 
-            if message == "STOP_MESSAGE":   #NOTE: This is temp code, the actual message for Stopping would be different
+            if message == "STOP":   #NOTE: This is temp code, the actual message for Stopping would be different
                 Curr_State = 0
                 Path_Index = -2
                 raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
@@ -129,7 +139,7 @@ class PRIM_Main_Jetson():
                 Path_Index = -2
             
             #PAUSE STATE (2) 
-            elif message == "PAUSE_MESSAGE":   #NOTE: This is temp code, the actual message for Pausing would be different
+            elif message == "PAUS":   #NOTE: This is temp code, the actual message for Pausing would be different
                 Curr_State = 2 #not necessairy but for redundancy
                 prALERT("PAUSING PRIMARY JETSON MAIN: PAUSE MESSAGE")
                 while True:
@@ -145,34 +155,35 @@ class PRIM_Main_Jetson():
                         break
             
             #### Update location -- not a state
-            #structure: 'LOC_MESSAGE\t[  4 floating point values  ]
-            #   ex (do own tab):   LOC_MESSAGE\t[3, 12]
-            elif message.split('\t')[0] == "LOC_MESSAGE":
-                Current_Location = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]#message  #TODO: Decode
+            #structure: 'CPOS\t[  4 floating point values  ]
+            #   ex (do own tab):   CPOS\t[3, 12]
+            elif message.split('\t')[0] == "CPOS":
+                Current_Location = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
 
             ### START STATE ###
-            #structure: 'START_MSG\t[  4 floating point values  ]
-            #   ex (do own tab):   START_MSG\t[40.35729, -79.93397, 40.35604, -79.93218]
-            elif message.split('\t')[0] == "START_MSG" and (Curr_State == 0 or Curr_State == 2) :
+            #structure: 'STAR\t[  4 floating point values  ]
+            #   ex (do own tab):   STAR\t[40.35729, -79.93397, 40.35604, -79.93218]
+            elif message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2) :
                 Runway_Boundaries = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
                 Previous_State = Curr_State
                 Curr_State = 1
             
             ### WAITING FOR APPROVAL STATE
-            elif message == "APPROVAL_MESSAGE" and Curr_State == 5 :
+            elif message == "OKAY" and Curr_State == 5 :
                 Previous_State = Curr_State
                 Curr_State = 6
     
-            elif message == "DISAPPROVAL_MESSAGE" and Curr_State == 5 : #Object Located (waiting)
+            elif message == "NKAY" and Curr_State == 5 : #Object Located (waiting)
                 #original point state, goes to next point in path
                 # Previous_State = Curr_State
                 # Curr_State = 6
                 Path_Index+=1
 
             ### Waiting to arrive at precise location state (STATE 7)
-            elif message == "ARRIVED_AT_TRASH_MESSAGE" and Curr_State == 7:
-                self.SerialComms.send_message("To bluetooth : Trash Picked Up")
-                self.SerialComms.send_message("Return to this cord")
+            elif message.split('\t')[0] == "ARSR" and Curr_State == 7:
+                Current_Location = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
+                self.SerialComms.Bluetooth("To bluetooth : Trash Picked Up")
+                # self.SerialComms.Search_GoTo("Return to this cord") #NOTE Is this not handled by other comms from other states???? Is this Search??
                 Previous_State = Curr_State
                 Curr_State = 8
             
@@ -228,7 +239,7 @@ class PRIM_Main_Jetson():
                     start_time = time.time()
                 if self.detect_Tele(): 
                     Curr_State = 5 
-                    self.SerialComms.send_message("OBJ FOUND")
+                    # self.SerialComms.send_message("OBJ FOUND") #NOTE: Is this right? Are we sending a message like this to the Arduino???????
                 elif (time.time() - start_time > 60):
                     Curr_State = 3 # go to next point, nothing is detected here
                 else :
@@ -251,21 +262,22 @@ class PRIM_Main_Jetson():
                 #precise location: Stereo Camera
                 if self.detect_Stereo(): 
                     Curr_State = 7 
-                    self.SerialComms.send_message("OBJ FOUND @ RELATIVE LOCATION")
+                    # self.SerialComms.send_message("OBJ FOUND @ RELATIVE LOCATION") #NOTE: Is this right? Are we sending a message like this to the Arduino???????
                 else:
                     #object is lost, what do we do?
                     Curr_State = 6
                     Previous_State = 6
-                    self.SerialComms.send_message("RELATIVE OBJ LOSS")
+                    # self.SerialComms.send_message("RELATIVE OBJ LOSS") #NOTE: Is this right? Are we sending a message like this to the Arduino???????
                     
             #===========================================================
             #Drive to Object (precise)
             elif(Curr_State == 7):
                 if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
-                self.SerialComms.send_message("To Motor Driver : Drive to [X,Y] location")
+                # self.SerialComms.send_message("To Motor Driver : Drive to [X,Y] location")
+                self.SerialComms.Search_GoTo(self.Stereo_Items[Trash_Index])
 
                 # will stay in this state until we are at set locations
-                if(Current_Location == self.Stereo_Pos[Trash_Index]):
+                if(Current_Location == self.Stereo_Items[Trash_Index]):
                     Curr_State = 8
                 else : 
                     Curr_State = 7
@@ -275,6 +287,9 @@ class PRIM_Main_Jetson():
             elif(Curr_State == 8):
                 if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 print("Turn on Vaccum, wait 30 seconds, turn off vaccum")
+                self.SerialComms.Vaccum()
+                time.sleep(30)
+                self.SerialComms.Vaccum()                
                 Trash_Collected_Locations.append(Current_Location)
                 Curr_State = 9
                 Previous_State = Curr_State
@@ -292,7 +307,7 @@ class PRIM_Main_Jetson():
                
         
     def detect_Tele(self):
-        #check telescopic camera for objects
+        #check telescopic camera for objects and their relative Angle
         if self.Real:
             Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
             if Tele_results is not None:
@@ -310,26 +325,28 @@ class PRIM_Main_Jetson():
                 return False
 
     def detect_Stereo(self,save_image=False):
-        #check Stereo Camera for objects and their relative positions
+        #check Stereo Camera for objects and their relative [ Angle, Depth ]
         if self.Real:
             Stereo_photo = self.SterCam.get_feed()
             Stereo_results = self.SterCam_Model.run_model( Stereo_photo  )
             if Stereo_results is not None:
-                self.Stereo_Pos = [ self.SterCam.get_relativePOSITION( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of trash
+                self.Stereo_Items = [ self.SterCam.get_relativeAngDep( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of trash
                 #outputs cropped & compressed pictures of trash
                 if save_image:
                     for index,res in enumerate(Stereo_results):
-                        reduce_found_obj( Stereo_photo,res[1],f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
+                        reduce_ImgObj( img= Stereo_photo,
+                                       coords=find_center(res[1]),
+                                       output_path=f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
                 return True
             else:
-                self.Stereo_Pos = None
+                self.Stereo_Items = None
                 return False
         else:
             if input('>S>>')=='y':
-                self.Stereo_Pos = [   [6,12], [3,12]   ]
+                self.Stereo_Items = [   [6,12], [3,12]   ]
                 return True
             else:
-                self.Stereo_Pos = None
+                self.Stereo_Items = None
                 return False
 
 

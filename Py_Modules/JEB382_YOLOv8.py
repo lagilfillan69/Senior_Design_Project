@@ -10,12 +10,10 @@ import ultralytics
 from ultralytics import YOLO
 from ultralytics import settings
 #onnx
-import onnxruntime,cv2,math
-from PIL import Image
+import onnxruntime,cv2
 
 #------------------------
-import os,sys,time,shutil
-import matplotlib.pyplot as plt
+import os,shutil
 import numpy as np
 
 #------------------------
@@ -544,7 +542,7 @@ if __name__ == "__main__":
     result = test_model.run_model(YOLO_home+'datasets/TEST_example.jpg')
     print(Back.BLUE+f'model5 Run output:\t{result}'+Style.RESET_ALL)
     for i,res in enumerate(result):
-        reduce_found_obj(
+        reduce_filepath(
             file_path=  YOLO_home+'datasets/TEST_example.jpg',
             coords=     res[1],
             output_path=    YOLO_home+f'loadable_models/testing/Reduce_{i}__{res[0]}.jpg',

@@ -22,18 +22,18 @@ Types of __Python__ -> Arduino messages
 - Collect: Relative Position Array     [f"COLL\t{cord}"]
   - Move to point, turn on vaccum
 - Send message over wireless: Message     [f"WIRE\t{message}"]
-- 
+- Toggle Vaccum: Message     [f"VACC"]
 
 Types of __Arduino__ -> Python
-- check if message from wireless, then send message over serial     [f"RECV\t{message}]"
-- recieve current position from Motor Driver [f"CPOS\t{cord}]"
-- arrived at directed PT and Seraching from Motor Driver f"ARSR\t{cord}]"
-- arrived at directed PT and Vaccuming f"ARSR\t{cord}]"
-- start message from UI [f"STAR\t{cord}]
-- stop messaafe from UI [f"STOP\t]
-- pause messafe from UI [f"PAUS\t]
-- approval to pickup object [f"OKAY\t]
-- no approval to pickup object [f"NKAY\t]
+- <x>   check if message from wireless, then send message over serial     [f"RECV\t{message}]"
+- <x>   recieved current position from Motor Driver [f"CPOS\t{cord}]"
+- <x>   arrived at directed PT and Searching from Motor Driver f"ARSR\t{cord}]"
+- <x>   arrived at directed PT and Vaccuming f"ARSR\t{cord}]"
+- <x>   start message from UI [f"STAR\t{cord}]
+- <x>   stop messaafe from UI [f"STOP\t]
+- <x>   pause messafe from UI [f"PAUS\t]S
+- <x>   approval to pickup object [f"OKAY\t]
+- <x>   no approval to pickup object [f"NKAY\t]
 '''
 
 
@@ -65,6 +65,9 @@ class Serial_Ard:
 
     def Bluetooth(self,mes):
         self.ser.write(f"WIRE\t{mes}".encode()+b'\n')  #The exact framing of this message is still TBD
+
+    def Vaccum(self):
+        self.ser.write(f"VACC".encode()+b'\n')  #The exact framing of this message is still TBD
 
 
 
@@ -137,6 +140,8 @@ def GetRelaytime(data="bro fuck this"):
 
 
 
+
+#===============================================================================
 if __name__ == "__main__":
     import time
     
