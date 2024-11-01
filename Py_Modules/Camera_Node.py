@@ -4,11 +4,10 @@ from rclpy.qos import ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import ros_numpy
-
 import time
 
-class DisparitySubscriber(Node):
 
+class DisparitySubscriber(Node):
     def __init__(self):
         ###fix QOS policy
         super().__init__('disparity_subscriber')  #name of node
@@ -17,19 +16,21 @@ class DisparitySubscriber(Node):
             '/multisense/left/disparity',  #stream
             self.jonah_code1,  #function called,
             depth=10,
-            history=HistoryPolicy.KEEP_LAST
+            history=HistoryPolicy.KEEP_LAST,
             reliability=ReliabilityPolicy.BEST_EFFORT)
         self.subscription  # prevent unused variable warning
         
+        self.bridge = CvBridge()#lets you convert to cv2
         self.lastupdate= time.time()
         self.want=None
 
     #called whenever msg is sent out (subscription)
     def jonah_code1(self, msg):
         self.lastupdate= time.time()
-        print(self.lastupdate)
-        #msg is the Image (sensor_msgs.msg), convert to numpy array
-        self.want = ros_numpy.numpify(msg)
+        print("DisparitySubscriber\tlastupdate: ",self.lastupdate)
+        #msg is the Image (sensor_msgs.msg), convert to cv2
+        self.want= self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+        print("DisparitySubscriber\ttype: ",type(self.want))
 
     #unused, example func
     def runOnce(self):
@@ -45,7 +46,7 @@ class ColorImgSubscriber(Node):
             '/multisense/left/image_rect',#image_color',  #stream
             self.jonah_code2,  #function called,
             depth=10,
-            history=HistoryPolicy.KEEP_LAST
+            history=HistoryPolicy.KEEP_LAST,
             reliability=ReliabilityPolicy.BEST_EFFORT)
         self.subscription  # prevent unused variable warning
         
@@ -56,9 +57,9 @@ class ColorImgSubscriber(Node):
     #called whenever msg is sent out (subscription)
     def jonah_code2(self, msg):
         self.lastupdate= time.time()
-        print(self.lastupdate)
+        print("ColorImgSubscriber\tlastupdate: ",self.lastupdate)
         #msg is the Image (sensor_msgs.msg), convert to cv2
-        self.want= self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        self.want= self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
 
     #unused, example func
     def runOnce(self):
