@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import ros_numpy
@@ -12,11 +13,12 @@ class DisparitySubscriber(Node):
         ###fix QOS policy
         super().__init__('disparity_subscriber')  #name of node
         self.subscription = self.create_subscription(
-            sensor_msgs.msg.Image,
+            Image,
             '/multisense/left/disparity',  #stream
             self.jonah_code1,  #function called,
-            10,
-            Relability="keep last")
+            depth=10,
+            history=HistoryPolicy.KEEP_LAST
+            reliability=ReliabilityPolicy.BEST_EFFORT)
         self.subscription  # prevent unused variable warning
         
         self.lastupdate= time.time()
@@ -38,11 +40,12 @@ class ColorImgSubscriber(Node):
         ###fix QOS policy
         super().__init__('colorimg_subscriber')  #name of node
         self.subscription = self.create_subscription(
-            sensor_msgs.msg.Image,
+            Image,
             '/multisense/left/image_color',  #stream
-            self.jonah_code2,  #function called
-            10,
-            Relability="keep last")
+            self.jonah_code2,  #function called,
+            depth=10,
+            history=HistoryPolicy.KEEP_LAST
+            reliability=ReliabilityPolicy.BEST_EFFORT)
         self.subscription  # prevent unused variable warning
         
         self.bridge = CvBridge()#lets you convert to cv2
