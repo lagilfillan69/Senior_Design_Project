@@ -27,6 +27,7 @@ class DisparitySubscriber(Node):
     #called whenever msg is sent out (subscription)
     def jonah_code1(self, msg):
         self.lastupdate= time.time()
+        print(self.lastupdate)
         #msg is the Image (sensor_msgs.msg), convert to numpy array
         self.want = ros_numpy.numpify(msg)
 
@@ -55,6 +56,7 @@ class ColorImgSubscriber(Node):
     #called whenever msg is sent out (subscription)
     def jonah_code2(self, msg):
         self.lastupdate= time.time()
+        print(self.lastupdate)
         #msg is the Image (sensor_msgs.msg), convert to cv2
         self.want= self.bridge.imgmsg_to_cv2(msg, "bgr8")
 
