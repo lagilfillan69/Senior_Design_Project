@@ -41,7 +41,7 @@ class ColorImgSubscriber(Node):
         super().__init__('colorimg_subscriber')  #name of node
         self.subscription = self.create_subscription(
             Image,
-            '/multisense/left/image_color',  #stream
+            '/multisense/left/image_rect'#image_color',  #stream
             self.jonah_code2,  #function called,
             depth=10,
             history=HistoryPolicy.KEEP_LAST
