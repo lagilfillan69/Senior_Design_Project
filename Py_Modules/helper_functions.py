@@ -2,7 +2,7 @@
 
 # Helper functions
 
-import win32api,datetime,pandas
+import datetime
 from colorama import Fore, Back, Style
 def prRed(skk): print("\033[91m{}\033[00m" .format(skk))
 def prGreen(skk): print("\033[92m{}\033[00m" .format(skk))
@@ -23,16 +23,6 @@ def logger(filepath,text):
     file.write(text+"\n")
     file.close()
 
-DRIVENAME = "SURG24-ML_DATA"
-def getDrive(drivename=DRIVENAME):
-    drives = win32api.GetLogicalDriveStrings()
-    dx = [x for x in drives.split("\000") if x]
-    for drive in dx:
-        try:
-            #print(drive, win32api.GetVolumeInformation(drive))
-            if drivename == str(win32api.GetVolumeInformation(drive)[0]): return str(drive)
-        except: pass
-    return None
 
 def goodtime(tim):
     str=""

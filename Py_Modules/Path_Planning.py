@@ -2,18 +2,17 @@
 
 # Convert GPS coordinates to Rectangle Path Plan for Robot
 
+import math,platform
+import numpy as np
 
 try:
-    from helper_functions import GPStoXY
-    from helper_functions import haversine_distance
-    from helper_functions import interpolate_points
+    from helper_functions import haversine_distance, gps_to_xy, interpolate_points
 except:
-    from Py_Modules.helper_functions import haversine_distance
-    from Py_Modules.helper_functions import gps_to_xy
-    from Py_Modules.helper_functions import interpolate_points
+    if platform.system() != 'Linux':
+        from Py_Modules.helper_functions import haversine_distance, gps_to_xy, interpolate_points
+    else:
+        from snr_proj.helper_functions import haversine_distance, gps_to_xy, interpolate_points
 
-import math
-import numpy as np
 
 #Max seeing distance of the bot in height and width in meters
 RANGE_WIDTH = 5.0

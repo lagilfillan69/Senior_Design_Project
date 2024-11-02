@@ -3,7 +3,7 @@ from launch_ros.actions import Node
 
 
 packagename='your_package_name'
-output='screen'
+output='multisense_ros'
 
 def generate_launch_description():
     return LaunchDescription([

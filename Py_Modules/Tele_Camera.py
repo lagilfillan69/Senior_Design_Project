@@ -2,14 +2,18 @@
 
 # Stable container for Telescopic Camera
 
-import cv2,math
+import cv2,math,platform
 
 try:
     from helper_functions import *
     from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
 except:
-    from Py_Modules.helper_functions import *
-    from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
+    if platform.system() != 'Linux':
+        from Py_Modules.helper_functions import *
+        from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
+    else:
+        from snr_proj.helper_functions import *
+        from snr_proj.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
 
 
 

@@ -2,7 +2,8 @@
 
 # Stable container for Depth Camera from Carnegie Robotics
 
-import math, platform, subprocess,os,time
+import math, platform, subprocess,os,time,cv2,signal
+import numpy as np
 
 #ROS
 import rclpy, threading
@@ -15,9 +16,14 @@ try:
     from Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 except:
-    from Py_Modules.helper_functions import *
-    from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+    if platform.system() != 'Linux':
+        from Py_Modules.helper_functions import *
+        from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
+        from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+    else:
+        from snr_proj.helper_functions import *
+        from snr_proj.Camera_Node import DisparitySubscriber,ColorImgSubscriber
+        from snr_proj.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 
 
 
@@ -50,20 +56,8 @@ class Stereo_Camera:
             prRed("Not real StereoCam, so don't expect ROS")
             self.height,self.width,self.layers = 1188,1920,3
         prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
-        
-        #---------        
-        #Turning on ROS to multithread spin
-        if self.multithread:
-            prGreen("Starting ROS Subscriber threading")
-            self.t1 = threading.Thread(self.Disparity_sub.spin())
-            self.t1.daemon = True
-            self.t2 = threading.Thread(self.ColorImg_sub.spin())
-            self.t2.daemon = True
-            self.t1.start()
-            self.t2.start()
-            print(Back.GREEN+"SUCCESS: ROS THREADING PASS"+Style.RESET_ALL)
             
-        #---- end of class    
+        #---- end of class init   
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
             
             
@@ -71,10 +65,40 @@ class Stereo_Camera:
     #---------------------------------------------------------------------
         
     def __del__(self):
+        #-------------
+        #Parallel Terminal
+        prALERT(f'Stereo_Camera Destructor:\tKilling Camera Startup Parallel Terminal\n{"="*12}')
+        try:
+            prYellow("Giving time for Split terminal to run before closing")
+            time.sleep(5)
+            #os.kill(self.CAMprocess.pid,signal.SIGTERM)
+            os.system("pkill -f MS_startup.sh")
+            if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself")
+        except Exception as e:
+            print("error shutting down parallel terminal:",e)
+        #-------------
+        #Kill threads
+        if self.multithread:
+            prALERT(f'Stereo_Camera Destructor:\tKilling Parallel Node Spin Threads\n{"="*12}')  
+            try:
+                #self.t1.raise_exception()
+                #self.t2.raise_exception()
+                self.KeepRunning = False
+                prYellow("Giving time for Spin Thread to close")
+                time.sleep(1)
+                if self.SpinThread.is_alive(): self.SpinThread.raise_exception()
+            except Exception as e:
+                print("error shutting down parallel spin threads:",e)
+        #-------------
+        #Kill RCLPY
         prALERT(f'Stereo_Camera Destructor:\tKilling ROS Node\n{"="*12}')
         if not self.Disparity_sub is None: self.Disparity_sub.destroy_node()
         if not self.ColorImg_sub is None: self.ColorImg_sub.destroy_node()
-        rclpy.shutdown()
+        try:
+            rclpy.shutdown()
+        except Exception as e:
+            #print(e)
+            raise KeyError("Error shutting down rclpy, probably not init-ed; if persists uncomment line above")
         prALERT("ROS Killed")
     
     #---------------------------------------------------------------------
@@ -86,45 +110,71 @@ class Stereo_Camera:
         self.ColorImg_sub = None
         if self.Real:
             '''
-            cd
-            cd ros2_ws
+            cd ~/ros2_ws
             source /opt/ros/humble/setup.bash
+            source /opt/ros/humble/setup.sh
             source install/setup.bash
-            ros2 launch multisense_ros multisense_language.py
+            ros2 launch multisense_ros multisense_launch.py
             '''
-            #NOTE: !!!!!!!!!!!! MAY need to edit the FILEPATH to shell script
-            result = subprocess.call(['sh', './Py_Modules/MS_startup.sh'])
-            time.sleep(1)
-            if result !=0: raise KeyError(f"Could not establish connection\tresult: {result}")
+            prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
+            os.system("pkill -f MS_startup.sh")
+            #self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "./MS_startup.sh; exec bash"'],stderr=subprocess.PIPE)
+            self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "~/MS_startup.sh; exec bash"'],stderr=subprocess.PIPE) #this should work from anywhere provided the shell file is in home
+            prYellow("Loading parallel terminal to ---start up ROS CAMERA---")
+            time.sleep(5)
+            if self.CAMprocess.poll() is not None: raise KeyError(f"Could not establish connection to camera")
             
             #Start up ROS
             rclpy.init()
-            # self.Disparity_sub = self.create_subscription(sensor_msgs.msg.Image, '/multisense/left/disparity', self.callback1, 10, Relability="keep last")
-            # self.ColorImg_sub = self.create_subscription(sensor_msgs.msg.Image, '/multisense/left/image_color', self.callback2, 10, Relability="keep last")
             self.Disparity_sub = DisparitySubscriber()
             self.ColorImg_sub = ColorImgSubscriber()
             # rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
             # rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
-            self.check_connection_DISPAR()
-            self.check_connection_CLRIMG()
             
-            return result == 0
-    
-    #return T/F if able to connect
-    #Both Connections
-    #unsused
-    def check_connection(self):
-        if not self.multithread:
-            #get current last update times        
-            time_dis= self.Disparity_sub.lastupdate
-            time_img= self.ColorImg_sub.lastupdate
+            #---------        
+            #Turning on ROS to multithread spin
+            if self.multithread:
+                prYellow("Starting ROS Subscriber threading")
+                self.KeepRunning=True
+                self.SpinThread = threading.Thread(target=self.helperSpinner)
+                self.SpinThread.daemon = True
+                #----
+                self.SpinThread.start()
+                prYellow("Giving Time for Spin Thread to Spin")
+                #time.sleep(5)
+                
+                #checking that it spun for a max of 5 seconds
+                #once both have spun and gotten a msg at least once; exits
+                st=time.time()
+                while (self.Disparity_sub.first_try or self.ColorImg_sub.first_try):
+                    if time.time()-st >5: raise KeyError("Could not establish connection;   SpinThread;   Timeout>2s")
+                #----
+                print(Back.GREEN+"SUCCESS: ROS THREADING PASS"+Style.RESET_ALL)
+            
+            
+            self.check_connection_DISPAR()
+            self.check_connection_COLIMG()
+            
+    #-----------
+    #needed for threads to work, otherwises spins at the threads def
+    #USING spin_once instead of rclpy.spin() to avoid unwanted opened instances outside this class
+    #rclpy.spin() is secretly just spinning once a bunch anyway
+    def helperSpinner(self):
+        while self.KeepRunning:
             rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
             rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
-            return (time_dis!=self.Disparity_sub.lastupdate) and (time_img!=self.ColorImg_sub.lastupdate)
-        else:
-            #check that multithreads are still running
-            return self.t1.is_alive() and self.t2.is_alive()
+            self.Depth_Map = self.Disparity_sub.want
+        prRed("Stereo_Camera;  from helperSpinner: Killing Spin Thread")
+    #unused (problems)
+    '''
+    def helperSpin_DISPAR(self):       
+        rclpy.spin(self.Disparity_sub)        
+    def helperSpin_CLRIMG(self):       
+        rclpy.spin(self.ColorImg_sub)
+    '''
     
+    
+    #---------------------------------------------------------------------
     #return T/F if able to connect
     #also spins the node once
     #!!!! Use this to update the node, then extract Node.want
@@ -135,34 +185,38 @@ class Stereo_Camera:
             rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
             if (time_chk==self.Disparity_sub.lastupdate): raise KeyError("Disparity_sub:\tCould not check connection")
         else:
-            if self.t1.is_alive(): raise KeyError("Disparity_sub:\tCould not check connection;   Thread Dead")
-            if abs(self.Disparity_sub.lastupdate-time.time())<2: raise KeyError("Disparity_sub:\tCould not check connection;   Timeout>2s")
+            #if self.t1.is_alive(): raise KeyError("Disparity_sub:\tCould not check connection;   Thread Dead")
+            if not self.SpinThread.is_alive(): raise KeyError("SpinThread:\tCould not check connection;   Thread Dead")
+            if abs(self.Disparity_sub.lastupdate-time.time())>2: raise KeyError("Could not check connection;   check_connection_DISPAR;   Timeout>2s")
     
     #return T/F if able to connect
     #also spins the node once
     #!!!! Use this to update the node, then extract Node.want
-    def check_connection_CLRIMG(self):
+    def check_connection_COLIMG(self):
         if not self.multithread:
             #get current last update time
             time_chk= self.ColorImg_sub.lastupdate
             rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
             if (time_chk==self.ColorImg_sub.lastupdate): raise KeyError("ColorImg_sub:\tCould not check connection")
         else:
-            if self.t2.is_alive(): raise KeyError("ColorImg_sub:\tCould not check connection;   Thread Dead")
-            if abs(self.ColorImg_sub.lastupdate-time.time())<2: raise KeyError("ColorImg_sub:\tCould not check connection;   Timeout>2s")
+            #if self.t2.is_alive(): raise KeyError("ColorImg_sub:\tCould not check connection;   Thread Dead")
+            if not self.SpinThread.is_alive(): raise KeyError("SpinThread:\tCould not check connection;   Thread Dead")
+            if abs(self.ColorImg_sub.lastupdate-time.time())>2: raise KeyError("Could not check connection;   check_connection_COLIMG;   Timeout>2s")
     
     
     #---------------------------------------------------------------------
     
     #return camera feed (colored rectified image)
     def get_feed(self,new=True):
-        if new or self.multithread: self.check_connection_CLRIMG() #update
+        if new or self.multithread: self.check_connection_COLIMG() #update
+        if self.ColorImg_sub.want is None: raise KeyError("get_feed: self.ColorImg_sub.want is None")
         return self.ColorImg_sub.want
     
     #helper func for get_relativePOSITION and get_size
     def get_depthPOINT(self, coordX, coordY, new=True):
         if new or self.multithread: self.check_connection_DISPAR() #update
-        return self.Disparity_sub.want[coordX, coordY]
+        if self.Disparity_sub.want is None: raise KeyError("get_depthPOINT: self.Disparity_sub.want is None")
+        return self.Depth_Map[coordX, coordY]
     
     
     #---------------------------------------------------------------------
@@ -278,15 +332,27 @@ class Stereo_Camera:
 
 prGreen("Stereo_Camera: Class Definition Success")
 #===============================================================================
+def balance_numpy(arr):
+    min_v=np.min(arr)
+    max_v=np.max(arr)
+    if max_v-min_v != 0:  return (((arr.copy()-min_v)/(max_v-min_v))*255).astype(np.uint8)
+    else:  return np.zeros(arr.shape).astype(np.uint8)
+    
+
 
 
 
 if __name__ == "__main__":
     cammie = Stereo_Camera()
     
-    print("waiting...")
+    print("waiting (safe)...")
     time.sleep(4)
     print(f"wait done\n\n{'-'*24}\n")
     
-    print(cammie.Depth_Map)
-    cv2.imshow(cammie.get_feed())
+    while True:
+        cv2.imshow("Depthmap <q key to quit>",balance_numpy(cammie.Depth_Map))
+        cv2.imshow("CameraFeed <q key to quit>",cammie.get_feed())
+        if cv2.waitKey(1) == ord('q'): break    
+    os.system("pkill -f MS_startup.sh")
+
+
