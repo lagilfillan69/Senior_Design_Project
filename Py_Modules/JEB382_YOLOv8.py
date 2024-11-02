@@ -13,14 +13,18 @@ from ultralytics import settings
 import onnxruntime,cv2
 
 #------------------------
-import os,shutil
+import os,shutil,platform
 import numpy as np
+print("a")
 
 #------------------------
 try:
     from helper_functions import *
 except:
-    from Py_Modules.helper_functions import *
+    if platform.system() != 'Linux':
+        from Py_Modules.helper_functions import *
+    else:
+        from snr_proj.helper_functions import *
     
 global YOLO_home
 YOLO_home = (os.getcwd()+'/Py_Modules/YOLOv8/').replace('\\','/')
