@@ -7,13 +7,17 @@ import asyncio
 import time
 from bleak import BleakClient, BleakError, BleakScanner
 import bleak
+from Path_Planning import generate_corners
 write_uuid = '0000ffe0-0000-1000-8000-00805f9b34fb'
 read_uuid = '0000ffe0-0000-1000-8000-00805f9b34fb'
+
+
 def build_gui():
     """Build a simple GUI."""
     # For the sake of simplicity, we use some global variables:
     global main_window, device_list, device_data, message_variable, input_buffer, is_connected
-
+    default_gps = [(40.35193576273826, -79.92251632083196), (40.35216725384582, -79.92235178305927),
+                   (40.357392805988894, -79.93423733144638)]
     main_window = tk.Tk()
     main_window.title('Tkinter/bleak asyncio Demo')
 
@@ -86,11 +90,13 @@ def build_gui():
         lat_label = ttk.Label(gps_frame, text=f"Latitude {i + 1}:", font=("Arial", 12))
         lat_label.grid(row=0, column=0, padx=5)
         lat_entry = ttk.Entry(gps_frame, width=10)
+        lat_entry.insert(0,default_gps[i][0])
         lat_entry.grid(row=0, column=1, padx=5)
 
         lon_label = ttk.Label(gps_frame, text=f"Longitude {i + 1}:", font=("Arial", 12))
         lon_label.grid(row=0, column=2, padx=5)
         lon_entry = ttk.Entry(gps_frame, width=10)
+        lon_entry.insert(0, default_gps[i][1])
         lon_entry.grid(row=0, column=3, padx=5)
 
         main_window.gps_fields.append((lat_entry, lon_entry))
@@ -150,7 +156,7 @@ class BLE():
         self.client = None
         is_connected=False
     async def write(self,message):
-        if self.client == None or not(is_connected):
+        if self.client == None:
             messagebox.showerror("Bluetooth Not Connected", "Cannot write to bluetooth")
             return False
         buffer = bytes(message, "utf-8")
@@ -168,22 +174,29 @@ class BLE():
 
     async def start_task(self):
         # add logic for if gps coorindates are not set then it will not go
-        message = "STAR \t"
-        if(self.client == None or is_connected == False):
+        message = ""
+        gps_points = []
+        if(self.client == None):
             messagebox.showerror("Error", "Bluetooth is not connected")
             return
         for i, (lat_entry, lon_entry) in enumerate(main_window.gps_fields):
             try:
-                if (lat_entry.fg == "black" and lon_entry.fg == "black"):
-                    messagebox.showerror("Error", "GPS POINTS NOT SET TO VALID POINTS")
-                    return
+                # if (lat_entry):
+                #     messagebox.showerror("Error", "GPS POINTS NOT SET TO VALID POINTS")
+                #     return
                 # Retrieve and validate latitude and longitude
                 lat = float(lat_entry.get())
                 lon = float(lon_entry.get())
-                message.append(str(lat) + "," + str(lon))
+                gps_points.append((lat,lon))
             except(ValueError):
                 messagebox.showerror("Error", "GPS POINTS NOT SET")
-        await self.write(message)
+                return
+        corners = generate_corners(gps_points[0],gps_points[1],gps_points[2])
+        await self.write("STAR \t\n")
+        await self.write("C1: " +  str(corners[0][0]) + "," +  str(corners[0][1]) + "\n")
+        await self.write("C2: " + str(corners[1][0]) + "," + str(corners[1][1]) + "\n")
+        await self.write("C3: " + str(corners[2][0]) + "," + str(corners[2][1]) + "\n")
+        message_variable.set("Running Bot")
     async def connect(self):
         """Connect to or disconnect from selected/connected device."""
         if not(self.client is None) and self.client.is_connected:
