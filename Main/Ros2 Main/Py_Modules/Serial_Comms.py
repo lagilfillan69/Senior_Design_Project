@@ -3,14 +3,19 @@
 # Stable container for Serial Communication from Jettson to ESP32
 
 #going to be using these libraries, but until can start working with ESP32 not sure exactly how
-import serial
+import serial,platform
 
 try:
     from helper_functions import *
     from SD_constants import COM_PORT,BAUDRATE #needs to be manually set
 except:
-    from Py_Modules.helper_functions import *
-    from Py_Modules.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
+    if platform.system() != 'Linux':
+        from Py_Modules.helper_functions import *
+        from Py_Modules.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
+    else:
+        from snr_proj.helper_functions import *
+        from snr_proj.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
+        
 
 #WERE DOING ARDUINO NOW PYFRIMATA
 
@@ -29,8 +34,9 @@ Types of __Arduino__ -> Python
 - <x>   recieved current position from Motor Driver [f"CPOS\t{cord}]"
 - <x>   arrived at directed PT and Searching from Motor Driver f"ARSR\t{cord}]"
 - <x>   arrived at directed PT and Vaccuming f"ARSR\t{cord}]"
-- <x>   start message from UI [f"STAR\t{cord}]
-- <x>   stop messaafe from UI [f"STOP\t]
+- <x>   start message from UI [f"STAR\t]
+- <x>   cord message (1-3) from UI [f"Cx : {cord}]
+- <x>   stop messaage from UI [f"STOP\t]
 - <x>   pause messafe from UI [f"PAUS\t]S
 - <x>   approval to pickup object [f"OKAY\t]
 - <x>   no approval to pickup object [f"NKAY\t]
@@ -70,7 +76,7 @@ class Serial_Ard:
 
 
 
-prGreen("Serial_ESP32: Class Definition Success")
+prGreen("Serial_Ard: Class Definition Success")
 #===============================================================================
 
 

@@ -181,10 +181,6 @@ class BLE():
             return
         for i, (lat_entry, lon_entry) in enumerate(main_window.gps_fields):
             try:
-                # if (lat_entry):
-                #     messagebox.showerror("Error", "GPS POINTS NOT SET TO VALID POINTS")
-                #     return
-                # Retrieve and validate latitude and longitude
                 lat = float(lat_entry.get())
                 lon = float(lon_entry.get())
                 gps_points.append((lat,lon))
@@ -213,17 +209,25 @@ class BLE():
         # try:
         message_variable.set(f'Trying to connect to {name}')
         self.client = BleakClient(device)
-        await self.client.connect()
-        message_variable.set(f'Device {name} is connected!')
-        is_connected = True
-        await self.notify_read()
+        try :
+            await self.client.connect()
+            message_variable.set(f'Device {name} is connected!')
+            is_connected = True
+        except (BleakError, asyncio.TimeoutError):
+            message_variable.set(f'Connecting to {name}\nnot successful')
+            is_connected = False
+
+        try :
+            await self.notify_read()
+        except (BleakError, asyncio.TimeoutError):
+            message_variable.set(f'Failed to establish 2 way connection')
+            is_connected = False
+
         while not disconnect.is_set():
             await asyncio.sleep(0.1)
         is_connected = False
         return
-        # except (BleakError, asyncio.TimeoutError):
-        #     message_variable.set(f'Connecting to {name}\nnot successful')
-        #     is_connected = False
+
 
     async def detailed_scanner(self):
         for service in self.client.services:
@@ -261,14 +265,7 @@ class BLE():
 
 
     async def show(self):
-        """Handle the GUI's update method asynchronously.
-
-        Most of the time the program is waiting here and
-        updates the GUI regularly.
-        This function principally replaces the Tkinter mainloop.
-        """
-
-        while not stop.is_set():
+       while not stop.is_set():
             main_window.update()
             self.bt_alive()
             await asyncio.sleep(0.1)
