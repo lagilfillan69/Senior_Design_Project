@@ -1,22 +1,33 @@
 #include <SoftwareSerial.h>
 SoftwareSerial btSerial(4,3);
 
+String Command;
+String Data;
+int split;
+int Serial_comms;
+int Bluetooth_comms;
+float CurrPos_X;
+float CurrPos_Y;
+float Angle;
+float Depth;
+String incomingString;
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
   btSerial.begin(9600); // open the bluetooth serial port
 	// Serial.setTimeout(1);
-  String Command="";
-  String Data="";
-  int split=-1;
-  int Serial_comms = 0;
-  int Bluetooth_comms = 0;
+  Command="";
+  Data="";
+  split=-1;
+  Serial_comms = 0;
+  Bluetooth_comms = 0;
 
-  float CurrPos_X=0;
-  float CurrPos_Y=1;
+  CurrPos_X=0;
+  CurrPos_Y=1;
 
-  float Angle = 0;
-  float Depth = 0;
+  Angle = 0;
+  Depth = 0;
 
 }
 
@@ -28,17 +39,17 @@ void loop() {
   if (Serial.available() > 0 and btSerial.available() == 0) {
     // read the incoming byte:
     String incomingString = Serial.readStringUntil('\n');
-    String Command = "";
+   
     //test printouts; ENCODE ARD->Py: _blahblahblah_\n (newline token message splitter)
     // Serial.print("I received: "); Serial.println(incomingString);
 
     //DECODING: Split String: {Command}\t{data}
-    int split = incomingString.indexOf('\t');
+    split = incomingString.indexOf('\t');
     if (split != -1)
     {
       Command = incomingString.substring(0, split);
       if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
-      else {Data=""}
+      else {Data="";}
     }
     else {Command=incomingString;Data="";}
   
@@ -48,17 +59,18 @@ void loop() {
   //Get Bluetooth Comms from App
   if(btSerial.available() > 0 ){
     String incomingString  = btSerial.readStringUntil('\n');
+
     // Split String: {Command}\t{data}
-    String split = incomingString.indexOf('\t')
+    split = incomingString.indexOf('\t');
     if (split != -1)
     {
       Command = incomingString.substring(0, split);
       if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
-      else {Data=""}
+      else {Data="";}
     }
     else
      {
-      split = incomingString.indexof(':');
+      split = incomingString.indexOf(':');
       if (split != -1){
         Command = incomingString.substring(0, split);
          if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
@@ -125,7 +137,7 @@ void loop() {
     //Send message to App from Python
     else if (Command == "WIRE")
     {
-      btSerial.println(incomingString) //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
+      btSerial.println(incomingString); //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
     }
     //-----------------------------------
     //Toggle!!! Vaccum
@@ -146,7 +158,7 @@ void loop() {
   else if (Bluetooth_comms==1)
   {
     //START Message from App; Data=
-    else if (Command == "STAR" and Bluetooth_comms==1)
+    if (Command == "STAR" and Bluetooth_comms==1)
     {
 
       Serial.print("STAR\t");Serial.print(Data);
@@ -154,9 +166,9 @@ void loop() {
 
     //-----------------------------------
     //STOP,PAUSE messages to App from Python
-    else if (Command == "STOP" or Command == "PAUS" or Command == "OKAY" or Command == "NKAY" or)
+    else if (Command == "STOP" or Command == "PAUS" or Command == "OKAY" or Command == "NKAY")
     {
-      Serial.println(Command + "\t") //NOTE: whats the encode for Ard->Blueetooth 
+      Serial.println(Command + "\t"); //NOTE: whats the encode for Ard->Blueetooth 
     }
 
     //-----------------------------------
@@ -166,17 +178,17 @@ void loop() {
       Serial.print("RECV\t");Serial.print(Data); //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
     }
 
-    else if (Command == "C1" or Command == 'C2' or Command == 'C3')
-      Serial.print(Data)
-
+    else if (Command == "C1" or Command == 'C2' or Command == 'C3'){
+      Serial.print(Data);
+    }
     //-----------------------------------
   
-  //THIS SHOULD BE INTERNAL
-  //give current position [f"CPOS\t{cord}"]
-  else if (Command == "CPOS")
-  {
-    Serial.print("CPOS\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
-  }
+  // //THIS SHOULD BE INTERNAL
+  // //give current position [f"CPOS\t{cord}"]
+  // else if (Command == "CPOS")
+  // {
+  //   Serial.print("CPOS\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
+  // }
 
     
     Bluetooth_comms = 0;
