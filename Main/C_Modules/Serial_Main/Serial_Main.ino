@@ -1,5 +1,4 @@
 #include <SoftwareSerial.h>
-
 SoftwareSerial btSerial(4,3);
 
 void setup() {
@@ -29,19 +28,19 @@ void loop() {
   if (Serial.available() > 0 and btSerial.available() == 0) {
     // read the incoming byte:
     String incomingString = Serial.readStringUntil('\n');
-
+    String Command = "";
     //test printouts; ENCODE ARD->Py: _blahblahblah_\n (newline token message splitter)
     // Serial.print("I received: "); Serial.println(incomingString);
 
     //DECODING: Split String: {Command}\t{data}
-    split = incomingString.indexOf('\t')
+    int split = incomingString.indexOf('\t');
     if (split != -1)
     {
       Command = incomingString.substring(0, split);
       if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
       else {Data=""}
     }
-    else {Command=incomingString;Data=""}
+    else {Command=incomingString;Data="";}
   
     Serial_comms = 1;
   }
@@ -50,15 +49,23 @@ void loop() {
   if(btSerial.available() > 0 ){
     String incomingString  = btSerial.readStringUntil('\n');
     // Split String: {Command}\t{data}
-    split = incomingString.indexOf('\t')
+    String split = incomingString.indexOf('\t')
     if (split != -1)
     {
       Command = incomingString.substring(0, split);
       if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
       else {Data=""}
     }
-    else {Command=incomingString;Data=""}
-
+    else
+     {
+      split = incomingString.indexof(':');
+      if (split != -1){
+        Command = incomingString.substring(0, split);
+         if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
+        else {Data="";}
+      }
+      else{Command=incomingString;Data="";}
+      }
     Bluetooth_comms = 1;
   }
 
@@ -126,11 +133,7 @@ void loop() {
     {
       //--------
       // Chad your code goes here
-    }
-
-
-
-    
+    }    
     Serial_comms = 0;
   }
 
@@ -145,19 +148,15 @@ void loop() {
     //START Message from App; Data=
     else if (Command == "STAR" and Bluetooth_comms==1)
     {
-      //decode data: Str to Arr Int
-      Data.remove(0, 1);           // Remove the first character '['
-      Data.remove(Data.length() - 1, 1);  // Remove the last character ']'
-      CurrPos_X = Data.substring(0, Data.indexOf(', ')).toFloat();
-      CurrPos_Y = Data.substring(Data.indexOf(', ')+1).toFloat();
-      Serial.print("STAR\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
+
+      Serial.print("STAR\t");Serial.print(Data);
     }
 
     //-----------------------------------
     //STOP,PAUSE messages to App from Python
-    else if (Command == "STOP" or Command == "PAUS")
+    else if (Command == "STOP" or Command == "PAUS" or Command == "OKAY" or Command == "NKAY" or)
     {
-      Serial.println(Command) //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
+      Serial.println(Command + "\t") //NOTE: whats the encode for Ard->Blueetooth 
     }
 
     //-----------------------------------
@@ -167,12 +166,17 @@ void loop() {
       Serial.print("RECV\t");Serial.print(Data); //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
     }
 
+    else if (Command == "C1" or Command == 'C2' or Command == 'C3')
+      Serial.print(Data)
+
     //-----------------------------------
-    //give current position [f"CPOS\t{cord}"]
-    else if (Command == "CPOS")
-    {
-      Serial.print("CPOS\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
-    }
+  
+  //THIS SHOULD BE INTERNAL
+  //give current position [f"CPOS\t{cord}"]
+  else if (Command == "CPOS")
+  {
+    Serial.print("CPOS\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
+  }
 
     
     Bluetooth_comms = 0;
