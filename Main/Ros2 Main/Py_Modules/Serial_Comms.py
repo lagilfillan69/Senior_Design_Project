@@ -34,10 +34,9 @@ Types of __Arduino__ -> Python
 - <x>   recieved current position from Motor Driver [f"CPOS\t{cord}]"
 - <x>   arrived at directed PT and Searching from Motor Driver f"ARSR\t{cord}]"
 - <x>   arrived at directed PT and Vaccuming f"ARSR\t{cord}]"
-- <x>   start message from UI [f"STAR\t]
-- <x>   cord message (1-3) from UI [f"Cx : {cord}]
+- <x>   start message from UI [f"STAR\t {cord}]
 - <x>   stop messaage from UI [f"STOP\t]
-- <x>   pause messafe from UI [f"PAUS\t]S
+- <x>   pause message from UI [f"PAUS\t]S
 - <x>   approval to pickup object [f"OKAY\t]
 - <x>   no approval to pickup object [f"NKAY\t]
 '''
