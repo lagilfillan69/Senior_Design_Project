@@ -1,73 +1,20 @@
 #include <SoftwareSerial.h>
 SoftwareSerial btSerial(4,3);
+int escPin = 9;
 
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
-  btSerial.begin(9600); // open the bluetooth serial port
-	// Serial.setTimeout(1);
-  String Command="";
-  String Data="";
-  int split=-1;
-  int Serial_comms = 0;
-  int Bluetooth_comms = 0;
-
-  float CurrPos_X=0;
-  float CurrPos_Y=1;
-
-  float Angle = 0;
-  float Depth = 0;
-
-}
-
-
-
-void loop() {
-
-  //Get Serial Comms from Python
-  if (Serial.available() > 0 and btSerial.available() == 0) {
-    // read the incoming byte:
-    String incomingString = Serial.readStringUntil('\n');
-    String Command = "";
-    //test printouts; ENCODE ARD->Py: _blahblahblah_\n (newline token message splitter)
-    // Serial.print("I received: "); Serial.println(incomingString);
-
-    //DECODING: Split String: {Command}\t{data}
-    int split = incomingString.indexOf('\t');
-    if (split != -1)
-    {
-      Command = incomingString.substring(0, split);
-      if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
-      else {Data=""}
-    }
-    else {Command=incomingString;Data="";}
-  
-    Serial_comms = 1;
-  }
-
-  //Get Bluetooth Comms from App
-  if(btSerial.available() > 0 ){
-    String incomingString  = btSerial.readStringUntil('\n');
-    // Split String: {Command}\t{data}
-    String split = incomingString.indexOf('\t')
-    if (split != -1)
-    {
-      Command = incomingString.substring(0, split);
-      if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
-      else {Data=""}
-    }
-    else
-     {
-      split = incomingString.indexof(':');
-      if (split != -1){
-        Command = incomingString.substring(0, split);
-         if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
-        else {Data="";}
-      }
-      else{Command=incomingString;Data="";}
-      }
-    Bluetooth_comms = 1;
-  }
+String Command;
+String Data;
+int split;
+int Serial_comms;
+int Bluetooth_comms;
+float CurrPos_X;
+float CurrPos_Y;
+float Angle;
+float Depth;
+String incomingString;
+String C1 = "";
+String C2 = "";
+String C3 = "";
 
 
 
@@ -83,13 +30,100 @@ void loop() {
     Serial.print("ARSR\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
   */
 
+// '''
+// Types of __Python__ -> Arduino messages
+// - Search: Relative Position Array     [f"SRCH\t{cord}"]
+//   - Move to point and spin in a circle
+// - Collect: Relative Position Array     [f"COLL\t{cord}"]
+//     - Move to point, turn on vaccum
+// - Things found    [f"LOCT\t{cord}"]
+//     -seeking approval to pick up trash
+// - Toggle Vaccum: Message     [f"VACC"]
+
+// Types of __Arduino__ -> Python
+// - <x>   recieved current position from Motor Driver [f"CPOS\t{cord}]"
+// - <x>   arrived at directed PT and Searching from Motor Driver f"ARSR\t{cord}]"
+// - <x>   arrived at directed PT and Vaccuming f"ARSR\t{cord}]"
+// - <x>   start message from UI [f"STAR\t {cord}]
+// - <x>   stop messaage from UI [f"STOP\t]
+// - <x>   pause message from UI [f"PAUS\t]S
+// - <x>   approval to pickup object [f"OKAY\t]
+// - <x>   no approval to pickup object [f"NKAY\t]
 
 
 
-  //-----------------------------------
-  //Python to Arduino !!!!!!
-  if (Serial_comms==1)
-  {
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
+  btSerial.begin(9600); // open the bluetooth serial port
+	// Serial.setTimeout(1);
+  armESC();
+  Command="";
+  Data="";
+  split=-1;
+  Serial_comms = 0;
+  Bluetooth_comms = 0;
+
+  CurrPos_X=0;
+  CurrPos_Y=1;
+
+  Angle = 0;
+  Depth = 0;
+
+}
+
+//////////////CHAD FUNCTIONS ////////////////////
+void armESC() {
+  Serial.println("Arming ESC...");
+  for (int i = 0; i < 30; i++) {
+    writePWM(escPin, 1000);  // Send low PWM signal to arm ESC
+    delay(20);
+  }
+  for (int i = 0; i < 15; i++) {
+    writePWM(escPin, 1300);  // Increase PWM to start motor
+    delay(500);
+  }
+  Serial.println("ESC Armed!");
+}
+
+void writePWM(int pin, int pulseWidth) {
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(pulseWidth); // Pulse width determines speed
+  digitalWrite(pin, LOW);
+  delay(20 - pulseWidth / 1000);
+}
+
+void fwd2(int it) {
+  for (int i = 0; i < it; i++) {
+    writePWM(escPin, 1800);  // PWM signal for moving forward
+  }
+}
+//////////////////////////////////////////////
+
+void loop() {
+
+  //Get Serial Comms from Python
+  if (Serial.available() > 0 and btSerial.available() == 0) {
+    // read the incoming byte:
+    String incomingString = Serial.readStringUntil('\n');
+   
+    //test printouts; ENCODE ARD->Py: _blahblahblah_\n (newline token message splitter)
+    // Serial.print("I received: "); Serial.println(incomingString);
+
+    //DECODING: Split String: {Command}\t{data}
+    split = incomingString.indexOf('\t');
+    if (split != -1)
+    {
+      Command = incomingString.substring(0, split);
+      if (split+1 < incomingString.length())  {Data = incomingString.substring(split + 1);}
+      else {Data="";}
+    }
+    else {Command=incomingString;Data="";}
+
+
+    ///// CHAD DO UR WORK HERE
+    ///// YOU NEED TO ADD UR LOGIC FOR TRACKING LOCATION AND REGULARLY SEND IT TO THE UI
+
     //Search; Data= Angle, Depth
     if (Command == "SRCH")
     {
@@ -125,7 +159,7 @@ void loop() {
     //Send message to App from Python
     else if (Command == "WIRE")
     {
-      btSerial.println(incomingString) //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
+      btSerial.println(incomingString); //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
     }
     //-----------------------------------
     //Toggle!!! Vaccum
@@ -134,55 +168,44 @@ void loop() {
       //--------
       // Chad your code goes here
     }    
-    Serial_comms = 0;
+  
+    Serial_comms = 1;
   }
 
-
-
-
-  //----------------------------------------------------------------------
-  // Bluetooth to Arduino to Python !!!!!!
-
-  else if (Bluetooth_comms==1)
-  {
-    //START Message from App; Data=
-    else if (Command == "STAR" and Bluetooth_comms==1)
-    {
-
-      Serial.print("STAR\t");Serial.print(Data);
-    }
-
+///// CHAD DO NOT WORK BELOW HERE THIS IS LAURENS STUFF vvvv
+  //Get Bluetooth Comms from App
+  if(btSerial.available() > 0 ){
+    String incomingString  = btSerial.readStringUntil('\n');
+  
     //-----------------------------------
     //STOP,PAUSE messages to App from Python
-    else if (Command == "STOP" or Command == "PAUS" or Command == "OKAY" or Command == "NKAY" or)
+    if (incomingString.substring(0,4) == "STOP" or incomingString.substring(0,4)== "PAUS" or incomingString.substring(0,4) == "OKAY" or incomingString.substring(0,4) == "NKAY")
     {
-      Serial.println(Command + "\t") //NOTE: whats the encode for Ard->Blueetooth 
+      Serial.println(Command + "\t"); //NOTE: whats the encode for Ard->Blueetooth 
     }
 
-    //-----------------------------------
-    //Send over message from Bluetooth to Python; data=Message
-    else if (Command == "RECV")
-    {
-      Serial.print("RECV\t");Serial.print(Data); //NOTE: whats the encode for Ard->Blueetooth (ln or nah)????????????????????????
+    else if (incomingString.substring(0,2) == "C1" {
+        C1 = incomingString.substring(3,incomingString.length);
+      
     }
-
-    else if (Command == "C1" or Command == 'C2' or Command == 'C3')
-      Serial.print(Data)
-
-    //-----------------------------------
-  
-  //THIS SHOULD BE INTERNAL
-  //give current position [f"CPOS\t{cord}"]
-  else if (Command == "CPOS")
-  {
-    Serial.print("CPOS\t[");Serial.print(CurrPos_X);Serial.print(", ");Serial.print(CurrPos_Y);Serial.println("]");
-  }
-
     
-    Bluetooth_comms = 0;
-  }
+    else if(incomingString.substring(0,2)== "C2"){
+        C2 = incomingString.substring(3,incomingString.length);
 
 
+    } 
+    else if(incomingString.substring(0,2) == 'C3'){
+      C3 = incomingString.substring(3,incomingString.length);
 
-  
+      Serial.print("STAR \t");
+      Serial.print(C1 + ":")
+      Serial.print(C2 + ":")
+      Serial.print(C3 + "\n") 
+
+      C1 = "";
+      C2 = "";
+      C3 = "";
+      
+    }
+    //----------------------------------- 
 }

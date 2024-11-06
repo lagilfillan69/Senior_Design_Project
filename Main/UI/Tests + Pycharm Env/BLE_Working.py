@@ -188,7 +188,6 @@ class BLE():
                 messagebox.showerror("Error", "GPS POINTS NOT SET")
                 return
         corners = generate_corners(gps_points[0],gps_points[1],gps_points[2])
-        await self.write("STAR \t\n")
         await self.write("C1: " +  str(corners[0][0]) + "," +  str(corners[0][1]) + "\n")
         await self.write("C2: " + str(corners[1][0]) + "," + str(corners[1][1]) + "\n")
         await self.write("C3: " + str(corners[2][0]) + "," + str(corners[2][1]) + "\n")

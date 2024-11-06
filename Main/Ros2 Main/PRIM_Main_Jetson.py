@@ -182,9 +182,11 @@ class PRIM_Main_Jetson():
 
             ### START STATE ###
             #structure: 'STAR\t[  4 floating point values  ]
-            #   ex (do own tab):   STAR\t[40.35729, -79.93397, 40.35604, -79.93218]
+            #   ex (do own tab):   STAR\t[(p1,p2,p3)
             elif message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2) :
-                Runway_Boundaries = [ float(ele) for ele in message.split('\t')[1][1:-1].split(',') ]
+                for ele in message.split('\t')[1][1:-1].split(':') :
+                    Runway_Boundaries.push(float(ele.split(':')[0]), float(ele.split(':')[1]))
+
                 Previous_State = Curr_State
                 Curr_State = 1
             
@@ -222,7 +224,7 @@ class PRIM_Main_Jetson():
             elif(Curr_State == 1):
                 if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 #------
-                Path = generate_path(Runway_Boundaries)
+                Path = generate_path(Runway_Boundaries1[0],Runway_Boundaries1[1],Runway_Boundaries1[2])
                 Path_Index = -1 
                 Previous_State = Curr_State
                 Curr_State = 3
