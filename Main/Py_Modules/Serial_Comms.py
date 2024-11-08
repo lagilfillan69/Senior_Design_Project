@@ -3,7 +3,7 @@
 # Stable container for Serial Communication from Jettson to ESP32
 
 #going to be using these libraries, but until can start working with ESP32 not sure exactly how
-import serial,platform
+import serial,platform,time
 
 try:
     from helper_functions import *
@@ -40,6 +40,7 @@ Types of __Arduino__ -> Python
 
 class Serial_Ard:
     def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
+        prYellow(f"Serial_Ard:\t{Port},  {BaudRate}")
         self.ser = serial.Serial(Port, BaudRate)#, timeout=.1)
         time.sleep(1)
         print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)

@@ -1,10 +1,13 @@
+#here for class import purposes
+import subprocess,time
+#print( "wowza CN:", subprocess.run("bash -c 'source /opt/ros/humble/setup.bash'", shell=True) )
+
+
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-import time
-#import numpy
 
 class DisparitySubscriber(Node):
     def __init__(self,verbose=False):

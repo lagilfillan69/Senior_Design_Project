@@ -6,9 +6,7 @@ import math, platform, subprocess,os,time,cv2,signal
 import numpy as np
 
 #ROS
-print("A")
-print( "wowza:", subprocess.run("bash -c 'source /opt/ros/humble/setup.bash'", shell=True) )
-print("A")
+#print( "wowza:", subprocess.run("bash -c 'source /opt/ros/humble/setup.bash'", shell=True) )
 import rclpy, threading
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -43,7 +41,8 @@ class Stereo_Camera:
         
         #---------        
         #Start up Depth Camera; also boots Ros subscribers
-        if self.Real:        
+        self.Disparity_sub=None; self.ColorImg_sub=None
+        if self.Real:
             #Start up Depth Camera; also boots Ros subscribers
             self.establish_connection()
             print(Back.GREEN+"SUCCESS: ROS ESTABLISHED"+Style.RESET_ALL)
@@ -139,13 +138,16 @@ class Stereo_Camera:
                 #----
                 self.SpinThread.start()
                 prYellow("Giving Time for Spin Thread to Spin")
-                #time.sleep(5)
+                time.sleep(5)
                 
                 #checking that it spun for a max of 5 seconds
                 #once both have spun and gotten a msg at least once; exits
                 st=time.time()
                 while (self.Disparity_sub.first_try or self.ColorImg_sub.first_try):
-                    if time.time()-st >5: raise KeyError("Could not establish connection;   SpinThread;   Timeout>2s")
+                    if time.time()-st >5:
+                        prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
+                        os.system("pkill -f MS_startup.sh")
+                        raise KeyError("Could not establish connection;   SpinThread;   Timeout>5s")
                 #----
                 print(Back.GREEN+"SUCCESS: ROS THREADING PASS"+Style.RESET_ALL)
             

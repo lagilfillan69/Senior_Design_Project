@@ -36,23 +36,21 @@ class PRIM_Main_Jetson():
                  RealSystem=True
                  ):
         
+        self.Real=Real
+        if platform.system() != 'Linux': self.RealSystem=False
+        else: self.RealSystem=RealSystem
         
-        if platform.system() != 'Linux':
-            self.Real=False
-            self.RealSystem=False
-        else:
-            print( "wowza: ",subprocess.run("source /opt/ros/humble/setup.bash", shell=True) )
-            self.Real=Real
-            self.RealSystem=RealSystem
-        
-        print(f"Real??\t{self.Real}")
-        print(f"Real System??\t{self.RealSystem}")
+        prYellow(f"Real??\t{self.Real}")
+        prYellow(f"Real System??\t{self.RealSystem}")
         
         #-----------------------------
         #Telescopic Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("TELESCOPIC Camera initialization")
-        if self.RealSystem: self.TeleCam = TeleCAM()
+        
+        #NOTE: !!!!!!!!!!!!!!!   commenting out for current objectives
+        
+        #if self.RealSystem: self.TeleCam = TeleCAM()
         
         #Telescopic YOLO Model
         prCyan("TELESCOPIC Camera **ML MODEL** initialization")
@@ -76,7 +74,7 @@ class PRIM_Main_Jetson():
         #Serial Communication to ESP32
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("Serial Communication initialization")
-        if self.Real: self.SerialComms = Serial_Ard()
+        if self.RealSystem: self.SerialComms = Serial_Ard()
         else: self.SerialComms = Serial_Ard_FAKE()
         
         
@@ -119,11 +117,7 @@ class PRIM_Main_Jetson():
         Trash_Index = -1
         
         #====================================================================
-        while True:
-            if not self.Real:
-                prCyan(f"Curr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Items[Trash_Index] if self.Stereo_Items is not None else None}]")
-
-            
+        while True:            
             if cv2.waitKey(1) == ord('q'):
                 prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT")
                 return
@@ -131,14 +125,48 @@ class PRIM_Main_Jetson():
             #get message if there is
             message = self.SerialComms.read_message()
             # if not self.Real: prGreen(f'<{message}>')
+            if message is None: continue
+            
+            
+            #printing
+            if not self.Real:
+                print(message,end="\t")
+                prCyan(f"Curr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Items[Trash_Index] if self.Stereo_Items is not None else None}]")
+                #print(message.split('\t'))
+            
             
             #STOP STATE 
             if message == "STOP":   #NOTE: This is temp code, the actual message for Stopping would be different
+                #raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
+                #-----
+                #Resetting
+                self.Tele_angles = None #Relative Angles - 1xN, 1D
+                self.Stereo_Items = None #Relative [Angle, Depth] - 2xN, 2D
+                Previous_State = 0
                 Curr_State = 0
+                Current_Cordinate = []  #use??????, is this a duplicate of Current_Location??
+                Path=[]
                 Path_Index = -2
-                raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
-                State = 0
-                Path_Index = -2
+                Current_Location = [0,0]
+                Runway_Boundaries=None
+                Trash_Collected_Locations = []  #use?????? set but not used, send to UI?
+                Trash_Index = -1
+                #-----
+                
+                while True:
+                    if cv2.waitKey(1) == ord('q'):
+                        prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT; in pause loop")
+                        return
+                    
+                    message = self.SerialComms.read_message()
+                    if message.split('\t')[0] == "STAR":
+                        for ele in message.split('\t')[1][1:-1].split(':') :
+                            Runway_Boundaries.push(float(ele.split(':')[0]), float(ele.split(':')[1]))
+                        Previous_State = Curr_State
+                        Curr_State = 1
+                        prALERT("RESUME PRIMARY JETSON MAIN")
+                        break
+                    elif not message is None: prRed(f"Incoming Message but not 'STAR' to restart:\t{message}")
             
             #PAUSE STATE (2) 
             elif message == "PAUS":   #NOTE: This is temp code, the actual message for Pausing would be different
@@ -150,11 +178,12 @@ class PRIM_Main_Jetson():
                         return
                     
                     message = self.SerialComms.read_message()
-                    if message == "RESUME_MESSAGE":
+                    if message == "PAUS":
                         prALERT("RESUME PRIMARY JETSON MAIN")
                         Curr_State = Previous_State
                         Previous_State = 2
                         break
+                    elif not message is None: prRed(f"Incoming Message but not 'PAUS' to unpause:\t{message}")
             
             #### Update location -- not a state
             #structure: 'CPOS\t[  4 floating point values  ]
@@ -166,8 +195,9 @@ class PRIM_Main_Jetson():
             #structure: 'STAR\t[  4 floating point values  ]
             #   ex (do own tab):   STAR\t[(p1,p2,p3)
             elif message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2) :
-                for ele in message.split('\t')[1][1:-1].split(':') :
-                    Runway_Boundaries.push(float(ele.split(':')[0]), float(ele.split(':')[1]))
+                #NOTE: !!!!!!! Lauren FIX
+                #for ele in message.split('\t')[1][1:-1].split(':') :
+                #    Runway_Boundaries.push(float(ele.split(':')[0]), float(ele.split(':')[1]))
 
                 Previous_State = Curr_State
                 Curr_State = 1
@@ -206,8 +236,20 @@ class PRIM_Main_Jetson():
             elif(Curr_State == 1):
                 if not self.Real: prLightPurple(f"EXEC State {Curr_State}")
                 #------
-                Path = generate_path(Runway_Boundaries1[0],Runway_Boundaries1[1],Runway_Boundaries1[2])
-                Path_Index = -1 
+                #NOTE: !!!!!!! Lauren FIX
+                #Path = generate_path(Runway_Boundaries1[0],Runway_Boundaries1[1],Runway_Boundaries1[2])
+                
+                #NOTE: !!!!!!! 
+                #TEST
+                self.SerialComms.Collect_GoTo([10,1])
+                '''
+                while True:
+                    print('.',end='')
+                    self.SerialComms.Collect_GoTo([10,1])
+                    time.sleep(1)
+                '''
+                
+                Path_Index = -1
                 Previous_State = Curr_State
                 Curr_State = 3
 
@@ -361,5 +403,5 @@ prGreen("PRIMARY MAIN Jetson: Class Definition Success")
 
 
 if __name__ == "__main__":
-    eevee = PRIM_Main_Jetson(Real=False)
+    eevee = PRIM_Main_Jetson(Real=False)#,RealSystem=False)
     eevee.MainProject_Loop()
