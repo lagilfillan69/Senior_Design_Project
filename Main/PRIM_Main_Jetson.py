@@ -159,6 +159,8 @@ class PRIM_Main_Jetson():
                         return
                     
                     message = self.SerialComms.read_message()
+                    if message is None: continue
+                    
                     if message.split('\t')[0] == "STAR":
                         for ele in message.split('\t')[1][1:-1].split(':') :
                             Runway_Boundaries.push(float(ele.split(':')[0]), float(ele.split(':')[1]))
@@ -170,6 +172,7 @@ class PRIM_Main_Jetson():
             
             #PAUSE STATE (2) 
             elif message == "PAUS":   #NOTE: This is temp code, the actual message for Pausing would be different
+                Previous_State = Curr_State
                 Curr_State = 2 #not necessairy but for redundancy
                 prALERT("PAUSING PRIMARY JETSON MAIN: PAUSE MESSAGE")
                 while True:
@@ -349,6 +352,12 @@ class PRIM_Main_Jetson():
                 else :
                     Curr_State = 9
                 Previous_State = Curr_State
+            
+            
+            #-------------------
+            #printing
+            if not self.Real:
+                prYellow(f"{message}\tCurr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Items[Trash_Index] if self.Stereo_Items is not None else None}]")
                 
                
         
