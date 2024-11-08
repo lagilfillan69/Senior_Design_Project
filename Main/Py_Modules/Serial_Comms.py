@@ -9,12 +9,8 @@ try:
     from helper_functions import *
     from SD_constants import COM_PORT,BAUDRATE #needs to be manually set
 except:
-    if platform.system() != 'Linux':
-        from Py_Modules.helper_functions import *
-        from Py_Modules.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
-    else:
-        from snr_proj.helper_functions import *
-        from snr_proj.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
+    from Py_Modules.helper_functions import *
+    from Py_Modules.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
         
 
 #WERE DOING ARDUINO NOW PYFRIMATA

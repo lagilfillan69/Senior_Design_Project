@@ -4,39 +4,20 @@
 # Primary Main: Responsible for decision making process, tells ESP32 what to do through serial
 #   - see Serial_Comms
 
-import os,sys,platform,time
+import os,sys,platform,time,subprocess
 dir_path = os.path.abspath("").replace('\\','/')
 if __name__ == "__main__": print(f"DIRECTORY:\t\t<{dir_path}>")
 sys.path.append(dir_path)
 
 #------------------------
-if platform.system() != 'Linux':
-    print(platform.system())
-    from Py_Modules.helper_functions import *
-    from Py_Modules.JEB382_YOLOv8 import YOLO_model_v1
-    from Py_Modules.Stereo_Camera import Stereo_Camera
-    from Py_Modules.Tele_Camera  import TeleCAM
-    from Py_Modules.Serial_Comms import Serial_Ard, Serial_Ard_FAKE
-    from Py_Modules.SD_constants import STEREOCAM_MODELPATH,TELECAM_MODELPATH,CROPCOMPR_FILEPATH
-    from Py_Modules.Path_Planning import generate_path
-else:
-    print(platform.system())
-    #timewait=1
-    #print("hi1")
-    from snr_proj.helper_functions import *
-    #time.sleep(timewait);print("hi2")
-    from snr_proj.JEB382_YOLOv8 import YOLO_model_v1
-    #time.sleep(timewait);print("hi3")
-    from snr_proj.Stereo_Camera import Stereo_Camera
-    #time.sleep(timewait);print("hi4")
-    from snr_proj.Tele_Camera  import TeleCAM
-    #time.sleep(timewait);print("hi5")
-    from snr_proj.Serial_Comms import Serial_Ard, Serial_Ard_FAKE
-    #time.sleep(timewait);print("hi6")
-    from snr_proj.SD_constants import STEREOCAM_MODELPATH,TELECAM_MODELPATH,CROPCOMPR_FILEPATH
-    #time.sleep(timewait);print("hi7")
-    from snr_proj.Path_Planning import generate_path
-    #time.sleep(timewait);print("hi8")
+print(platform.system())
+from Py_Modules.helper_functions import *
+from Py_Modules.JEB382_YOLOv8 import YOLO_model_v1
+from Py_Modules.Stereo_Camera import Stereo_Camera
+from Py_Modules.Tele_Camera  import TeleCAM
+from Py_Modules.Serial_Comms import Serial_Ard, Serial_Ard_FAKE
+from Py_Modules.SD_constants import STEREOCAM_MODELPATH,TELECAM_MODELPATH,CROPCOMPR_FILEPATH
+from Py_Modules.Path_Planning import generate_path
 prGreen("PRIMARY MAIN Jetson: Import Success")
 
 #------------------------
@@ -60,6 +41,7 @@ class PRIM_Main_Jetson():
             self.Real=False
             self.RealSystem=False
         else:
+            print( "wowza: ",subprocess.run("source /opt/ros/humble/setup.bash", shell=True) )
             self.Real=Real
             self.RealSystem=RealSystem
         

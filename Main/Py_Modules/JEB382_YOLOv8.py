@@ -15,16 +15,12 @@ import onnxruntime,cv2
 #------------------------
 import os,shutil,platform
 import numpy as np
-print("a")
 
 #------------------------
 try:
     from helper_functions import *
 except:
-    if platform.system() != 'Linux':
-        from Py_Modules.helper_functions import *
-    else:
-        from snr_proj.helper_functions import *
+    from Py_Modules.helper_functions import *
     
 global YOLO_home
 YOLO_home = (os.getcwd()+'/Py_Modules/YOLOv8/').replace('\\','/')

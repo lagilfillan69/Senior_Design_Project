@@ -6,6 +6,9 @@ import math, platform, subprocess,os,time,cv2,signal
 import numpy as np
 
 #ROS
+print("A")
+print( "wowza:", subprocess.run("bash -c 'source /opt/ros/humble/setup.bash'", shell=True) )
+print("A")
 import rclpy, threading
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -16,14 +19,9 @@ try:
     from Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 except:
-    if platform.system() != 'Linux':
-        from Py_Modules.helper_functions import *
-        from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-        from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
-    else:
-        from snr_proj.helper_functions import *
-        from snr_proj.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-        from snr_proj.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+    from Py_Modules.helper_functions import *
+    from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
+    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 
 
 
@@ -45,7 +43,7 @@ class Stereo_Camera:
         
         #---------        
         #Start up Depth Camera; also boots Ros subscribers
-        if self.Real:
+        if self.Real:        
             #Start up Depth Camera; also boots Ros subscribers
             self.establish_connection()
             print(Back.GREEN+"SUCCESS: ROS ESTABLISHED"+Style.RESET_ALL)
