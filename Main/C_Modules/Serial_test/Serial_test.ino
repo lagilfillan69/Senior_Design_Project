@@ -1,6 +1,7 @@
 #include <SoftwareSerial.h>
 
 SoftwareSerial btSerial(4,3);
+int escPin = 9;
 
 void setup() {
   // put your setup code here, to run once:
@@ -12,13 +13,40 @@ void setup() {
   int split=-1;
   int Serial_comms = 0;
   int Bluetooth_comms = 0;
-
+  armESC();
   float CurrPos_X=0;
   float CurrPos_Y=1;
-
   float Angle = 0;
   float Depth = 0;
+  String C1 = "";
+  String C2 = "";
+  String C3 = "";
+}
 
+void armESC() {
+  Serial.println("Arming ESC...");
+  for (int i = 0; i < 30; i++) {
+    writePWM(escPin, 1000);  // Send low PWM signal to arm ESC
+    delay(20);
+  }
+  for (int i = 0; i < 15; i++) {
+    writePWM(escPin, 1300);  // Increase PWM to start motor
+    delay(500);
+  }
+  Serial.println("ESC Armed!");
+}
+
+void writePWM(int pin, int pulseWidth) {
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(pulseWidth); // Pulse width determines speed
+  digitalWrite(pin, LOW);
+  delay(20 - pulseWidth / 1000);
+}
+
+void fwd2(int it) {
+  for (int i = 0; i < it; i++) {
+    writePWM(escPin, 1500);  // PWM signal for moving forward
+  }
 }
 
 
@@ -132,7 +160,7 @@ void loop() {
 
   //----------------------------------------------------------------------
   // Bluetooth to Arduino to Python !!!!!!
-
+  //
   else if (Bluetooth_comms==1)
   {
     //START Message from App; Data=
