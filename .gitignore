@@ -11,3 +11,5 @@
 *.ipynb
 *.pyc
 Py_Modules/RelmathTest.JPG
+/Main/Ros2 Main/Py_Modules/YOLOv8/datasets/example_dataset
+/Main/Ros2 Main/Py_Modules/YOLOv8/runs
