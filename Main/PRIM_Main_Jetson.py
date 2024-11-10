@@ -226,7 +226,7 @@ class PRIM_Main_Jetson():
                 Previous_State = Curr_State
                 Curr_State = 8
             
-            #TAKE PICTURE AND SAVE    
+            #TAKE PICTURE AND SAVE to folder
             elif message == "CAMR" and self.RealSystem:
                 dstr=datestr()
                 if not self.SterCam is None: cv2.imwrite("/DataCollect/Stereo/{dstr}.jpg",     self.SterCam.get_feed())
