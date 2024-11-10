@@ -2,7 +2,7 @@
 
 # Stable container for Telescopic Camera
 
-import cv2,math,platform,subprocess
+import cv2,math,platform,subprocess,time
 
 try:
     from helper_functions import *
@@ -35,28 +35,28 @@ class TeleCAM():
     #---------------------------------------------------------------------
     
     def SetupCam(self,index,campath="/dev/video"):
-    	prYellow("Setting up Telescopic Camera w/ gphoto2")
-    	#-----
-    	prYellow("--TCAM: create virtual camera device")
-    	#subprocess.run("bash -c 'sudo modprobe v4l2loopback exclusive_caps=1'", shell=True)
-    	res = subprocess.run("sudo modprobe v4l2loopback exclusive_caps=1", shell=True, capture_output=True, text=True)
-    	if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: create virtual device\n{res.stderr.strip()}")
-    	
-    	prYellow("--TCAM: kill gphoto (drive connect edgecase)")
-    	res = subprocess.run("pkill gphoto", shell=True, capture_output=True, text=True)
-    	if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: kill gphoto\n{res.stderr.strip()}")
-    	
-    	prYellow("--TCAM: connect to camera")
-    	self.StreamProc = subprocess.Popen(f"gphoto2 --stdout --capture-movie | ffmpeg -i -vcodec rawvideo -pix_fmt yuv420p -f v4l2 {campath}{index}",
-    						shell=True,
-    						stdout=subprocess.PIPE,
-    						stderr=subprocess.PIPE
-    						)
-    	prYellow("Giving time for Telescopic camera to startup")
-    	time.sleep(5)
-    	
+        prYellow("Setting up Telescopic Camera w/ gphoto2")
+        #-----
+        prYellow("--TCAM: create virtual camera device")
+        #subprocess.run("bash -c 'sudo modprobe v4l2loopback exclusive_caps=1'", shell=True)
+        res = subprocess.run("sudo modprobe v4l2loopback exclusive_caps=1", shell=True, capture_output=True, text=True)
+        if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: create virtual device\n{res.stderr.strip()}")
+
+        prYellow("--TCAM: kill gphoto (drive connect edgecase)")
+        res = subprocess.run("pkill gphoto", shell=True, capture_output=True, text=True)
+        if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: kill gphoto\n{res.stderr.strip()}")
+
+        prYellow("--TCAM: connect to camera")
+        self.StreamProc = subprocess.Popen(f"gphoto2 --stdout --capture-movie | ffmpeg -i -vcodec rawvideo -pix_fmt yuv420p -f v4l2 {campath}{index}",
+                            shell=True,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE
+                            )
+        prYellow("Giving time for Telescopic camera to startup")
+        time.sleep(5)
+
         #if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera:\n{self.StreamProc.stderr.read().decode()}")
-    	if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+        if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
     	
     	
     	
