@@ -53,10 +53,10 @@ class TeleCAM():
     						stderr=subprocess.PIPE
     						)
     	prYellow("Giving time for Telescopic camera to startup")
-        time.sleep(5)
-        
+    	time.sleep(5)
+    	
         #if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera:\n{self.StreamProc.stderr.read().decode()}")
-        if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+    	if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
     	
     	
     	
