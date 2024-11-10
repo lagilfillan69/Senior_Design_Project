@@ -22,7 +22,7 @@ class TeleCAM():
         self.H_DegView = math.degrees(2*math.atan(  22.3/(2*FocalLength) ))#prev:FL*16 (realistic? was not)
         self.V_DegView = math.degrees(2*math.atan(  14.9/(2*FocalLength) ))
         
-        if platform.system() != 'Linux': self.SetupCam(index)
+        if platform.system() == 'Linux': self.SetupCam(index)
         
         self.capture = cv2.VideoCapture(index)
         
@@ -44,10 +44,10 @@ class TeleCAM():
 
         prYellow("--TCAM: kill gphoto (drive connect edgecase)")
         res = subprocess.run("pkill gphoto", shell=True, capture_output=True, text=True)
-        if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: kill gphoto\n{res.stderr.strip()}")
+        #if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: kill gphoto\n{res.stderr.strip()}")
 
         prYellow("--TCAM: connect to camera")
-        self.StreamProc = subprocess.Popen(f"gphoto2 --stdout --capture-movie | ffmpeg -i -vcodec rawvideo -pix_fmt yuv420p -f v4l2 {campath}{index}",
+        self.StreamProc = subprocess.Popen(f"gphoto2 --stdout --capture-movie | ffmpeg -i - -vcodec rawvideo -pix_fmt yuv420p -f v4l2 {campath}{index}",
                             shell=True,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE
