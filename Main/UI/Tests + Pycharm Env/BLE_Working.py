@@ -44,10 +44,10 @@ def build_gui():
     main_window.start_button = ttk.Button(control_frame, text="Start", style="TButton", command= lambda : asyncio.create_task(BLE.start_task()))
     main_window.start_button.grid(row=0, column=0, padx=20, pady=10, sticky="nsew", ipadx=20)
 
-    main_window.stop_button = ttk.Button(control_frame, text="Stop", style="TButton", command= lambda : asyncio.create_task(BLE.write("STOP\t")))
+    main_window.stop_button = ttk.Button(control_frame, text="Stop", style="TButton", command= lambda : asyncio.create_task(BLE.write("STOP\t\n")))
     main_window.stop_button.grid(row=0, column=2, padx=20, pady=10, sticky="nsew", ipadx=20)
 
-    main_window.pause_button = ttk.Button(control_frame, text="Pause", style="TButton", command= lambda : asyncio.create_task(BLE.write("PAUS\t")))
+    main_window.pause_button = ttk.Button(control_frame, text="Pause", style="TButton", command= lambda : asyncio.create_task(BLE.write("PAUS\t\n")))
     main_window.pause_button.grid(row=0, column=1, padx=20, pady=10, sticky="nsew", ipadx=20)
 
     # Bluetooth Frame
@@ -107,9 +107,12 @@ def build_gui():
 
     buffer_input_frame = ttk.Frame(main_window)
     buffer_input_frame.pack(pady=20)
-    main_window.input_label = tk.Label(buffer_input_frame, textvariable=input_buffer, font=("Arial", 12),
+    main_window.input_label = tk.Label(buffer_input_frame, textvariable=input_buffer, font=("Arial", 15),
                                         fg="red", bg="white")
     main_window.input_label.grid(row=0, column=1, padx=10)
+
+    # Estop_frame = ttk.Frame(main_window)
+    # Estop_frame.pack(pady=20)
      ###################
 
 
@@ -247,6 +250,7 @@ class BLE():
 
     async def read_callback(self, sender : bleak.BleakGATTCharacteristic, data : bytearray):
         data = data.decode('utf-8')
+        print(data)
         pts = data[:8]
         input_buffer.set(time.ctime(time.time()) + data)
         pickup = messagebox.askyesno("Trash Detected",message="Trash was found at " + str(pts) + ". Pick it up?")
