@@ -132,7 +132,8 @@ class PRIM_Main_Jetson():
         Path=[]
         Path_Index = -2
         Current_Location = [0,0]
-        Runway_Boundaries=None
+        Runway_Boundaries= []
+
         Trash_Collected_Locations = []  #use?????? set but not used, send to UI?
         Trash_Index = -1
         
@@ -157,6 +158,9 @@ class PRIM_Main_Jetson():
                 raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
                 State = 0
                 Path_Index = -2
+
+            if message == "ESTO" :
+                print("Estop Triggered")
             
             #PAUSE STATE (2) 
             elif message == "PAUS":   #NOTE: This is temp code, the actual message for Pausing would be different
@@ -184,8 +188,9 @@ class PRIM_Main_Jetson():
             #structure: 'STAR\t[  4 floating point values  ]
             #   ex (do own tab):   STAR\t[(p1,p2,p3)
             elif message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2) :
-                for ele in message.split('\t')[1][1:-1].split(':') :
-                    Runway_Boundaries.push(float(ele.split(':')[0]), float(ele.split(':')[1]))
+                for ele in message.split('\t')[1].strip().split(':'):
+                    x, y = map(float, ele.split(','))
+                    Runway_Boundaries.append((x, y))
 
                 Previous_State = Curr_State
                 Curr_State = 1
@@ -228,7 +233,6 @@ class PRIM_Main_Jetson():
                 Path_Index = -1 
                 Previous_State = Curr_State
                 Curr_State = 3
-
 
             #Go to Next Path Index
             elif(Curr_State == 3):
