@@ -49,7 +49,7 @@ def rgb(minimum, maximum, value):
     return (r, g, b)
 
 def datestr():
-    return f'{datetime.datetime.now().date()}_{datetime.datetime.now().hour}_{datetime.datetime.now().minute}'
+    return f'{datetime.datetime.now().date()}_{datetime.datetime.now().hour}_{datetime.datetime.now().minute}_{datetime.datetime.now().second}'
 
 def mean(arr):
     tot=0
