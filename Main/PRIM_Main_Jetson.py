@@ -35,6 +35,8 @@ class PRIM_Main_Jetson():
                  Real=True,
                  RealSystem=True
                  ):
+        #cover cases for when parts of system aren't real
+        self.TeleCam=None;self.TeleCam_Model=None;self.SterCam=None;self.SterCam_Model=None
         
         self.Real=Real
         if platform.system() != 'Linux': self.RealSystem=False
@@ -136,7 +138,7 @@ class PRIM_Main_Jetson():
             
             
             #STOP STATE 
-            if message == "STOP":   #NOTE: This is temp code, the actual message for Stopping would be different
+            if message == "STOP":
                 #raise RuntimeError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
                 #-----
                 #Resetting
@@ -171,7 +173,7 @@ class PRIM_Main_Jetson():
                     elif not message is None: prRed(f"Incoming Message but not 'STAR' to restart:\t{message}")
             
             #PAUSE STATE (2) 
-            elif message == "PAUS":   #NOTE: This is temp code, the actual message for Pausing would be different
+            elif message == "PAUS":
                 Previous_State = Curr_State
                 Curr_State = 2 #not necessairy but for redundancy
                 prALERT("PAUSING PRIMARY JETSON MAIN: PAUSE MESSAGE")
@@ -223,6 +225,12 @@ class PRIM_Main_Jetson():
                 # self.SerialComms.Search_GoTo("Return to this cord") #NOTE Is this not handled by other comms from other states???? Is this Search??
                 Previous_State = Curr_State
                 Curr_State = 8
+            
+            #TAKE PICTURE AND SAVE    
+            elif message == "CAMR" and self.RealSystem:
+                dstr=datestr()
+                if not self.SterCam is None: cv2.imwrite("/DataCollect/Stereo/{dstr}.jpg",     self.SterCam.get_feed())
+                if not self.TeleCam is None: cv2.imwrite("/DataCollect/Telescopic/{dstr}.jpg", self.TeleCam.get_feed())
             
 
                 
