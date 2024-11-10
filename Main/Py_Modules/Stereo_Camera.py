@@ -95,7 +95,7 @@ class Stereo_Camera:
             rclpy.shutdown()
         except Exception as e:
             #print(e)
-            raise KeyError("Error shutting down rclpy, probably not init-ed; if persists uncomment line above")
+            raise RuntimeError("Error shutting down rclpy, probably not init-ed; if persists uncomment line above")
         prALERT("ROS Killed")
     
     #---------------------------------------------------------------------
@@ -119,7 +119,7 @@ class Stereo_Camera:
             self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "~/MS_startup.sh; exec bash"'],stderr=subprocess.PIPE) #this should work from anywhere provided the shell file is in home
             prYellow("Loading parallel terminal to ---start up ROS CAMERA---")
             time.sleep(5)
-            if self.CAMprocess.poll() is not None: raise KeyError(f"Could not establish connection to camera")
+            if self.CAMprocess.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
             
             #Start up ROS
             rclpy.init()
@@ -147,7 +147,7 @@ class Stereo_Camera:
                     if time.time()-st >5:
                         prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
                         os.system("pkill -f MS_startup.sh")
-                        raise KeyError("Could not establish connection;   SpinThread;   Timeout>5s")
+                        raise RuntimeError("Could not establish connection;   SpinThread;   Timeout>5s")
                 #----
                 print(Back.GREEN+"SUCCESS: ROS THREADING PASS"+Style.RESET_ALL)
             
@@ -183,11 +183,11 @@ class Stereo_Camera:
             #get current last update times
             time_chk= self.Disparity_sub.lastupdate
             rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
-            if (time_chk==self.Disparity_sub.lastupdate): raise KeyError("Disparity_sub:\tCould not check connection")
+            if (time_chk==self.Disparity_sub.lastupdate): raise RuntimeError("Disparity_sub:\tCould not check connection")
         else:
-            #if self.t1.is_alive(): raise KeyError("Disparity_sub:\tCould not check connection;   Thread Dead")
-            if not self.SpinThread.is_alive(): raise KeyError("SpinThread:\tCould not check connection;   Thread Dead")
-            if abs(self.Disparity_sub.lastupdate-time.time())>2: raise KeyError("Could not check connection;   check_connection_DISPAR;   Timeout>2s")
+            #if self.t1.is_alive(): raise RuntimeError("Disparity_sub:\tCould not check connection;   Thread Dead")
+            if not self.SpinThread.is_alive(): raise RuntimeError("SpinThread:\tCould not check connection;   Thread Dead")
+            if abs(self.Disparity_sub.lastupdate-time.time())>2: raise RuntimeError("Could not check connection;   check_connection_DISPAR;   Timeout>2s")
     
     #return T/F if able to connect
     #also spins the node once
@@ -197,11 +197,11 @@ class Stereo_Camera:
             #get current last update time
             time_chk= self.ColorImg_sub.lastupdate
             rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
-            if (time_chk==self.ColorImg_sub.lastupdate): raise KeyError("ColorImg_sub:\tCould not check connection")
+            if (time_chk==self.ColorImg_sub.lastupdate): raise RuntimeError("ColorImg_sub:\tCould not check connection")
         else:
-            #if self.t2.is_alive(): raise KeyError("ColorImg_sub:\tCould not check connection;   Thread Dead")
-            if not self.SpinThread.is_alive(): raise KeyError("SpinThread:\tCould not check connection;   Thread Dead")
-            if abs(self.ColorImg_sub.lastupdate-time.time())>2: raise KeyError("Could not check connection;   check_connection_COLIMG;   Timeout>2s")
+            #if self.t2.is_alive(): raise RuntimeError("ColorImg_sub:\tCould not check connection;   Thread Dead")
+            if not self.SpinThread.is_alive(): raise RuntimeError("SpinThread:\tCould not check connection;   Thread Dead")
+            if abs(self.ColorImg_sub.lastupdate-time.time())>2: raise RuntimeError("Could not check connection;   check_connection_COLIMG;   Timeout>2s")
     
     
     #---------------------------------------------------------------------
@@ -209,13 +209,13 @@ class Stereo_Camera:
     #return camera feed (colored rectified image)
     def get_feed(self,new=True):
         if new or self.multithread: self.check_connection_COLIMG() #update
-        if self.ColorImg_sub.want is None: raise KeyError("get_feed: self.ColorImg_sub.want is None")
+        if self.ColorImg_sub.want is None: raise RuntimeError("get_feed: self.ColorImg_sub.want is None")
         return self.ColorImg_sub.want
     
     #helper func for get_relativePOSITION and get_size
     def get_depthPOINT(self, coordX, coordY, new=True):
         if new or self.multithread: self.check_connection_DISPAR() #update
-        if self.Disparity_sub.want is None: raise KeyError("get_depthPOINT: self.Disparity_sub.want is None")
+        if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT: self.Disparity_sub.want is None")
         return self.Depth_Map[coordX, coordY]
     
     

@@ -509,7 +509,7 @@ if __name__ == "__main__":
     # #training (not allowed)
     # try:
     #     save_dir = test_model.train_model(YOLO_home+'datasets/example_dataset/data.yaml',imgsize=[512,384])
-    #     raise KeyError("model4 NOT SUPPOSED TO BE ABLE TO TRAIN")
+    #     raise RuntimeError("model4 NOT SUPPOSED TO BE ABLE TO TRAIN")
     # except:
     #     print(Back.BLUE+f'model4 SUCCESS: cant train .onnx model'+Style.RESET_ALL)
     # #running
@@ -527,7 +527,7 @@ if __name__ == "__main__":
     # #saving (not allowed)
     # try:
     #     result = test_model.save_model(YOLO_home+'loadable_models/testing/TEST_LoadModONNX.onnx')
-    #     raise KeyError("model4 NOT SUPPOSED TO BE ABLE TO SAVE")
+    #     raise RuntimeError("model4 NOT SUPPOSED TO BE ABLE TO SAVE")
     # except:
     #     print(Back.BLUE+f'model4 SUCCESS: cant save .onnx model'+Style.RESET_ALL)
     

@@ -137,7 +137,7 @@ class PRIM_Main_Jetson():
             
             #STOP STATE 
             if message == "STOP":   #NOTE: This is temp code, the actual message for Stopping would be different
-                #raise KeyError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
+                #raise RuntimeError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
                 #-----
                 #Resetting
                 self.Tele_angles = None #Relative Angles - 1xN, 1D
