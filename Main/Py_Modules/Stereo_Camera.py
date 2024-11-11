@@ -39,6 +39,43 @@ class Stereo_Camera:
         else: self.Real=Real
         self.multithread = multithread and self.Real #only multithread if real and allowed
         
+        #---------
+        #Start up Depth Camera; also boots Ros subscribers
+        self.CAMprocess=None; self.SpinThread=None #prevent minor error in destructor
+        self.Disparity_sub=None; self.ColorImg_sub=None
+        if self.Real:
+            #Start up Depth Camera; also boots Ros subscribers
+            self.establish_connection()
+            print(Back.GREEN+"SUCCESS: ROS ESTABLISHED"+Style.RESET_ALL)
+            #get shape
+            t_frame = self.get_feed()
+            self.height,self.width,self.layers = t_frame.shape
+        else:
+            prRed("Not real StereoCam, so don't expect ROS")
+            self.height,self.width,self.layers = 1188,1920,3
+        prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+            
+        #---- end of class init   
+        print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
+        
+        
+        #---------------------------
+        '''
+        try:
+            self.init_helper()
+        except Exception as e:
+            prRed(f"Error starting 'Stereo_Camera', switch to Fake?:\ty?")
+            if input(">").lower() == 'y':
+                self.Real=False
+                self.multithread = False
+                self.init_helper()
+            else: raise RuntimeError("Error loading Real Arduino") from e
+        '''
+            
+            
+    
+    #---------------------------------------------------------------------
+    def init_helper(self):
         #---------        
         #Start up Depth Camera; also boots Ros subscribers
         self.CAMprocess=None; self.SpinThread=None #prevent minor error in destructor
@@ -57,11 +94,9 @@ class Stereo_Camera:
             
         #---- end of class init   
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
-            
-            
-    
-    #---------------------------------------------------------------------
         
+        
+           
     def __del__(self):
         #-------------
         #Parallel Terminal

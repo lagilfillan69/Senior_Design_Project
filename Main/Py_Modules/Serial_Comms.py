@@ -86,6 +86,7 @@ prGreen("Serial_Ard: Class Definition Success")
 #Fake Version for FSM Debug
 class Serial_Ard_FAKE:
     def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
+        self.fail=True
         print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
         prRed("WARNING: Not Real Arduino Serial, Test version")
     

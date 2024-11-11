@@ -22,15 +22,20 @@ class TeleCAM():
         self.H_DegView = math.degrees(2*math.atan(  22.3/(2*FocalLength) ))#prev:FL*16 (realistic? was not)
         self.V_DegView = math.degrees(2*math.atan(  14.9/(2*FocalLength) ))
         
-        if platform.system() == 'Linux': self.SetupCam(index)
-        
-        self.capture = cv2.VideoCapture(index)
-        
-        #get shape
-        t_frame = self.get_feed()
-        self.height,self.width,self.layers = t_frame.shape
-        prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
-        print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
+        try:
+            if platform.system() == 'Linux': self.SetupCam(index)
+            
+            self.capture = cv2.VideoCapture(index)
+            
+            #get shape
+            t_frame = self.get_feed()
+            self.height,self.width,self.layers = t_frame.shape
+            prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+            print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
+        except Exception as e:
+            prRed(f"Error starting 'TeleCAM', switch to Fake?:\ty?")
+            if input(">").lower() == 'y': self.fail=True
+            else: raise RuntimeError("Error loading Real TeleCAM") from e
     
     #---------------------------------------------------------------------
     
@@ -57,6 +62,7 @@ class TeleCAM():
 
         #if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera:\n{self.StreamProc.stderr.read().decode()}")
         if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+        self.fail=False
     	
     	
     	
