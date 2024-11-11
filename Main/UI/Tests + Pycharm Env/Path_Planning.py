@@ -26,7 +26,6 @@ def generate_corners(p1, p2, p3, step=5):
 
     x4, y4 = x2 + x3, y2 + y3
 
-   
     corners = [origin, (x2, y2), (x3, y3), (x4, y4)]
 
     unique_corners = list(dict.fromkeys(corners))

@@ -7,10 +7,7 @@ import numpy as np
 try:
     from helper_functions import haversine_distance, gps_to_xy, interpolate_points
 except:
-    if platform.system() != 'Linux':
-        from Py_Modules.helper_functions import haversine_distance, gps_to_xy, interpolate_points
-    else:
-        from snr_proj.helper_functions import haversine_distance, gps_to_xy, interpolate_points
+    from Py_Modules.helper_functions import haversine_distance, gps_to_xy, interpolate_points
 
 
 #Max seeing distance of the bot in height and width in meters

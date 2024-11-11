@@ -6,6 +6,7 @@ import math, platform, subprocess,os,time,cv2,signal
 import numpy as np
 
 #ROS
+#print( "wowza:", subprocess.run("bash -c 'source /opt/ros/humble/setup.bash'", shell=True) )
 import rclpy, threading
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -16,14 +17,9 @@ try:
     from Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 except:
-    if platform.system() != 'Linux':
-        from Py_Modules.helper_functions import *
-        from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-        from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
-    else:
-        from snr_proj.helper_functions import *
-        from snr_proj.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-        from snr_proj.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+    from Py_Modules.helper_functions import *
+    from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
+    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
 
 
 
@@ -45,6 +41,8 @@ class Stereo_Camera:
         
         #---------        
         #Start up Depth Camera; also boots Ros subscribers
+        self.CAMprocess=None; self.SpinThread=None #prevent minor error in destructor
+        self.Disparity_sub=None; self.ColorImg_sub=None
         if self.Real:
             #Start up Depth Camera; also boots Ros subscribers
             self.establish_connection()
@@ -67,18 +65,19 @@ class Stereo_Camera:
     def __del__(self):
         #-------------
         #Parallel Terminal
-        prALERT(f'Stereo_Camera Destructor:\tKilling Camera Startup Parallel Terminal\n{"="*12}')
-        try:
-            prYellow("Giving time for Split terminal to run before closing")
-            time.sleep(5)
-            #os.kill(self.CAMprocess.pid,signal.SIGTERM)
-            os.system("pkill -f MS_startup.sh")
-            if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself")
-        except Exception as e:
-            print("error shutting down parallel terminal:",e)
+        if not self.CAMprocess is None:
+            prALERT(f'Stereo_Camera Destructor:\tKilling Camera Startup Parallel Terminal\n{"="*12}')
+            try:
+                prYellow("Giving time for Split terminal to run before closing")
+                time.sleep(5)
+                #os.kill(self.CAMprocess.pid,signal.SIGTERM)
+                os.system("pkill -f MS_startup.sh")
+                if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself")
+            except Exception as e:
+                prRed("error shutting down parallel terminal,Likely minor:\n",e)
         #-------------
         #Kill threads
-        if self.multithread:
+        if self.multithread and not self.SpinThread is None:
             prALERT(f'Stereo_Camera Destructor:\tKilling Parallel Node Spin Threads\n{"="*12}')  
             try:
                 #self.t1.raise_exception()
@@ -98,7 +97,7 @@ class Stereo_Camera:
             rclpy.shutdown()
         except Exception as e:
             #print(e)
-            raise KeyError("Error shutting down rclpy, probably not init-ed; if persists uncomment line above")
+            raise RuntimeError("Error shutting down rclpy, probably not init-ed; if persists uncomment line above")
         prALERT("ROS Killed")
     
     #---------------------------------------------------------------------
@@ -122,7 +121,7 @@ class Stereo_Camera:
             self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "~/MS_startup.sh; exec bash"'],stderr=subprocess.PIPE) #this should work from anywhere provided the shell file is in home
             prYellow("Loading parallel terminal to ---start up ROS CAMERA---")
             time.sleep(5)
-            if self.CAMprocess.poll() is not None: raise KeyError(f"Could not establish connection to camera")
+            if self.CAMprocess.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
             
             #Start up ROS
             rclpy.init()
@@ -141,13 +140,16 @@ class Stereo_Camera:
                 #----
                 self.SpinThread.start()
                 prYellow("Giving Time for Spin Thread to Spin")
-                #time.sleep(5)
+                time.sleep(5)
                 
                 #checking that it spun for a max of 5 seconds
                 #once both have spun and gotten a msg at least once; exits
                 st=time.time()
                 while (self.Disparity_sub.first_try or self.ColorImg_sub.first_try):
-                    if time.time()-st >5: raise KeyError("Could not establish connection;   SpinThread;   Timeout>2s")
+                    if time.time()-st >5:
+                        prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
+                        os.system("pkill -f MS_startup.sh")
+                        raise RuntimeError("Could not establish connection;   SpinThread;   Timeout>5s")
                 #----
                 print(Back.GREEN+"SUCCESS: ROS THREADING PASS"+Style.RESET_ALL)
             
@@ -183,11 +185,11 @@ class Stereo_Camera:
             #get current last update times
             time_chk= self.Disparity_sub.lastupdate
             rclpy.spin_once(self.Disparity_sub, timeout_sec=0.01)
-            if (time_chk==self.Disparity_sub.lastupdate): raise KeyError("Disparity_sub:\tCould not check connection")
+            if (time_chk==self.Disparity_sub.lastupdate): raise RuntimeError("Disparity_sub:\tCould not check connection")
         else:
-            #if self.t1.is_alive(): raise KeyError("Disparity_sub:\tCould not check connection;   Thread Dead")
-            if not self.SpinThread.is_alive(): raise KeyError("SpinThread:\tCould not check connection;   Thread Dead")
-            if abs(self.Disparity_sub.lastupdate-time.time())>2: raise KeyError("Could not check connection;   check_connection_DISPAR;   Timeout>2s")
+            #if self.t1.is_alive(): raise RuntimeError("Disparity_sub:\tCould not check connection;   Thread Dead")
+            if not self.SpinThread.is_alive(): raise RuntimeError("SpinThread:\tCould not check connection;   Thread Dead")
+            if abs(self.Disparity_sub.lastupdate-time.time())>2: raise RuntimeError("Could not check connection;   check_connection_DISPAR;   Timeout>2s")
     
     #return T/F if able to connect
     #also spins the node once
@@ -197,11 +199,11 @@ class Stereo_Camera:
             #get current last update time
             time_chk= self.ColorImg_sub.lastupdate
             rclpy.spin_once(self.ColorImg_sub, timeout_sec=0.01)
-            if (time_chk==self.ColorImg_sub.lastupdate): raise KeyError("ColorImg_sub:\tCould not check connection")
+            if (time_chk==self.ColorImg_sub.lastupdate): raise RuntimeError("ColorImg_sub:\tCould not check connection")
         else:
-            #if self.t2.is_alive(): raise KeyError("ColorImg_sub:\tCould not check connection;   Thread Dead")
-            if not self.SpinThread.is_alive(): raise KeyError("SpinThread:\tCould not check connection;   Thread Dead")
-            if abs(self.ColorImg_sub.lastupdate-time.time())>2: raise KeyError("Could not check connection;   check_connection_COLIMG;   Timeout>2s")
+            #if self.t2.is_alive(): raise RuntimeError("ColorImg_sub:\tCould not check connection;   Thread Dead")
+            if not self.SpinThread.is_alive(): raise RuntimeError("SpinThread:\tCould not check connection;   Thread Dead")
+            if abs(self.ColorImg_sub.lastupdate-time.time())>2: raise RuntimeError("Could not check connection;   check_connection_COLIMG;   Timeout>2s")
     
     
     #---------------------------------------------------------------------
@@ -209,13 +211,13 @@ class Stereo_Camera:
     #return camera feed (colored rectified image)
     def get_feed(self,new=True):
         if new or self.multithread: self.check_connection_COLIMG() #update
-        if self.ColorImg_sub.want is None: raise KeyError("get_feed: self.ColorImg_sub.want is None")
+        if self.ColorImg_sub.want is None: raise RuntimeError("get_feed: self.ColorImg_sub.want is None")
         return self.ColorImg_sub.want
     
     #helper func for get_relativePOSITION and get_size
     def get_depthPOINT(self, coordX, coordY, new=True):
         if new or self.multithread: self.check_connection_DISPAR() #update
-        if self.Disparity_sub.want is None: raise KeyError("get_depthPOINT: self.Disparity_sub.want is None")
+        if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT: self.Disparity_sub.want is None")
         return self.Depth_Map[coordX, coordY]
     
     
@@ -343,16 +345,18 @@ def balance_numpy(arr):
 
 
 if __name__ == "__main__":
-    cammie = Stereo_Camera()
+    try:
+        cammie = Stereo_Camera()
     
-    print("waiting (safe)...")
-    time.sleep(4)
-    print(f"wait done\n\n{'-'*24}\n")
+        print("waiting (safe)...")
+        time.sleep(4)
+        print(f"wait done\n\n{'-'*24}\n")
     
-    while True:
-        cv2.imshow("Depthmap <q key to quit>",balance_numpy(cammie.Depth_Map))
-        cv2.imshow("CameraFeed <q key to quit>",cammie.get_feed())
-        if cv2.waitKey(1) == ord('q'): break    
-    os.system("pkill -f MS_startup.sh")
+        while True:
+            cv2.imshow("Depthmap <q key to quit>",balance_numpy(cammie.Depth_Map))
+            cv2.imshow("CameraFeed <q key to quit>",cammie.get_feed())
+            if cv2.waitKey(1) == ord('q'): break    
+    except:
+        os.system("pkill -f MS_startup.sh")
 
 
