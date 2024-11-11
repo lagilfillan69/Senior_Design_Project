@@ -28,7 +28,7 @@ float totalDistanceDriven = 0.0;
 
 
 
-SoftwareSerial btSerial(4,3);
+SoftwareSerial btSerial(4,3); //RX to DIgital 4, TX to Digital 3
 
 
 String Command;
