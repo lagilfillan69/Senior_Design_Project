@@ -52,7 +52,7 @@ class PRIM_Main_Jetson():
         
         #NOTE: !!!!!!!!!!!!!!!   commenting out for current objectives
         
-        #if self.RealSystem: self.TeleCam = TeleCAM()
+        if self.RealSystem: self.TeleCam = TeleCAM()
         
         #Telescopic YOLO Model
         prCyan("TELESCOPIC Camera **ML MODEL** initialization")
@@ -420,5 +420,10 @@ prGreen("PRIMARY MAIN Jetson: Class Definition Success")
 
 
 if __name__ == "__main__":
-    eevee = PRIM_Main_Jetson(Real=False)#,RealSystem=False)
-    eevee.MainProject_Loop()
+    try:
+        eevee = PRIM_Main_Jetson(Real=False)#,RealSystem=False)
+        eevee.MainProject_Loop()
+    except:
+        os.system("pkill -f MS_startup.sh")
+    
+    
