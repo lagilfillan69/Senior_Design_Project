@@ -52,7 +52,7 @@ class PRIM_Main_Jetson():
         
         #NOTE: !!!!!!!!!!!!!!!   commenting out for current objectives
         
-        #if self.RealSystem: self.TeleCam = TeleCAM()
+        if self.RealSystem: self.TeleCam = TeleCAM()
         
         #Telescopic YOLO Model
         prCyan("TELESCOPIC Camera **ML MODEL** initialization")
@@ -230,7 +230,7 @@ class PRIM_Main_Jetson():
                 Previous_State = Curr_State
                 Curr_State = 8
             
-            #TAKE PICTURE AND SAVE    
+            #TAKE PICTURE AND SAVE to folder
             elif message == "CAMR" and self.RealSystem:
                 dstr=datestr()
                 if not self.SterCam is None: cv2.imwrite("/DataCollect/Stereo/{dstr}.jpg",     self.SterCam.get_feed())
@@ -423,5 +423,10 @@ prGreen("PRIMARY MAIN Jetson: Class Definition Success")
 
 
 if __name__ == "__main__":
-    eevee = PRIM_Main_Jetson(Real=False)#,RealSystem=False)
-    eevee.MainProject_Loop()
+    try:
+        eevee = PRIM_Main_Jetson(Real=False)#,RealSystem=False)
+        eevee.MainProject_Loop()
+    except:
+        os.system("pkill -f MS_startup.sh")
+    
+    
