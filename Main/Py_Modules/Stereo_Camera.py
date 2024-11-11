@@ -72,7 +72,7 @@ class Stereo_Camera:
                 time.sleep(5)
                 #os.kill(self.CAMprocess.pid,signal.SIGTERM)
                 os.system("pkill -f MS_startup.sh")
-                if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself")
+                if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself if open")
             except Exception as e:
                 prRed("error shutting down parallel terminal,Likely minor:\n",e)
         #-------------
@@ -96,8 +96,7 @@ class Stereo_Camera:
         try:
             rclpy.shutdown()
         except Exception as e:
-            #print(e)
-            raise RuntimeError("Error shutting down rclpy, probably not init-ed; if persists uncomment line above")
+            raise RuntimeError(f"Error shutting down rclpy:\n{e}")
         prALERT("ROS Killed")
     
     #---------------------------------------------------------------------
@@ -145,7 +144,7 @@ class Stereo_Camera:
                 #checking that it spun for a max of 5 seconds
                 #once both have spun and gotten a msg at least once; exits
                 st=time.time()
-                while (self.Disparity_sub.first_try or self.ColorImg_sub.first_try):
+                while (self.Disparity_sub.first_try and self.ColorImg_sub.first_try):
                     if time.time()-st >5:
                         prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
                         os.system("pkill -f MS_startup.sh")
@@ -356,7 +355,8 @@ if __name__ == "__main__":
             cv2.imshow("Depthmap <q key to quit>",balance_numpy(cammie.Depth_Map))
             cv2.imshow("CameraFeed <q key to quit>",cammie.get_feed())
             if cv2.waitKey(1) == ord('q'): break    
-    except:
+    except Exception as e:
+        print(e)
         os.system("pkill -f MS_startup.sh")
 
 

@@ -64,7 +64,7 @@ class PRIM_Main_Jetson():
         #Stereo Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("STEREO Camera initialization")
-        if self.RealSystem: self.SterCam = Stereo_Camera(Real=self.Real)
+        if self.RealSystem: self.SterCam = Stereo_Camera()
         
         #Telescopic YOLO Model
         prCyan("STEREO Camera **ML MODEL** initialization")
@@ -76,8 +76,13 @@ class PRIM_Main_Jetson():
         #Serial Communication to ESP32
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("Serial Communication initialization")
-        if self.RealSystem: self.SerialComms = Serial_Ard()
+        if self.RealSystem:
+            self.SerialComms = Serial_Ard()
+            if self.SerialComms.fail:
+                prYellow("Switching to Fake Arduino")
+                self.SerialComms = Serial_Ard_FAKE()
         else: self.SerialComms = Serial_Ard_FAKE()
+
         
         
         
@@ -125,9 +130,8 @@ class PRIM_Main_Jetson():
                 prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT")
                 return
             
-            #get message if there is
+            #	get message if there is
             message = self.SerialComms.read_message()
-            # if not self.Real: prGreen(f'<{message}>')
             if message is None: continue
             
             
@@ -231,10 +235,11 @@ class PRIM_Main_Jetson():
                 Curr_State = 8
             
             #TAKE PICTURE AND SAVE to folder
-            elif message == "CAMR" and self.RealSystem:
+            elif ( message == "CAMR" or (not self.Real and message=="\\") ) and self.RealSystem:
+                prYellow(f"taking your picture ;)\t\t<{not self.SterCam is None}, {not self.TeleCam is None}>")
                 dstr=datestr()
-                if not self.SterCam is None: cv2.imwrite("/DataCollect/Stereo/{dstr}.jpg",     self.SterCam.get_feed())
-                if not self.TeleCam is None: cv2.imwrite("/DataCollect/Telescopic/{dstr}.jpg", self.TeleCam.get_feed())
+                if not self.SterCam is None: cv2.imwrite(f"DataCollect/Stereo/STER__{dstr}.jpg",     self.SterCam.get_feed())
+                if not self.TeleCam is None: cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}.jpg", self.TeleCam.get_feed())
             
 
                 
@@ -426,7 +431,8 @@ if __name__ == "__main__":
     try:
         eevee = PRIM_Main_Jetson(Real=False)#,RealSystem=False)
         eevee.MainProject_Loop()
-    except:
+    except Exception as e:
+        print(e)
         os.system("pkill -f MS_startup.sh")
     
     

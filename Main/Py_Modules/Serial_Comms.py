@@ -41,9 +41,16 @@ Types of __Arduino__ -> Python
 class Serial_Ard:
     def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
         prYellow(f"Serial_Ard:\t{Port},  {BaudRate}")
-        self.ser = serial.Serial(Port, BaudRate)#, timeout=.1)
-        time.sleep(1)
-        print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
+        try:
+            self.ser = serial.Serial(Port, BaudRate)#, timeout=.1)
+            time.sleep(1)
+            print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
+            self.fail=False
+        except Exception as e:
+            prRed(f"Error starting 'Serial_Ard', switch to Fake?:\ty?")
+            if input(">").lower() == 'y': self.fail=True
+            else: raise RuntimeError("Error loading Real Arduino") from e
+
     
     def read_message(self,safe=True):
         if safe:
@@ -80,6 +87,7 @@ prGreen("Serial_Ard: Class Definition Success")
 class Serial_Ard_FAKE:
     def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
         print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
+        prRed("WARNING: Not Real Arduino Serial, Test version")
     
     def read_message(self):
         return input(">")
