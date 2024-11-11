@@ -111,11 +111,11 @@ def build_gui():
                                         fg="red", bg="white")
 
     main_window.input_label.grid(row=0, column=1, padx=20)
-
-    ESTOP_frame = ttk.Frame(main_window)
-    ESTOP_frame.pack(pady=20)
-    main_window.estop_button = ttk.Button(ESTOP_frame, text="ESTOP", command= lambda : asyncio.create_task(BLE.write("ESTO\t")))
-    main_window.estop_button.grid(row=0,column=1, padx=20)
+    #
+    # ESTOP_frame = ttk.Frame(main_window)
+    # ESTOP_frame.pack(pady=20)
+    # main_window.estop_button = ttk.Button(ESTOP_frame, text="ESTOP", command= lambda : asyncio.create_task(BLE.write("ESTO\t")))
+    # main_window.estop_button.grid(row=0,column=1, padx=20)
 
      ###################
 
@@ -196,11 +196,11 @@ class BLE():
                 messagebox.showerror("Error", "GPS POINTS NOT SET")
                 return
         corners = generate_corners(gps_points[0],gps_points[1],gps_points[2])
-        await self.write("STAR \t\n")
-        await self.write("C1:" + str(corners[0][0]) + "," +  str(corners[0][1]) + "\n")
-        await self.write("C2:" + str(corners[1][0]) + "," + str(corners[1][1]) + "\n")
-        await self.write("C3:" + str(corners[2][0]) + "," + str(corners[2][1]) + "\n")
-        message_variable.set("Running Bot")
+        if(not(corners == None)):
+            await self.write("C1:" + str(corners[0][0]) + "," +  str(corners[0][1]) + "\n")
+            await self.write("C2:" + str(corners[1][0]) + "," + str(corners[1][1]) + "\n")
+            await self.write("C3:" + str(corners[2][0]) + "," + str(corners[2][1]) + "\n")
+            message_variable.set("Running Bot")
 
     async def connect(self):
         """Connect to or disconnect from selected/connected device."""
