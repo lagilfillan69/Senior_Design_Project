@@ -1,3 +1,5 @@
+# Written by Jonah Earl Belback
+
 from ultralytics import YOLO
 import time,os,torch
 from datetime import datetime

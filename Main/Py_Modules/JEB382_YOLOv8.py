@@ -17,10 +17,10 @@ import os,shutil,platform
 import numpy as np
 
 #------------------------
-try:
-    from helper_functions import *
-except:
+try: from helper_functions import *
+except Exception as e:
     from Py_Modules.helper_functions import *
+    raise RuntimeError("Import Error:\n") from e
     
 global YOLO_home
 YOLO_home = (os.getcwd()+'/Py_Modules/YOLOv8/').replace('\\','/')
@@ -163,8 +163,8 @@ class YOLO_model_v1:
                 prGreen("SUCCESS: MODEL LOADED (.pt from directory)")
             
             except Exception as e:
-                prALERT(str(e))
-                os._exit()
+                # prALERT(str(e))
+                raise RuntimeError("Error loading model from directory") from e
             
     
     # ========================================
