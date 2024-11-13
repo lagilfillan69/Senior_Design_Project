@@ -49,10 +49,7 @@ class PRIM_Main_Jetson():
         #-----------------------------
         #Telescopic Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
-        prCyan("TELESCOPIC Camera initialization")
-        
-        #NOTE: !!!!!!!!!!!!!!!   commenting out for current objectives
-        
+        prCyan("TELESCOPIC Camera initialization")        
         if self.RealSystem:
             self.TeleCam = TeleCAM()
             if self.TeleCam.fail:
@@ -61,7 +58,7 @@ class PRIM_Main_Jetson():
         
         #Telescopic YOLO Model
         prCyan("TELESCOPIC Camera **ML MODEL** initialization")
-        if self.Real: self.TeleCam_Model = YOLO_model_v1(model_path=TeleCamera_ModelPath)
+        if self.Real and not(self.TeleCam is None): self.TeleCam_Model = YOLO_model_v1(model_path=TeleCamera_ModelPath)
         
         
         
@@ -69,11 +66,15 @@ class PRIM_Main_Jetson():
         #Stereo Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("STEREO Camera initialization")
-        if self.RealSystem: self.SterCam = Stereo_Camera()
+        if self.RealSystem:
+            self.SterCam = Stereo_Camera()
+            if self.SterCam.fail:
+                prYellow("Switching to Fake TeleCam")
+                self.SterCam=None
         
         #Telescopic YOLO Model
         prCyan("STEREO Camera **ML MODEL** initialization")
-        if self.Real: self.SterCam_Model = YOLO_model_v1(model_path=StereoCamera_ModelPath)
+        if self.Real and not(self.SterCam is None): self.SterCam_Model = YOLO_model_v1(model_path=StereoCamera_ModelPath)
         
         
         
