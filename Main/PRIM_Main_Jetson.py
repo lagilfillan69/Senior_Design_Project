@@ -1,3 +1,5 @@
+# Written by Jonah Earl Belback
+
 # Main on Jettson
 # Uses modules avalible to it in Py_Modules directory
 
