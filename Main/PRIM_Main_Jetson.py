@@ -468,5 +468,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         os.system("pkill -f MS_startup.sh")
+        raise RuntimeError("PRIM Jetson __main__ Error") from e
     
     

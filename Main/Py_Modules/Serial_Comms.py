@@ -8,9 +8,10 @@ import serial,platform,time
 try:
     from helper_functions import *
     from SD_constants import COM_PORT,BAUDRATE #needs to be manually set
-except:
+except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
+    raise RuntimeError("Import Error:\n") from e
         
 
 #WERE DOING ARDUINO NOW PYFRIMATA
