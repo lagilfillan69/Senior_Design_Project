@@ -56,7 +56,7 @@ while True:
     TELEresults = TeleCam_Model.run_model(TELE_img)
     if len(TELEresults)>0:
         #draw
-        for res in TELEresults: cv2.rectangle(TELE_img,res[1],(0, 255, 0),2)
+        for res in TELEresults: cv2.rectangle(TELE_img,res[1],(0, 255, 0),2) #green
         #relative angle
         TELEcenters= [find_center(res[1]) for res in TELEresults]
     else: TELEcenters=None
@@ -71,7 +71,7 @@ while True:
     STERresults = SterCam_Model.run_model(STER_img)
     if len(STERresults)>0:
         #draw
-        for res in STERresults: cv2.rectangle(STER_img,res[1],(0, 255, 0),2)
+        for res in STERresults: cv2.rectangle(STER_img,res[1],(255, 0, 0),2) #blue
         
         #relative position, size
         STER_RELPOSs = [SterCamObj.get_relativePOSITION(find_center(res[1]))  for res in STERresults]
