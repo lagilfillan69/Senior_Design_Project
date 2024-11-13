@@ -109,13 +109,21 @@ def build_gui():
     buffer_input_frame.pack(pady=20)
     main_window.input_label = tk.Label(buffer_input_frame, textvariable=input_buffer, font=("Arial", 12),
                                         fg="red", bg="white")
-    main_window.input_label.grid(row=0, column=1, padx=10)
+
+    main_window.input_label.grid(row=0, column=1, padx=20)
+
+    ESTOP_frame = ttk.Frame(main_window)
+    ESTOP_frame.pack(pady=20)
+    main_window.estop_button = ttk.Button(ESTOP_frame, text="ESTOP", command= lambda : asyncio.create_task(BLE.write("ESTO\t")))
+    main_window.estop_button.grid(row=0,column=1, padx=20)
+
      ###################
 
 
     # Don't do: main_window.mainloop()!
     # We are using the asyncio event loop in 'show' to call
     # main_window.update() regularly.
+
 
 
 def gps_update():
@@ -188,11 +196,11 @@ class BLE():
                 messagebox.showerror("Error", "GPS POINTS NOT SET")
                 return
         corners = generate_corners(gps_points[0],gps_points[1],gps_points[2])
-        await self.write("STAR \t\n")
-        await self.write("C1: " +  str(corners[0][0]) + "," +  str(corners[0][1]) + "\n")
-        await self.write("C2: " + str(corners[1][0]) + "," + str(corners[1][1]) + "\n")
-        await self.write("C3: " + str(corners[2][0]) + "," + str(corners[2][1]) + "\n")
+        await self.write("C1:" + str(corners[0][0]) + "," +  str(corners[0][1]) + "\n")
+        await self.write("C2:" + str(corners[1][0]) + "," + str(corners[1][1]) + "\n")
+        await self.write("C3:" + str(corners[2][0]) + "," + str(corners[2][1]) + "\n")
         message_variable.set("Running Bot")
+
     async def connect(self):
         """Connect to or disconnect from selected/connected device."""
         if not(self.client is None) and self.client.is_connected:
@@ -250,7 +258,7 @@ class BLE():
         data = data.decode('utf-8')
         pts = data[:8]
         input_buffer.set(time.ctime(time.time()) + data)
-        pickup = messagebox.askyesno("Trash Detected",message="Trash was found at " + str(pts) + ". Pick it up?")
+        pickup = messagebox.askyesno("Message Recieved",message=data)
         if pickup == True:
             await self.write("OKAY\t")
         else :

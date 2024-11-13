@@ -4,6 +4,7 @@
 /* Chad stuff */
 #include <Servo.h>
 #include <Vector.h>
+int dummy = 0;
 
 int escPin = 9;
 Servo steeringServo;
@@ -28,7 +29,7 @@ float totalDistanceDriven = 0.0;
 
 
 
-SoftwareSerial btSerial(4,3);
+SoftwareSerial btSerial(11,10); //RX to DIgital 4, TX to Digital 3
 
 
 String Command;
@@ -85,6 +86,8 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
   btSerial.begin(9600); // open the bluetooth serial port
+  steeringServo.attach(8);
+  center();
 	// Serial.setTimeout(1);
   armESC();
   Command="";
@@ -281,6 +284,7 @@ void loop() {
 
       //--------
       // Chad your code goes here
+      
     }
 
     //-----------------------------------
@@ -298,7 +302,8 @@ void loop() {
       //--------
       // Chad your code goes here
 
-      navigateToDistanceAndAngle(Depth,Angle);
+      steerToAngle(Angle);
+      fwd2(200);
 
     }
 
@@ -328,7 +333,7 @@ void loop() {
     //STOP,PAUSE messages to App from Python
     if (incomingString.substring(0,4) == "STOP" or incomingString.substring(0,4)== "PAUS" or incomingString.substring(0,4) == "OKAY" or incomingString.substring(0,4) == "NKAY")
     {
-      Serial.println(Command + "\t"); //NOTE: whats the encode for Ard->Blueetooth 
+      Serial.println(incomingString.substring(0,4) + "\t"); //NOTE: whats the encode for Ard->Blueetooth 
     }
 
     else if (incomingString.substring(0,2) == "C1"){
@@ -340,19 +345,20 @@ void loop() {
 
 
     } 
-    else if(incomingString.substring(0,2) == 'C3'){
+    else if(incomingString.substring(0,2) == "C3"){
       C3 = incomingString.substring(3,incomingString.length());
-
-      Serial.print("STAR \t");
+      if (!(C1 == "" or C2 == "" or C3 =="")){
+      Serial.print("STAR\t");
       Serial.print(C1 + ":");
       Serial.print(C2 + ":");
       Serial.print(C3 + "\n");
-
+      }
       C1 = "";
       C2 = "";
       C3 = "";
+     
       
-    }
   }
     //----------------------------------- 
+}
 }

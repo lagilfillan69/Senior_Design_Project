@@ -39,8 +39,24 @@ class Stereo_Camera:
         else: self.Real=Real
         self.multithread = multithread and self.Real #only multithread if real and allowed
         
+        #---------------------------
+        try:
+            self.init_helper()
+        except Exception as e:
+            prRed(f"Error starting 'Stereo_Camera', switch to Fake?:\ty?")
+            if input(">").lower() == 'y':
+                self.Real=False
+                self.multithread = False
+                self.init_helper()
+            else: raise RuntimeError("Error loading Real Arduino") from e
+            
+            
+    
+    #---------------------------------------------------------------------
+    def init_helper(self):
         #---------        
         #Start up Depth Camera; also boots Ros subscribers
+        self.CAMprocess=None; self.SpinThread=None #prevent minor error in destructor
         self.Disparity_sub=None; self.ColorImg_sub=None
         if self.Real:
             #Start up Depth Camera; also boots Ros subscribers
@@ -49,33 +65,34 @@ class Stereo_Camera:
             #get shape
             t_frame = self.get_feed()
             self.height,self.width,self.layers = t_frame.shape
+            self.fail=False
         else:
             prRed("Not real StereoCam, so don't expect ROS")
             self.height,self.width,self.layers = 1188,1920,3
+            self.fail=True
         prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
             
         #---- end of class init   
         print(Back.GREEN+"SUCCESS: DEPTH CAMERA INIT PASS"+Style.RESET_ALL)
-            
-            
-    
-    #---------------------------------------------------------------------
         
+        
+           
     def __del__(self):
         #-------------
         #Parallel Terminal
-        prALERT(f'Stereo_Camera Destructor:\tKilling Camera Startup Parallel Terminal\n{"="*12}')
-        try:
-            prYellow("Giving time for Split terminal to run before closing")
-            time.sleep(5)
-            #os.kill(self.CAMprocess.pid,signal.SIGTERM)
-            os.system("pkill -f MS_startup.sh")
-            if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself")
-        except Exception as e:
-            print("error shutting down parallel terminal:",e)
+        if not self.CAMprocess is None:
+            prALERT(f'Stereo_Camera Destructor:\tKilling Camera Startup Parallel Terminal\n{"="*12}')
+            try:
+                prYellow("Giving time for Split terminal to run before closing")
+                time.sleep(5)
+                #os.kill(self.CAMprocess.pid,signal.SIGTERM)
+                os.system("pkill -f MS_startup.sh")
+                if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself if open")
+            except Exception as e:
+                prRed("error shutting down parallel terminal,Likely minor:\n",e)
         #-------------
         #Kill threads
-        if self.multithread:
+        if self.multithread and not self.SpinThread is None:
             prALERT(f'Stereo_Camera Destructor:\tKilling Parallel Node Spin Threads\n{"="*12}')  
             try:
                 #self.t1.raise_exception()
@@ -94,8 +111,7 @@ class Stereo_Camera:
         try:
             rclpy.shutdown()
         except Exception as e:
-            #print(e)
-            raise RuntimeError("Error shutting down rclpy, probably not init-ed; if persists uncomment line above")
+            raise RuntimeError(f"Error shutting down rclpy:\n{e}")
         prALERT("ROS Killed")
     
     #---------------------------------------------------------------------
@@ -143,7 +159,7 @@ class Stereo_Camera:
                 #checking that it spun for a max of 5 seconds
                 #once both have spun and gotten a msg at least once; exits
                 st=time.time()
-                while (self.Disparity_sub.first_try or self.ColorImg_sub.first_try):
+                while (self.Disparity_sub.first_try and self.ColorImg_sub.first_try):
                     if time.time()-st >5:
                         prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
                         os.system("pkill -f MS_startup.sh")
@@ -343,16 +359,19 @@ def balance_numpy(arr):
 
 
 if __name__ == "__main__":
-    cammie = Stereo_Camera()
+    try:
+        cammie = Stereo_Camera()
     
-    print("waiting (safe)...")
-    time.sleep(4)
-    print(f"wait done\n\n{'-'*24}\n")
+        print("waiting (safe)...")
+        time.sleep(4)
+        print(f"wait done\n\n{'-'*24}\n")
     
-    while True:
-        cv2.imshow("Depthmap <q key to quit>",balance_numpy(cammie.Depth_Map))
-        cv2.imshow("CameraFeed <q key to quit>",cammie.get_feed())
-        if cv2.waitKey(1) == ord('q'): break    
-    os.system("pkill -f MS_startup.sh")
+        while True:
+            cv2.imshow("Depthmap <q key to quit>",balance_numpy(cammie.Depth_Map))
+            cv2.imshow("CameraFeed <q key to quit>",cammie.get_feed())
+            if cv2.waitKey(1) == ord('q'): break    
+    except Exception as e:
+        print(e)
+        os.system("pkill -f MS_startup.sh")
 
 
