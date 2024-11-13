@@ -7,9 +7,10 @@ import cv2,math,platform,subprocess,time
 try:
     from helper_functions import *
     from SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
-except:
+except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
+    raise RuntimeError("Import Error:\n") from e
 
 
 

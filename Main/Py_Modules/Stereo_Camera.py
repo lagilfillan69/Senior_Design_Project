@@ -7,19 +7,23 @@ import numpy as np
 
 #ROS
 #print( "wowza:", subprocess.run("bash -c 'source /opt/ros/humble/setup.bash'", shell=True) )
-import rclpy, threading
-from rclpy.node import Node
-from sensor_msgs.msg import Image
+try:
+    import rclpy, threading
+    from rclpy.node import Node
+    from sensor_msgs.msg import Image
+except Exception as e:
+    raise RuntimeError("You didnt set up ROS setup.bash") from e
 
 #Other Module Imports
 try:
     from helper_functions import *
     from Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
-except:
+except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
     from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+    raise RuntimeError("Import Error:\n") from e
 
 
 
@@ -48,7 +52,7 @@ class Stereo_Camera:
                 self.Real=False
                 self.multithread = False
                 self.init_helper()
-            else: raise RuntimeError("Error loading Real Arduino") from e
+            else: raise RuntimeError("Error loading Real Arduino:\n") from e
             
             
     
@@ -59,6 +63,8 @@ class Stereo_Camera:
         self.CAMprocess=None; self.SpinThread=None #prevent minor error in destructor
         self.Disparity_sub=None; self.ColorImg_sub=None
         if self.Real:
+            os.system("pkill -f MS_startup.sh")
+            time.sleep(2)
             #Start up Depth Camera; also boots Ros subscribers
             self.establish_connection()
             print(Back.GREEN+"SUCCESS: ROS ESTABLISHED"+Style.RESET_ALL)
@@ -102,16 +108,14 @@ class Stereo_Camera:
                 time.sleep(1)
                 if self.SpinThread.is_alive(): self.SpinThread.raise_exception()
             except Exception as e:
-                print("error shutting down parallel spin threads:",e)
+                print("error shutting down parallel spin threads:\n",e)
         #-------------
         #Kill RCLPY
         prALERT(f'Stereo_Camera Destructor:\tKilling ROS Node\n{"="*12}')
         if not self.Disparity_sub is None: self.Disparity_sub.destroy_node()
         if not self.ColorImg_sub is None: self.ColorImg_sub.destroy_node()
-        try:
-            rclpy.shutdown()
-        except Exception as e:
-            raise RuntimeError(f"Error shutting down rclpy:\n{e}")
+        try: rclpy.shutdown()
+        except Exception as e: raise RuntimeError(f"Error shutting down rclpy:\n{e}")
         prALERT("ROS Killed")
     
     #---------------------------------------------------------------------
@@ -373,5 +377,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         os.system("pkill -f MS_startup.sh")
+        raise RuntimeError("Stereo Main Error:\n") from e
 
 
