@@ -104,8 +104,15 @@ class PRIM_Main_Jetson():
         self.MainProject_Loop()
         
         
+    #---------------------------------------------------------------------
+    def __del__(self):
+        prALERT("Deleting PRIM_MAIN")
+        os.system("pkill -f MS_startup.sh")
+        time.sleep(2)
+
         
         
+    #---------------------------------------------------------------------
     def MainProject_Loop(self,Forced=False):
         #-----
         if self.Forced or Forced: prALERT("__WARNING__ Operating MainLoop in:\tFORCED")
@@ -466,7 +473,6 @@ if __name__ == "__main__":
     try:
         eevee = PRIM_Main_Jetson(Real=False)#,Forced=True)#,RealSystem=False)
     except Exception as e:
-        print(e)
         os.system("pkill -f MS_startup.sh")
         raise RuntimeError("PRIM Jetson __main__ Error") from e
     

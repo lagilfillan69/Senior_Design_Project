@@ -63,6 +63,8 @@ class Stereo_Camera:
         self.CAMprocess=None; self.SpinThread=None #prevent minor error in destructor
         self.Disparity_sub=None; self.ColorImg_sub=None
         if self.Real:
+            os.system("pkill -f MS_startup.sh")
+            time.sleep(2)
             #Start up Depth Camera; also boots Ros subscribers
             self.establish_connection()
             print(Back.GREEN+"SUCCESS: ROS ESTABLISHED"+Style.RESET_ALL)
