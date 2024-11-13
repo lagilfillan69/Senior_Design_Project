@@ -33,7 +33,8 @@ class PRIM_Main_Jetson():
                  StereoCamera_ModelPath=STEREOCAM_MODELPATH,
                  TeleCamera_ModelPath=TELECAM_MODELPATH,
                  Real=True,
-                 RealSystem=True
+                 RealSystem=True,
+                 Forced=False
                  ):
         #cover cases for when parts of system aren't real
         self.TeleCam=None;self.TeleCam_Model=None;self.SterCam=None;self.SterCam_Model=None
@@ -48,15 +49,16 @@ class PRIM_Main_Jetson():
         #-----------------------------
         #Telescopic Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
-        prCyan("TELESCOPIC Camera initialization")
-        
-        #NOTE: !!!!!!!!!!!!!!!   commenting out for current objectives
-        
-        if self.RealSystem: self.TeleCam = TeleCAM()
+        prCyan("TELESCOPIC Camera initialization")        
+        if self.RealSystem:
+            self.TeleCam = TeleCAM()
+            if self.TeleCam.fail:
+                prYellow("Switching to Fake TeleCam")
+                self.TeleCam=None
         
         #Telescopic YOLO Model
         prCyan("TELESCOPIC Camera **ML MODEL** initialization")
-        if self.Real: self.TeleCam_Model = YOLO_model_v1(model_path=TeleCamera_ModelPath)
+        if self.Real and not(self.TeleCam is None): self.TeleCam_Model = YOLO_model_v1(model_path=TeleCamera_ModelPath)
         
         
         
@@ -64,11 +66,15 @@ class PRIM_Main_Jetson():
         #Stereo Camera
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("STEREO Camera initialization")
-        if self.RealSystem: self.SterCam = Stereo_Camera(Real=self.Real)
+        if self.RealSystem:
+            self.SterCam = Stereo_Camera()
+            if self.SterCam.fail:
+                prYellow("Switching to Fake TeleCam")
+                self.SterCam=None
         
         #Telescopic YOLO Model
         prCyan("STEREO Camera **ML MODEL** initialization")
-        if self.Real: self.SterCam_Model = YOLO_model_v1(model_path=StereoCamera_ModelPath)
+        if self.Real and not(self.SterCam is None): self.SterCam_Model = YOLO_model_v1(model_path=StereoCamera_ModelPath)
         
         
         
@@ -76,8 +82,13 @@ class PRIM_Main_Jetson():
         #Serial Communication to ESP32
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("Serial Communication initialization")
-        if self.RealSystem: self.SerialComms = Serial_Ard()
+        if self.RealSystem:
+            self.SerialComms = Serial_Ard()
+            if self.SerialComms.fail:
+                prYellow("Switching to Fake Arduino")
+                self.SerialComms = Serial_Ard_FAKE()
         else: self.SerialComms = Serial_Ard_FAKE()
+
         
         
         
@@ -88,9 +99,18 @@ class PRIM_Main_Jetson():
         print(Back.GREEN+("="*24)+Style.RESET_ALL)
         
         
+        #-----------------------------
+        self.Forced=Forced
+        self.MainProject_Loop()
         
         
-    def MainProject_Loop(self):
+        
+        
+    def MainProject_Loop(self,Forced=False):
+        #-----
+        if self.Forced or Forced: prALERT("__WARNING__ Operating MainLoop in:\tFORCED")
+        
+        #-----
         # State Legend
         # 0 - Stop
         # 1 - Start
@@ -125,10 +145,18 @@ class PRIM_Main_Jetson():
                 prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT")
                 return
             
-            #get message if there is
+            #	get message if there is
+            if self.Forced or Forced:
+                #COLL	[40,100]
+                send_mess = input("FORCE_SEND >")
+                if len(send_mess)!=0: self.SerialComms.send_message(send_mess)
             message = self.SerialComms.read_message()
-            # if not self.Real: prGreen(f'<{message}>')
             if message is None: continue
+            
+            #---
+            #m=message.split('\t')[0]
+            #prGreen(f"<{m}>")
+            #print(message.split('\t')[0] == "STAR", (Curr_State == 0 or Curr_State == 2), message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2))
             
             
             #printing
@@ -204,7 +232,11 @@ class PRIM_Main_Jetson():
             #structure: 'STAR\t[  4 floating point values  ]
             #   ex (do own tab):   STAR\t[(p1,p2,p3)
             elif message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2) :
+                #print(message.split('\t')[1])
+                #print(message.split('\t')[1].strip())
+                #print(message.split('\t')[1].strip().split(':'))
                 for ele in message.split('\t')[1].strip().split(':'):
+                    #print(ele)
                     x, y = map(float, ele.split(','))
                     Runway_Boundaries.append((x, y))
 
@@ -231,10 +263,18 @@ class PRIM_Main_Jetson():
                 Curr_State = 8
             
             #TAKE PICTURE AND SAVE to folder
-            elif message == "CAMR" and self.RealSystem:
+            elif ( message == "CAMR" or (not self.Real and message=="\\") ) and (self.RealSystem or self.SerialComms.fail):
+                prYellow(f"taking your picture ;)\t\t<{not self.SterCam is None}, {not self.TeleCam is None}>")
                 dstr=datestr()
-                if not self.SterCam is None: cv2.imwrite("/DataCollect/Stereo/{dstr}.jpg",     self.SterCam.get_feed())
-                if not self.TeleCam is None: cv2.imwrite("/DataCollect/Telescopic/{dstr}.jpg", self.TeleCam.get_feed())
+                if not self.SterCam is None: cv2.imwrite(f"DataCollect/Stereo/STER__{dstr}.jpg",     self.SterCam.get_feed())
+                if not self.TeleCam is None: cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}.jpg", self.TeleCam.get_feed())
+            
+            ##Display feed if arduino is fake
+            #elif ( message == "CAMR" or (not self.Real and message=="\\") ) and (self.RealSystem or self.SerialComms.fail):
+            #    prYellow(f"taking your picture ;)\t\t<{not self.SterCam is None}, {not self.TeleCam is None}>")
+            #    dstr=datestr()
+            #    if not self.SterCam is None: cv2.imwrite(f"DataCollect/Stereo/STER__{dstr}.jpg",     self.SterCam.get_feed())
+            #    if not self.TeleCam is None: cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}.jpg", self.TeleCam.get_feed())
             
 
                 
@@ -368,13 +408,13 @@ class PRIM_Main_Jetson():
             #-------------------
             #printing
             if not self.Real:
-                prYellow(f"{message}\tCurr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Items[Trash_Index] if self.Stereo_Items is not None else None}]")
+                prLightPurple(f"AFTER:\t{message}\tCurr,Prev,  DetBound,  PathIdx,PathLen,PathTarg,  currTrashTarg\t\t[{Curr_State}, {Previous_State},   {Runway_Boundaries},   {Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None },   {self.Stereo_Items[Trash_Index] if self.Stereo_Items is not None else None}]")
                 
                
         
     def detect_Tele(self):
         #check telescopic camera for objects and their relative Angle
-        if self.Real:
+        if self.Real and not(self.TeleCam is None):
             Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
             if Tele_results is not None:
                 self.Tele_angles = [self.TeleCam.get_relativeANGLEX(res) for res in Tele_results]
@@ -424,9 +464,9 @@ prGreen("PRIMARY MAIN Jetson: Class Definition Success")
 
 if __name__ == "__main__":
     try:
-        eevee = PRIM_Main_Jetson(Real=False)#,RealSystem=False)
-        eevee.MainProject_Loop()
-    except:
+        eevee = PRIM_Main_Jetson(Real=False)#,Forced=True)#,RealSystem=False)
+    except Exception as e:
+        print(e)
         os.system("pkill -f MS_startup.sh")
     
     
