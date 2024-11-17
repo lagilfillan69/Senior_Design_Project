@@ -4,14 +4,14 @@
 
 import datetime
 from colorama import Fore, Back, Style
-def prRed(skk): print("\033[91m{}\033[00m" .format(skk))
-def prGreen(skk): print("\033[92m{}\033[00m" .format(skk))
-def prYellow(skk): print("\033[93m{}\033[00m" .format(skk))
-def prLightPurple(skk): print("\033[94m{}\033[00m" .format(skk))
-def prPurple(skk): print("\033[95m{}\033[00m" .format(skk))
-def prCyan(skk): print("\033[96m{}\033[00m" .format(skk))
-def prLightGray(skk): print("\033[97m{}\033[00m" .format(skk))
-def prBlack(skk): print("\033[98m{}\033[00m" .format(skk))
+def prRed(        skk,end1="\n"):	print("\033[91m{}\033[00m" .format(skk),end=end1)
+def prGreen(      skk,end1="\n"):	print("\033[92m{}\033[00m" .format(skk),end=end1)
+def prYellow(     skk,end1="\n"):	print("\033[93m{}\033[00m" .format(skk),end=end1)
+def prLightPurple(skk,end1="\n"):	print("\033[94m{}\033[00m" .format(skk),end=end1)
+def prPurple(     skk,end1="\n"):	print("\033[95m{}\033[00m" .format(skk),end=end1)
+def prCyan(       skk,end1="\n"):	print("\033[96m{}\033[00m" .format(skk),end=end1)
+def prLightGray(  skk,end1="\n"):	print("\033[97m{}\033[00m" .format(skk),end=end1)
+def prBlack(      skk,end1="\n"):	print("\033[98m{}\033[00m" .format(skk),end=end1)
 
 
 #logging, graphing
@@ -137,3 +137,7 @@ def interpolate_points(start, end, step):
         y = y1 + t * (y2 - y1)
         points.append((x, y))
     return points
+    
+    
+def pntDist(cord1,cord2):
+    return abs(  math.sqrt(  (cord2[0]-cord1[0])**2 + (cord2[1]-cord1[1])**2  )  )

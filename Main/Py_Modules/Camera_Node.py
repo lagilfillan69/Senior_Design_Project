@@ -51,7 +51,7 @@ class ColorImgSubscriber(Node):
         super().__init__('colorimg_subscriber')  #name of node
         self.subscription = self.create_subscription(
             Image,
-            '/multisense/left/image_rect',  # stream
+            '/multisense/aux/image_rect_color',  # stream
             self.jonah_code2,  # function called
             QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST)  # QoS profile
         )

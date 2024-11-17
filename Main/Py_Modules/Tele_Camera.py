@@ -10,7 +10,7 @@ try:
 except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.SD_constants import TELECAM_PORT,TELECAM_GND_HEIGHT,TELECAM_FOCAL_LENGTH #needs to be manually set
-    raise RuntimeError("Import Error:\n") from e
+    #raise RuntimeError("Import Error:\n") from e
 
 
 
@@ -34,7 +34,7 @@ class TeleCAM():
             prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
             print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
         except Exception as e:
-            prRed(f"Error starting 'TeleCAM', switch to Fake?:\ty?")
+            prALERT(f"Error starting 'TeleCAM', switch to Fake?:\ty?")
             if input(">").lower() == 'y': self.fail=True
             else: raise RuntimeError("Error loading Real TeleCAM") from e
     
@@ -46,7 +46,8 @@ class TeleCAM():
         prYellow("--TCAM: create virtual camera device")
         #subprocess.run("bash -c 'sudo modprobe v4l2loopback exclusive_caps=1'", shell=True)
         res = subprocess.run("sudo modprobe v4l2loopback exclusive_caps=1", shell=True, capture_output=True, text=True)
-        if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: create virtual device\n{res.stderr.strip()}")
+        #if res.returncode != 0: raise RuntimeError(f"TELECAM Setup Fail: create virtual device\n{res.stderr.strip()}")
+        if res.returncode != 0: prALERT("!!!!!!! WARNING !!!!!!!\nCouldn't create v4l2loopback DSLR webcam object for Telescopic Camera;\nBe aware of unexpected error before end of this INIT")
 
         prYellow("--TCAM: kill gphoto (drive connect edgecase)")
         res = subprocess.run("pkill gphoto", shell=True, capture_output=True, text=True)
@@ -62,7 +63,7 @@ class TeleCAM():
         time.sleep(5)
 
         #if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera:\n{self.StreamProc.stderr.read().decode()}")
-        if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+        #if self.StreamProc.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
         self.fail=False
     	
     	

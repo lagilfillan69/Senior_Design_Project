@@ -7,7 +7,7 @@ import numpy as np
 try: from helper_functions import haversine_distance, gps_to_xy, interpolate_points
 except Exception as e:
     from Py_Modules.helper_functions import haversine_distance, gps_to_xy, interpolate_points
-    raise RuntimeError("Import Error:\n") from e
+    #raise RuntimeError("Import Error:\n") from e
 
 
 #Max seeing distance of the bot in height and width in meters
