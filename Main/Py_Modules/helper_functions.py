@@ -4,14 +4,30 @@
 
 import datetime
 from colorama import Fore, Back, Style
-def prRed(        skk,end1="\n"):	print("\033[91m{}\033[00m" .format(skk),end=end1)
-def prGreen(      skk,end1="\n"):	print("\033[92m{}\033[00m" .format(skk),end=end1)
-def prYellow(     skk,end1="\n"):	print("\033[93m{}\033[00m" .format(skk),end=end1)
-def prLightPurple(skk,end1="\n"):	print("\033[94m{}\033[00m" .format(skk),end=end1)
-def prPurple(     skk,end1="\n"):	print("\033[95m{}\033[00m" .format(skk),end=end1)
-def prCyan(       skk,end1="\n"):	print("\033[96m{}\033[00m" .format(skk),end=end1)
-def prLightGray(  skk,end1="\n"):	print("\033[97m{}\033[00m" .format(skk),end=end1)
-def prBlack(      skk,end1="\n"):	print("\033[98m{}\033[00m" .format(skk),end=end1)
+def prRed(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[91m{}\033[00m" .format(message),end=end)
+def prGreen(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[92m{}\033[00m" .format(message),end=end)
+def prYellow(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[93m{}\033[00m" .format(message),end=end)
+def prLightPurple(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[94m{}\033[00m" .format(message),end=end)
+def prPurple(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[95m{}\033[00m" .format(message),end=end)
+def prCyan(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[96m{}\033[00m" .format(message),end=end)
+def prLightGray(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[97m{}\033[00m" .format(message),end=end)
+def prBlack(*args, sep=' ', end="\n"):
+    message = sep.join(map(str,args))
+    print("\033[98m{}\033[00m" .format(message),end=end)
 
 
 #logging, graphing

@@ -139,7 +139,7 @@ class PRIM_Main_Jetson():
         self.Tele_angles = None #Relative Angles - 1xN, 1D
         self.Stereo_AngDep = None #Relative [Angle, Depth] - 2xN, 2D
         self.Stereo_RelPos = None #Relative [X, Y] - 2xN, 2D
-        updated=False
+        updated=True#False
 
         #-----
         Previous_State = 0
@@ -175,11 +175,13 @@ class PRIM_Main_Jetson():
             
                 #printing
                 prCyan(message)
-                prCyan(f"Curr, Prev\t\t{Curr_State}, {Previous_State}")
-                prCyan(f"RunWayBound\t\t{Runway_Boundaries}")
-                prCyan(f"PathIdx, PathLen, PathTarg\t\t{Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None }")
-                prLightPurple(f"currTrashTarg: Stereo_AngDep\t\t{self.Stereo_AngDep[Trash_Index] if self.Stereo_AngDep is not None else None}")
-                prLightPurple(f"currTrashTarg: Stereo_RelPos\t\t{self.Stereo_RelPos[Trash_Index] if self.Stereo_RelPos is not None else None}")
+                prPurple(f"Curr, Prev\t\t{Curr_State}, {Previous_State}",
+                f"RunWayBound\t\t{Runway_Boundaries}",
+                f"PathIdx, PathLen, PathTarg\t\t{Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None }",
+                f"Current_Location\t\t{Current_Location}",
+                f"currTrashTarg: Stereo_AngDep\t\t{Trash_Index}: {self.Stereo_AngDep if self.Stereo_AngDep is not None else None}",
+                f"currTrashTarg: Stereo_RelPos\t\t{Trash_Index}: {self.Stereo_RelPos if self.Stereo_RelPos is not None else None}",
+                f"Tele Angles:\t\t{Trash_Index}: {self.Tele_angles}",sep='\n')
                 #print(message.split('\t'))
             
             
@@ -383,9 +385,11 @@ class PRIM_Main_Jetson():
             #==============
             # 7 - Wait until trash is collected
             elif(Curr_State == 7):
-                prLightPurple(f"EXEC State {Curr_State}")
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 # will stay in this state until we are at set locations
-                if pntDist(Current_Location,self.Stereo_RelPos[Trash_Index])<=0.03: #NOTE: within 3cm
+                if pntDist(Current_Location,self.Stereo_RelPos[0])<=0.03: #NOTE: within 3cm
                     Trash_Collected_Locations.append(Current_Location)
                     Curr_State = 9
                 else:  Curr_State = 7
@@ -405,12 +409,14 @@ class PRIM_Main_Jetson():
             
             #-------------------
             #printing
-            prLightPurple("AFTER")
-            prLightPurple(f"Curr, Prev\t\t{Curr_State}, {Previous_State}")
-            prLightPurple(f"RunWayBound\t\t{Runway_Boundaries}")
-            prLightPurple(f"PathIdx, PathLen, PathTarg\t\t{Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None }")
-            prLightPurple(f"currTrashTarg: Stereo_AngDep\t\t{self.Stereo_AngDep[Trash_Index] if self.Stereo_AngDep is not None else None}")
-            prLightPurple(f"currTrashTarg: Stereo_RelPos\t\t{self.Stereo_RelPos[Trash_Index] if self.Stereo_RelPos is not None else None}")
+            #prLightPurple("***AFTER****",
+            #f"Curr, Prev\t\t{Curr_State}, {Previous_State}",
+            #f"RunWayBound\t\t{Runway_Boundaries}",
+            #f"PathIdx, PathLen, PathTarg\t\t{Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None }",
+            #f"Current_Location\t\t{Current_Location}",
+            #f"currTrashTarg: Stereo_AngDep\t\t{Trash_Index}: {self.Stereo_AngDep if self.Stereo_AngDep is not None else None}",
+            #f"currTrashTarg: Stereo_RelPos\t\t{Trash_Index}: {self.Stereo_RelPos if self.Stereo_RelPos is not None else None}",
+            #f"Tele Angles:\t\t{Trash_Index}: {self.Tele_angles}",sep="\n")
                 
                
         
@@ -454,7 +460,7 @@ class PRIM_Main_Jetson():
         else:
             if input('>S>>')=='y':
                 self.Stereo_AngDep = [   [6,12], [3,12]   ] #NOTE: change??
-                self.Stereo_RelPos = [   [6,12], [3,12]   ] #NOTE: change??
+                self.Stereo_RelPos = [   [6,12], [11.93, 1.25]   ] #NOTE: change??
                 return True
             else:
                 self.Stereo_AngDep = None
@@ -470,7 +476,7 @@ prGreen("PRIMARY MAIN Jetson: Class Definition Success")
 
 if __name__ == "__main__":
     try:
-        eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+        eevee = PRIM_Main_Jetson(Real=[False,False,False])#,Forced=True)
     except Exception as e:
         os.system("pkill -f MS_startup.sh")
         raise RuntimeError("PRIM Jetson __main__ Error") from e
