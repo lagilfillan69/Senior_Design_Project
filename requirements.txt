@@ -10,6 +10,7 @@ ament-package==0.14.0
 ament-pep257==0.12.11
 ament-uncrustify==0.12.11
 ament-xmllint==0.12.11
+asyncio==3.4.3
 appdirs==1.4.4
 apturl==0.5.2
 argcomplete==1.8.1
@@ -17,6 +18,7 @@ attrs==21.2.0
 bcrypt==3.2.0
 beniget==0.4.1
 blinker==1.4
+bleak==0.22.3
 bloom==0.12.0
 breezy==3.2.1
 Brlapi==0.8.3
@@ -250,6 +252,8 @@ toml==0.10.2
 topic-monitor==0.20.5
 torch==2.5.1
 torchvision==0.20.1
+tk==0.1.0
+tkintermapview==1.29
 tqdm==4.66.6
 typing_extensions==4.12.2
 ubuntu-drivers-common==0.0.0
