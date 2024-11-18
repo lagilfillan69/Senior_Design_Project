@@ -141,3 +141,16 @@ def interpolate_points(start, end, step):
     
 def pntDist(cord1,cord2):
     return abs(  math.sqrt(  (cord2[0]-cord1[0])**2 + (cord2[1]-cord1[1])**2  )  )
+
+
+def cap_float(value, max_length):
+    if value==0 or str(value)=='': return "0"
+    #trailing zeros
+    if len( str(value) ) <= max_length: return str(value).rstrip('0').rstrip('.')
+    #--
+    else:
+        for i in range(len(str(value).split('.')[1]), 0, -1):  # Adjust decimals
+            trimmed_value = f"{value:.{i}f}"
+            trimmed_value = trimmed_value.rstrip('0').rstrip('.')  # Remove trailing zeros
+            if len(trimmed_value) <= max_length: return trimmed_value
+        return str(int(value))
