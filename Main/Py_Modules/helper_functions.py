@@ -4,14 +4,14 @@
 
 import datetime
 from colorama import Fore, Back, Style
-def prRed(skk): print("\033[91m{}\033[00m" .format(skk))
-def prGreen(skk): print("\033[92m{}\033[00m" .format(skk))
-def prYellow(skk): print("\033[93m{}\033[00m" .format(skk))
-def prLightPurple(skk): print("\033[94m{}\033[00m" .format(skk))
-def prPurple(skk): print("\033[95m{}\033[00m" .format(skk))
-def prCyan(skk): print("\033[96m{}\033[00m" .format(skk))
-def prLightGray(skk): print("\033[97m{}\033[00m" .format(skk))
-def prBlack(skk): print("\033[98m{}\033[00m" .format(skk))
+def prRed        (*args, sep=' ', end="\n"):	print("\033[91m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prGreen      (*args, sep=' ', end="\n"):	print("\033[92m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prYellow     (*args, sep=' ', end="\n"):	print("\033[93m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prLightPurple(*args, sep=' ', end="\n"):	print("\033[94m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prPurple     (*args, sep=' ', end="\n"):	print("\033[95m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prCyan       (*args, sep=' ', end="\n"):	print("\033[96m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prLightGray  (*args, sep=' ', end="\n"):	print("\033[97m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prBlack      (*args, sep=' ', end="\n"):	print("\033[98m{}\033[00m" .format(sep.join(map(str,args))),end=end)
 
 
 #logging, graphing
@@ -137,3 +137,17 @@ def interpolate_points(start, end, step):
         y = y1 + t * (y2 - y1)
         points.append((x, y))
     return points
+
+
+
+def cap_float(value, max_length):
+    if value==0 or str(value)=='': return "0"
+    #trailing zeros
+    if len( str(value) ) <= max_length: return str(value).rstrip('0').rstrip('.')
+    #--
+    else:
+        for i in range(len(str(value).split('.')[1]), 0, -1):  # Adjust decimals
+            trimmed_value = f"{value:.{i}f}"
+            trimmed_value = trimmed_value.rstrip('0').rstrip('.')  # Remove trailing zeros
+            if len(trimmed_value) <= max_length: return trimmed_value
+        return str(int(value))

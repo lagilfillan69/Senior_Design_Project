@@ -8,15 +8,16 @@ import time
 from bleak import BleakClient, BleakError, BleakScanner
 import bleak
 
-try:
-    from Path_Planning import generate_corners
-except:
-    #for jonah
-    import sys,os
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Py_Modules')))
-    from Path_Planning import generate_corners
-    from helper_functions import *
-    prRed("hi")
+import sys,os
+#   attaches /Main/Py_Modules
+#   if you raise this a folder, delete a '..'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Py_Modules')))
+from Path_Planning import generate_corners
+from helper_functions import *
+prRed("hi")
+
+    
+
 write_uuid = '0000ffe0-0000-1000-8000-00805f9b34fb'
 read_uuid = '0000ffe0-0000-1000-8000-00805f9b34fb'
 

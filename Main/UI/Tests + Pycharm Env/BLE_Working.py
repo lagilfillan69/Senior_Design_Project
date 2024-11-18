@@ -173,7 +173,10 @@ class BLE():
             messagebox.showerror("Bluetooth Not Connected", "Cannot write to bluetooth")
             return False
         buffer = bytes(message, "utf-8")
-        try :
+        prPurple( str(buffer) )
+        prPurple( len(buffer))
+        if len(buffer)>20: raise RuntimeError(f"BUFFER TOO BIG:\t{len(buffer)}>20")
+        try:
             await self.client.write_gatt_char('0000ffe1-0000-1000-8000-00805f9b34fb', buffer, response=False)
         except (BleakError, asyncio.TimeoutError):
             message_variable.set(f'Writing not successful')
@@ -201,16 +204,21 @@ class BLE():
                 messagebox.showerror("Error", "GPS POINTS NOT SET")
                 return
         corners = generate_corners(gps_points[0],gps_points[1],gps_points[2])
-        await self.write("C1: " +  str(corners[0][0]) + "," +  str(corners[0][1]) + "\n")
-        await self.write("C2: " + str(corners[1][0]) + "," + str(corners[1][1]) + "\n")
-        await self.write("C3: " + str(corners[2][0]) + "," + str(corners[2][1]) + "\n")
+        prYellow(f'{corners}')
+        prGreen(f'{corners[0]}\t\t{corners[0][0]},{corners[0][1]}')
+        prGreen(f'{corners[1]}\t\t{corners[1][0]},{corners[1][1]}')
+        prGreen(f'{corners[2]}\t\t{corners[2][0]},{corners[2][1]}')
+        await self.write(f"C1:{cap_float(corners[0][0],7)},{cap_float(corners[0][1],7)}\n")
+        await asyncio.sleep(0.1)
+        await self.write(f"C2:{cap_float(corners[1][0],7)},{cap_float(corners[1][1],7)}\n")
+        await asyncio.sleep(0.1)
+        await self.write(f"C3:{cap_float(corners[2][0],7)},{cap_float(corners[2][1],7)}\n")
+        await asyncio.sleep(0.1)
         message_variable.set("Running Bot")
         prRed("STAR\t",
-              str(corners[1][0]) + ',' + str(corners[1][1]),
-              ':',
-              str(corners[1][0]) + ',' + str(corners[1][1]),
-              ':',
-              str(corners[2][0]) + "," + str(corners[2][1]),
+              f"C1:{cap_float(corners[0][0],7)},{cap_float(corners[0][1],7)}\n",
+              f"C2:{cap_float(corners[1][0],7)},{cap_float(corners[1][1],7)}\n",
+              f"C3:{cap_float(corners[2][0],7)},{cap_float(corners[2][1],7)}\n",
         sep='')
     async def connect(self):
         """Connect to or disconnect from selected/connected device."""
