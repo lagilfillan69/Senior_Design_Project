@@ -4,30 +4,14 @@
 
 import datetime
 from colorama import Fore, Back, Style
-def prRed(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[91m{}\033[00m" .format(message),end=end)
-def prGreen(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[92m{}\033[00m" .format(message),end=end)
-def prYellow(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[93m{}\033[00m" .format(message),end=end)
-def prLightPurple(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[94m{}\033[00m" .format(message),end=end)
-def prPurple(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[95m{}\033[00m" .format(message),end=end)
-def prCyan(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[96m{}\033[00m" .format(message),end=end)
-def prLightGray(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[97m{}\033[00m" .format(message),end=end)
-def prBlack(*args, sep=' ', end="\n"):
-    message = sep.join(map(str,args))
-    print("\033[98m{}\033[00m" .format(message),end=end)
+def prRed        (*args, sep=' ', end="\n"):	print("\033[91m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prGreen      (*args, sep=' ', end="\n"):	print("\033[92m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prYellow     (*args, sep=' ', end="\n"):	print("\033[93m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prLightPurple(*args, sep=' ', end="\n"):	print("\033[94m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prPurple     (*args, sep=' ', end="\n"):	print("\033[95m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prCyan       (*args, sep=' ', end="\n"):	print("\033[96m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prLightGray  (*args, sep=' ', end="\n"):	print("\033[97m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prBlack      (*args, sep=' ', end="\n"):	print("\033[98m{}\033[00m" .format(sep.join(map(str,args))),end=end)
 
 
 #logging, graphing

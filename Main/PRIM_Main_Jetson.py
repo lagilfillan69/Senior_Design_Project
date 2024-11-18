@@ -154,11 +154,8 @@ class PRIM_Main_Jetson():
         Trash_Index = -1
         
         #====================================================================
-        while True:            
-            if cv2.waitKey(1) == ord('q'):
-                prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT")
-                return
-            
+        while True:
+            #-----------
             #	get message if there is
             if self.Forced or Forced:
                 #COLL	[40,100]
@@ -167,12 +164,13 @@ class PRIM_Main_Jetson():
             message = self.SerialComms.read_message()
             if not(message is None):
                 
-                #---
+                #==================================
+                #print(message.split('\t'))
                 #m=message.split('\t')[0]
                 #prGreen(f"<{m}>")
                 #print(message.split('\t')[0] == "STAR", (Curr_State == 0 or Curr_State == 2), message.split('\t')[0] == "STAR" and (Curr_State == 0 or Curr_State == 2))
             
-            
+                #--------------
                 #printing
                 prCyan(message)
                 prPurple(f"Curr, Prev\t\t{Curr_State}, {Previous_State}",
@@ -182,11 +180,13 @@ class PRIM_Main_Jetson():
                 f"currTrashTarg: Stereo_AngDep\t\t{Trash_Index}: {self.Stereo_AngDep if self.Stereo_AngDep is not None else None}",
                 f"currTrashTarg: Stereo_RelPos\t\t{Trash_Index}: {self.Stereo_RelPos if self.Stereo_RelPos is not None else None}",
                 f"Tele Angles:\t\t{Trash_Index}: {self.Tele_angles}",sep='\n')
-                #print(message.split('\t'))
+
             
             
+                #==================================
                 #STOP STATE 
                 if message == "STOP":
+                    prALERT("Entered Stop")
                     #raise RuntimeError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
                     #-----
                     #Resetting
@@ -194,7 +194,7 @@ class PRIM_Main_Jetson():
                     self.Stereo_AngDep = None #Relative [Angle, Depth] - 2xN, 2D
                     self.Stereo_RelPos = None #Relative [X, Y] - 2xN, 2D
                     Previous_State = 0
-                    Curr_State = 0
+                    Curr_State = 0;updated=True
                     Current_Cordinate = []  #use??????, is this a duplicate of Current_Location??
                     Path=[]
                     Path_Index = -2
@@ -203,40 +203,44 @@ class PRIM_Main_Jetson():
                     Trash_Collected_Locations = []  #use?????? set but not used, send to UI?
                     Trash_Index = -1
                     #-----
-                    
-                    message = self.SerialComms.read_message()
-                    if message is None: continue
-                    
-                    if message.split('\t')[0] == "STAR":
-                        for ele in message.split('\t')[1][1:-1].split(':') :
-                            Runway_Boundaries.push(float(ele.split(':')[0]), float(ele.split(':')[1]))
-                        Previous_State = Curr_State
-                        Curr_State = 1
-                        prALERT("RESUME PRIMARY JETSON MAIN")
-                        break
-                    elif not message is None: prRed(f"Incoming Message but not 'STAR' to restart:\t{message}")
-
+                    while True:
+                        message = self.SerialComms.read_message()
+                        if message is None: continue
+                        if message.split('\t')[0] == "STAR":
+                            for ele in message.split('\t')[1].strip().split(':'):
+                                #print(ele)
+                                x, y = map(float, ele.split(','))
+                                Runway_Boundaries.append((x, y))
+                            Previous_State = Curr_State
+                            Curr_State = 1;updated=True
+                            prALERT(">>RESUME PRIMARY JETSON MAIN")
+                            break
+                        elif not message is None: prRed(f"Incoming Message but not 'STAR' to restart:\t{message}")
+                #==================================
+                
+                
+                #-----
                 if message == "ESTO" :
                     print("Estop Triggered")
             
-                #PAUSE STATE (2) 
+                #PAUSE STATE (2)
                 elif message == "PAUS":
                     Previous_State = Curr_State
-                    Curr_State = 2 #not necessairy but for redundancy
+                    Curr_State = 2;updated=True #not necessairy but for redundancy
                     prALERT("PAUSING PRIMARY JETSON MAIN: PAUSE MESSAGE")
-                    while True:
-                        if cv2.waitKey(1) == ord('q'):
-                            prALERT("STOPPING PRIMARY JETSON MAIN: 'Q' key QUIT; in pause loop")
-                            return
-                    
+                    while True:                    
                         message = self.SerialComms.read_message()
                         if message == "PAUS":
                             prALERT("RESUME PRIMARY JETSON MAIN")
-                            Curr_State = Previous_State
+                            Curr_State = Previous_State;updated=True
                             Previous_State = 2
                             break
                         elif not message is None: prRed(f"Incoming Message but not 'PAUS' to unpause:\t{message}")
-            
+                
+                
+                
+                
+                #====================================================================
                 #### Update location -- not a state
                 #structure: 'CPOS\t[  4 floating point values  ]
                 #   ex (do own tab):   CPOS\t[3, 12]
@@ -256,17 +260,17 @@ class PRIM_Main_Jetson():
                         Runway_Boundaries.append((x, y))
 
                     Previous_State = Curr_State
-                    Curr_State = 1
+                    Curr_State = 1;updated=True
             
                 ### WAITING FOR APPROVAL STATE
                 elif message == "OKAY" and Curr_State == 5 :
                     Previous_State = Curr_State
-                    Curr_State = 6
+                    Curr_State = 6;updated=True
     
                 elif message == "NKAY" and Curr_State == 5 : #Object Located (waiting)
                     #original point state, goes to next point in path
                     # Previous_State = Curr_State
-                    # Curr_State = 6
+                    # Curr_State = 6;updated=True
                     Path_Index+=1
 
                 ### Waiting to arrive at precise location state (STATE 7)
@@ -275,7 +279,7 @@ class PRIM_Main_Jetson():
                     self.SerialComms.Bluetooth("To bluetooth : Trash Picked Up")
                     # self.SerialComms.Search_GoTo("Return to this cord") #NOTE Is this not handled by other comms from other states???? Is this Search??
                     Previous_State = Curr_State
-                    Curr_State = 8
+                    Curr_State = 8;updated=True
             
                 #TAKE PICTURE AND SAVE to folder
                 elif ( message == "CAMR" and self.Real[0] and self.Real[1]):
@@ -289,14 +293,14 @@ class PRIM_Main_Jetson():
             #==============
             # 0 - READY TO START
             if Curr_State == 0:
-                prLightPurple(f"EXEC State {Curr_State}")
+                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
                 #------
                 continue
             
             #==============
             # 1 - START
             elif(Curr_State == 1):
-                prLightPurple(f"EXEC State {Curr_State}")
+                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
                 #------
                 prYellow("Generating Path")
                 Path = generate_path(Runway_Boundaries[0],Runway_Boundaries[1],Runway_Boundaries[2])
@@ -305,7 +309,7 @@ class PRIM_Main_Jetson():
                 
                 Path_Index = -1
                 Previous_State = 1
-                Curr_State = 3
+                Curr_State = 3;updated=True
             
             #==============
             #State 2 is pause
@@ -313,11 +317,11 @@ class PRIM_Main_Jetson():
             #==============
             # 3 - Go to Next Path Index
             elif(Curr_State == 3):
-                prLightPurple(f"EXEC State {Curr_State}")
+                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
                 #------
                 #edge case, try to travel with no path
                 if(Path_Index == -2):
-                    Curr_State = 0
+                    Curr_State = 0;updated=True
                 else :
                     Path_Index += 1
                     # prRed(f'{Current_Location}, {Path[Path_Index]}')
@@ -325,11 +329,11 @@ class PRIM_Main_Jetson():
                     # prRed(f'{Current_Location[1]}, {Path[Path_Index][1]}')
                     if(Path_Index > len(Path)-1):
                         Path_Index = -2
-                        Curr_State = 0
+                        Curr_State = 0;updated=True
                     elif (Current_Location[0] == Path[Path_Index][0]) or (Current_Location[1] == Path[Path_Index][1] and not(Path_Index < 0) ):
-                        Curr_State = 4
+                        Curr_State = 4;updated=True
                     else:
-                        Curr_State = 3
+                        Curr_State = 3;updated=True
                 Previous_State = 3
                 
                 #add go to command 
@@ -337,25 +341,25 @@ class PRIM_Main_Jetson():
             #==============
             # 4 - Detect Objects
             elif(Curr_State == 4):
-                prLightPurple(f"EXEC State {Curr_State}")
+                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
                 #------
                 #TODO: SOMEWHERE HERE go to self.Tele_angles[ang_ind]
                     
                 if Previous_State != 4: start_time = time.time()
                 if self.detect_Tele(): 
-                    Curr_State = 5 
+                    Curr_State = 5;updated=True
                     #tell bluetooth about objec
                     #NOTE : possible pickup the same object over and over BUGGG
                     #add message
                     self.SerialComms.Bluetooth(  str(self.Tele_angles[0])  )
-                elif (time.time() - start_time) > 60: Curr_State = 3 # go to next point, nothing is detected here
-                else: Curr_State = 4
+                elif (time.time() - start_time) > 60: Curr_State = 3;updated=True # go to next point, nothing is detected here
+                else: Curr_State = 4;updated=True
                 Previous_State = 4
             
             #==============
             # 5 - Object Located (Notify Officals)
             elif(Curr_State == 5):
-                prLightPurple(f"EXEC State {Curr_State}:  <waiting for approval>")
+                if updated: prLightPurple(f"EXEC State {Curr_State}:  <waiting for approval>");updated=False
                 #------
                 #Dead state while waiting for officals
                 Previous_State = 5
@@ -363,7 +367,7 @@ class PRIM_Main_Jetson():
             #==============
             # 6 - Drive to Object (relative, then precise)
             elif(Curr_State == 6):
-                prLightPurple(f"EXEC State {Curr_State}")
+                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
                 #------
                 ### TODO @Jonah add in ur piece to this
                 #Will stay in this state until there is a precise location found or object is lost
@@ -372,38 +376,36 @@ class PRIM_Main_Jetson():
                 self.SerialComms.AngDrive_GoTo(self.Tele_angles[0])
                 if not(Previous_State == 6): start_time = time.time()
                 if self.detect_Stereo():
-                    Curr_State = 7
+                    Curr_State = 7;updated=True
                     self.SerialComms.Collect_GoTo(  str(self.Stereo_AngDep[0])  )
                 elif (time.time() - start_time) > 60:
-            	    Curr_State = 3 # go to next point, nothing is detected her)
+            	    Curr_State = 3;updated=True # go to next point, nothing is detected her)
             	    self.SerialComms.Bluetooth("OBJT")
                 else:
                     #object is still searching
-                    Curr_State = 6
+                    Curr_State = 6;updated=True
                 Previous_State = 6
             
             #==============
             # 7 - Wait until trash is collected
             elif(Curr_State == 7):
-                if updated:
-                    prLightPurple(f"EXEC State {Curr_State}")
-                    updated=False
+                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
                 # will stay in this state until we are at set locations
                 if pntDist(Current_Location,self.Stereo_RelPos[0])<=0.03: #NOTE: within 3cm
                     Trash_Collected_Locations.append(Current_Location)
-                    Curr_State = 9
-                else:  Curr_State = 7
+                    Curr_State = 9;updated=True
+                else:  Curr_State = 7;updated=True
                 Previous_State = 7
             
             #==============
             # 9 - Return to Path Cord
             elif(Curr_State == 9):
-                prLightPurple(f"EXEC State {Curr_State}")
+                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
                 #will stay in this stay in this state until cordinates are reached
                 if (Current_Location[0] == Path[Path_Index][0]) or (Current_Location[1] == Path[Path_Index][1]):
-                    Curr_State = 4
+                    Curr_State = 4;updated=True
                 else :
-                    Curr_State = 9
+                    Curr_State = 9;updated=True
                 Previous_State = 9
             
             
@@ -476,7 +478,7 @@ prGreen("PRIMARY MAIN Jetson: Class Definition Success")
 
 if __name__ == "__main__":
     try:
-        eevee = PRIM_Main_Jetson(Real=[False,False,False])#,Forced=True)
+        eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
     except Exception as e:
         os.system("pkill -f MS_startup.sh")
         raise RuntimeError("PRIM Jetson __main__ Error") from e
