@@ -4,14 +4,14 @@
 
 import datetime
 from colorama import Fore, Back, Style
-def prRed(skk): print("\033[91m{}\033[00m" .format(skk))
-def prGreen(skk): print("\033[92m{}\033[00m" .format(skk))
-def prYellow(skk): print("\033[93m{}\033[00m" .format(skk))
-def prLightPurple(skk): print("\033[94m{}\033[00m" .format(skk))
-def prPurple(skk): print("\033[95m{}\033[00m" .format(skk))
-def prCyan(skk): print("\033[96m{}\033[00m" .format(skk))
-def prLightGray(skk): print("\033[97m{}\033[00m" .format(skk))
-def prBlack(skk): print("\033[98m{}\033[00m" .format(skk))
+def prRed        (*args, sep=' ', end="\n"):	print("\033[91m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prGreen      (*args, sep=' ', end="\n"):	print("\033[92m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prYellow     (*args, sep=' ', end="\n"):	print("\033[93m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prLightPurple(*args, sep=' ', end="\n"):	print("\033[94m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prPurple     (*args, sep=' ', end="\n"):	print("\033[95m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prCyan       (*args, sep=' ', end="\n"):	print("\033[96m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prLightGray  (*args, sep=' ', end="\n"):	print("\033[97m{}\033[00m" .format(sep.join(map(str,args))),end=end)
+def prBlack      (*args, sep=' ', end="\n"):	print("\033[98m{}\033[00m" .format(sep.join(map(str,args))),end=end)
 
 
 #logging, graphing
@@ -99,7 +99,13 @@ def reduce_ImgObj(img, coords, output_path, Expan_rate=0.3, Compress_rate=10):
 
 #coords= [ [x1y1],[x2,y2] ]; assume x2y2>x1y1
 def find_center(coords):
-    return [     coords[1][0]-coords[0][0], coords[1][1]-coords[0][1]     ]
+    LeftX= min(coords[1][0],coords[0][0])
+    LeftY= min(coords[1][1],coords[0][1])
+    return [   LeftX+(abs(coords[1][0]-coords[0][0])//2), LeftY+(abs(coords[1][1]-coords[1][0])//2)   ]
+def find_centerBOT(coords):
+    LeftX= min(coords[1][0],coords[0][0])
+    LeftY= min(coords[1][1],coords[0][1])
+    return [   LeftX+(abs(coords[1][0]-coords[0][0])//2), LeftY   ]
 
 
 
@@ -137,3 +143,52 @@ def interpolate_points(start, end, step):
         y = y1 + t * (y2 - y1)
         points.append((x, y))
     return points
+    
+    
+def pntDist(cord1,cord2):
+    return abs(  math.sqrt(  (cord2[0]-cord1[0])**2 + (cord2[1]-cord1[1])**2  )  )
+
+
+def cap_float(value, max_length):
+    if value==0 or str(value)=='': return "0"
+    #trailing zeros
+    if len( str(value) ) <= max_length: return str(value).rstrip('0').rstrip('.')
+    #--
+    else:
+        for i in range(len(str(value).split('.')[1]), 0, -1):  # Adjust decimals
+            trimmed_value = f"{value:.{i}f}"
+            trimmed_value = trimmed_value.rstrip('0').rstrip('.')  # Remove trailing zeros
+            if len(trimmed_value) <= max_length: return trimmed_value
+        return str(int(value))
+        
+
+from screeninfo import get_monitors
+global monH,monW
+monW=get_monitors()[0].width
+monH=get_monitors()[0].height
+prYellow(f"Monitor Size:\t{monW}x{monH}")
+def resizeFrame(frame,divisor=4):
+    global monH,monW
+    if len(frame.shape)>2: frmH, frmW = frame.shape[:2]
+    else: frmH, frmW = frame.shape
+    
+    scaler = min(   (monW//divisor)/frmW, (monH//divisor)/frmH   )
+    return cv2.resize(   frame,[int(frmW*scaler),int(frmH*scaler)]   )
+
+import numpy as np
+def raiseDIM(arr):
+    if len(arr.shape)==3: return arr
+    elif len(arr.shape)==2: return np.stack((arr,)*3,axis=-1)
+    
+def comboImg(imgs):
+    #make all 3D, color
+    imgs = [ raiseDIM(img) for img in imgs]
+    
+    newH = max([ img.shape[0] for img in imgs])
+    newW = max([ img.shape[1] for img in imgs])
+    return np.hstack(  [cv2.resize(img,[newW,newH]) for img in imgs]  )
+    
+    
+
+
+    

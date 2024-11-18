@@ -20,7 +20,7 @@ import numpy as np
 try: from helper_functions import *
 except Exception as e:
     from Py_Modules.helper_functions import *
-    raise RuntimeError("Import Error:\n") from e
+    #raise RuntimeError("Import Error:\n") from e
     
 global YOLO_home
 YOLO_home = (os.getcwd()+'/Py_Modules/YOLOv8/').replace('\\','/')

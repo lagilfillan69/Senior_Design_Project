@@ -11,7 +11,7 @@ try:
 except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.SD_constants import COM_PORT,BAUDRATE #needs to be manually set
-    raise RuntimeError("Import Error:\n") from e
+    #raise RuntimeError("Import Error:\n") from e
         
 
 #WERE DOING ARDUINO NOW PYFRIMATA
@@ -43,12 +43,12 @@ class Serial_Ard:
     def __init__(self,Port=COM_PORT, BaudRate=BAUDRATE):
         prYellow(f"Serial_Ard:\t{Port},  {BaudRate}")
         try:
-            self.ser = serial.Serial(Port, BaudRate)#, timeout=.1)
+            self.ser = serial.Serial(Port, BaudRate, timeout=1)
             time.sleep(1)
             print(Back.GREEN+"SUCCESS: Serial_Ard INIT PASS"+Style.RESET_ALL)
             self.fail=False
         except Exception as e:
-            prRed(f"Error starting 'Serial_Ard', switch to Fake?:\ty?")
+            prALERT(f"Error starting 'Serial_Ard', switch to Fake?:\ty?")
             if input(">").lower() == 'y': self.fail=True
             else: raise RuntimeError("Error loading Real Arduino") from e
 
@@ -66,17 +66,23 @@ class Serial_Ard:
     
     #==============================
     
-    def Search_GoTo(self,arr):
-        self.ser.write(f"SRCH\t{arr}".encode()+b'\n')  #The exact framing of this message is still TBD
+    #Drive in direction [angle]
+    def AngDrive_GoTo(self,arr):
+        self.ser.write(f"MOVE\t{arr}".encode()+b'\n')
     
+    #Go to, spin [angle, distance]
+    def Search_GoTo(self,arr):
+        self.ser.write(f"SRCH\t{arr}".encode()+b'\n')
+    
+    #go to exact location and vacuum [angle, distance]
     def Collect_GoTo(self,arr):
-        self.ser.write(f"COLL\t{arr}".encode()+b'\n')  #The exact framing of this message is still TBD
+        self.ser.write(f"COLL\t{arr}".encode()+b'\n')
 
     def Bluetooth(self,mes):
-        self.ser.write(f"WIRE\t{mes}".encode()+b'\n')  #The exact framing of this message is still TBD
+        self.ser.write(f"WIRE\t{mes}".encode()+b'\n')
 
-    def Vaccum(self):
-        self.ser.write(f"VACC".encode()+b'\n')  #The exact framing of this message is still TBD
+#   def Vaccum(self):
+#        self.ser.write(f"VACC".encode()+b'\n')
 
 
 

@@ -3,6 +3,10 @@
 '''
 Keeper of Constant variables
 '''
+import os
+dir_path = os.path.abspath("").replace('\\','/')
+print(f"CONSTANTS DIRECTORY:\t\t<{dir_path}>")
+
 
 #=========================
 #STEREO CAMERA
@@ -28,15 +32,15 @@ BAUDRATE=9600
 
 #=========================
 #MODELSHOW OFF
-DEMO_STEREOCAM_MODELPATH = "Main/Py_Modules/YOLOv8/loadable_models/" #NOTE: NEEDS ACTUALLY SET
-DEMO_TELECAM_MODELPATH = "Main/Py_Modules/YOLOv8/loadable_models/" #NOTE: NEEDS ACTUALLY SET
+DEMO_STEREOCAM_MODELPATH = dir_path+"/Py_Modules/YOLOv8/loadable_models/DEMO_1920x1188.pt" #NOTE: NEEDS ACTUALLY SET
+DEMO_TELECAM_MODELPATH = dir_path+"/Py_Modules/YOLOv8/loadable_models/DEMO_1920x1188.pt" #NOTE: NEEDS ACTUALLY SET
 
 #MAIN
-STEREOCAM_MODELPATH = "Main/Py_Modules/YOLOv8/loadable_models/" #NOTE: NEEDS ACTUALLY SET
-TELECAM_MODELPATH = "Main/Py_Modules/YOLOv8/loadable_models/" #NOTE: NEEDS ACTUALLY SET
+STEREOCAM_MODELPATH = dir_path+"/Py_Modules/YOLOv8/loadable_models/" #NOTE: NEEDS ACTUALLY SET
+TELECAM_MODELPATH = dir_path+"/Py_Modules/YOLOv8/loadable_models/" #NOTE: NEEDS ACTUALLY SET
 CROPCOMPR_FILEPATH = "" #NOTE: NEEDS ACTUALLY SET #end with '/'
-if STEREOCAM_MODELPATH == "": STEREOCAM_MODELPATH = DEMO_STEREOCAM_MODELPATH
-if TELECAM_MODELPATH == "": TELECAM_MODELPATH = DEMO_TELECAM_MODELPATH
+if STEREOCAM_MODELPATH[-3:] == '.pt': STEREOCAM_MODELPATH = DEMO_STEREOCAM_MODELPATH
+if TELECAM_MODELPATH[-3:]   == '.pt': TELECAM_MODELPATH = DEMO_TELECAM_MODELPATH
 
 
 
