@@ -113,7 +113,7 @@ class PRIM_Main_Jetson():
     def __del__(self):
         prALERT("Deleting PRIM_MAIN")
         os.system("pkill -f MS_startup.sh")
-        time.sleep(2)
+        if self.Real[2]: time.sleep(2)
 
         
         
@@ -139,6 +139,7 @@ class PRIM_Main_Jetson():
         self.Tele_angles = None #Relative Angles - 1xN, 1D
         self.Stereo_AngDep = None #Relative [Angle, Depth] - 2xN, 2D
         self.Stereo_RelPos = None #Relative [X, Y] - 2xN, 2D
+        self.Stereo_Size = None #Unused rn
         updated=True#False
 
         #-----
@@ -193,6 +194,7 @@ class PRIM_Main_Jetson():
                     self.Tele_angles = None #Relative Angles - 1xN, 1D
                     self.Stereo_AngDep = None #Relative [Angle, Depth] - 2xN, 2D
                     self.Stereo_RelPos = None #Relative [X, Y] - 2xN, 2D
+                    self.Stereo_Size = None #Unused rn
                     Previous_State = 0
                     Curr_State = 0;updated=True
                     Current_Cordinate = []  #use??????, is this a duplicate of Current_Location??
@@ -293,14 +295,18 @@ class PRIM_Main_Jetson():
             #==============
             # 0 - READY TO START
             if Curr_State == 0:
-                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 #------
                 continue
             
             #==============
             # 1 - START
             elif(Curr_State == 1):
-                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 #------
                 prYellow("Generating Path")
                 Path = generate_path(Runway_Boundaries[0],Runway_Boundaries[1],Runway_Boundaries[2])
@@ -317,7 +323,9 @@ class PRIM_Main_Jetson():
             #==============
             # 3 - Go to Next Path Index
             elif(Curr_State == 3):
-                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 #------
                 #edge case, try to travel with no path
                 if(Path_Index == -2):
@@ -333,7 +341,7 @@ class PRIM_Main_Jetson():
                     elif (Current_Location[0] == Path[Path_Index][0]) or (Current_Location[1] == Path[Path_Index][1] and not(Path_Index < 0) ):
                         Curr_State = 4;updated=True
                     else:
-                        Curr_State = 3;updated=True
+                        Curr_State = 3
                 Previous_State = 3
                 
                 #add go to command 
@@ -341,7 +349,9 @@ class PRIM_Main_Jetson():
             #==============
             # 4 - Detect Objects
             elif(Curr_State == 4):
-                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 #------
                 #TODO: SOMEWHERE HERE go to self.Tele_angles[ang_ind]
                     
@@ -353,13 +363,15 @@ class PRIM_Main_Jetson():
                     #add message
                     self.SerialComms.Bluetooth(  str(self.Tele_angles[0])  )
                 elif (time.time() - start_time) > 60: Curr_State = 3;updated=True # go to next point, nothing is detected here
-                else: Curr_State = 4;updated=True
+                else: Curr_State = 4
                 Previous_State = 4
             
             #==============
             # 5 - Object Located (Notify Officals)
             elif(Curr_State == 5):
-                if updated: prLightPurple(f"EXEC State {Curr_State}:  <waiting for approval>");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}:  <waiting for approval>")
+                    updated=False
                 #------
                 #Dead state while waiting for officals
                 Previous_State = 5
@@ -367,7 +379,9 @@ class PRIM_Main_Jetson():
             #==============
             # 6 - Drive to Object (relative, then precise)
             elif(Curr_State == 6):
-                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 #------
                 ### TODO @Jonah add in ur piece to this
                 #Will stay in this state until there is a precise location found or object is lost
@@ -383,29 +397,33 @@ class PRIM_Main_Jetson():
             	    self.SerialComms.Bluetooth("OBJT")
                 else:
                     #object is still searching
-                    Curr_State = 6;updated=True
+                    Curr_State = 6
                 Previous_State = 6
             
             #==============
             # 7 - Wait until trash is collected
             elif(Curr_State == 7):
-                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 # will stay in this state until we are at set locations
                 if pntDist(Current_Location,self.Stereo_RelPos[0])<=0.03: #NOTE: within 3cm
                     Trash_Collected_Locations.append(Current_Location)
                     Curr_State = 9;updated=True
-                else:  Curr_State = 7;updated=True
+                else:  Curr_State = 7
                 Previous_State = 7
             
             #==============
             # 9 - Return to Path Cord
             elif(Curr_State == 9):
-                if updated: prLightPurple(f"EXEC State {Curr_State}");updated=False
+                if updated:
+                    prLightPurple(f"EXEC State {Curr_State}")
+                    updated=False
                 #will stay in this stay in this state until cordinates are reached
                 if (Current_Location[0] == Path[Path_Index][0]) or (Current_Location[1] == Path[Path_Index][1]):
                     Curr_State = 4;updated=True
                 else :
-                    Curr_State = 9;updated=True
+                    Curr_State = 9
                 Previous_State = 9
             
             
@@ -447,7 +465,8 @@ class PRIM_Main_Jetson():
             Stereo_results = self.SterCam_Model.run_model( Stereo_photo  )
             if Stereo_results is not None:
                 self.Stereo_AngDep = [ self.SterCam.get_relativeAngDep( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of tras
-                self.Stereo_RelPos = [ self.SterCam.get_relativePOSITION( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of trashh
+                self.Stereo_RelPos = [ self.SterCam.get_relativePOSITION_BOX(res[1]) for res in Stereo_results ] #list of relative positions of trash
+                self.Stereo_Sizes = [self.SterCam.get_sizeWEIGHED(res[1])  for res in STERresults]
                 #outputs cropped & compressed pictures of trash
                 if save_image:
                     for index,res in enumerate(Stereo_results):
@@ -458,15 +477,18 @@ class PRIM_Main_Jetson():
             else:
                 self.Stereo_AngDep = None
                 self.Stereo_RelPos = None
+                self.Stereo_Size = None
                 return False
         else:
             if input('>S>>')=='y':
                 self.Stereo_AngDep = [   [6,12], [3,12]   ] #NOTE: change??
                 self.Stereo_RelPos = [   [6,12], [11.93, 1.25]   ] #NOTE: change??
+                self.Stereo_Size   = [   [500] , [300]   ]
                 return True
             else:
                 self.Stereo_AngDep = None
                 self.Stereo_RelPos = None
+                self.Stereo_Size = None
                 return False
 
 
