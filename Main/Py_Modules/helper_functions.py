@@ -137,7 +137,10 @@ def interpolate_points(start, end, step):
         y = y1 + t * (y2 - y1)
         points.append((x, y))
     return points
-
+    
+    
+def pntDist(cord1,cord2):
+    return abs(  math.sqrt(  (cord2[0]-cord1[0])**2 + (cord2[1]-cord1[1])**2  )  )
 
 
 def cap_float(value, max_length):

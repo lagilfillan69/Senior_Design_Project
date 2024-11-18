@@ -1,7 +1,7 @@
 # generated from ament_cmake_export_libraries/cmake/template/ament_cmake_export_libraries.cmake.in
 
-set(_exported_libraries "")
-set(_exported_library_names "MultiSense")
+set(_exported_libraries "MultiSense")
+set(_exported_library_names "")
 
 # populate multisense_lib_LIBRARIES
 if(NOT _exported_libraries STREQUAL "")
