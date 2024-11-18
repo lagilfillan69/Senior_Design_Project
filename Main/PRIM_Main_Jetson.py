@@ -113,7 +113,7 @@ class PRIM_Main_Jetson():
     def __del__(self):
         prALERT("Deleting PRIM_MAIN")
         os.system("pkill -f MS_startup.sh")
-        time.sleep(2)
+        if self.Real[2]: time.sleep(2)
 
         
         
