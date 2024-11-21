@@ -125,10 +125,7 @@ def build_gui():
     ESTOP_frame = ttk.Frame(main_window)
     ESTOP_frame.pack(pady=20)
     main_window.estop_button = ttk.Button(ESTOP_frame, text="ESTOP", command= lambda : asyncio.create_task(BLE.write("ESTO\t")))
-    main_window.pic = ttk.Button(ESTOP_frame, text="PIC",
-                                          command=lambda: asyncio.create_task(BLE.write("CAMR\t")))
-    main_window.estop_button.grid(row=0, column=1, padx=20)
-    main_window.pic.grid(row=0, column=2, padx=20)
+    main_window.estop_button.grid(row=0,column=1, padx=20)
 
      ###################
 
@@ -271,7 +268,7 @@ class BLE():
         data = data.decode('utf-8')
         pts = data[:8]
         input_buffer.set(time.ctime(time.time()) + data)
-        pickup = messagebox.askyesno("Trash Found!",message="Trash Found at " + data)
+        pickup = messagebox.askyesno("Message Recieved",message=data)
         if pickup == True:
             await self.write("OKAY\t")
         else :

@@ -29,7 +29,7 @@ float totalDistanceDriven = 0.0;
 
 
 
-SoftwareSerial btSerial(11,10); //RX to DIgital 11, TX to Digital 10
+SoftwareSerial btSerial(11,10); //RX to DIgital 4, TX to Digital 3
 
 
 String Command;
@@ -66,7 +66,6 @@ String C3 = "";
 //   - Move to point and spin in a circle
 // - Collect: Relative Position Array     [f"COLL\t{cord}"]
 //     - Move to point, turn on vaccum
-// - Move 
 // - Things found    [f"LOCT\t{cord}"]
 //     -seeking approval to pick up trash
 // - Toggle Vaccum: Message     [f"VACC"]

@@ -49,6 +49,7 @@ class Serial_Ard:
             self.fail=False
         except Exception as e:
             prALERT(f"Error starting 'Serial_Ard', switch to Fake?:\ty?")
+            ErrorLog("Error starting 'Serial_Ard', switch to Fake?:\ty?")
             if input(">").lower() == 'y': self.fail=True
             else: raise RuntimeError("Error loading Real Arduino") from e
 
@@ -84,6 +85,14 @@ class Serial_Ard:
 #   def Vaccum(self):
 #        self.ser.write(f"VACC".encode()+b'\n')
 
+    def Stop(self):
+        self.ser.write("STOP\t".encode()+b'\n')
+
+    def ReturnTo(self,arr):
+        self.ser.write(f"RTUN\t{arr}".encode()+b'\n')
+    
+    def Pause(self):
+        self.ser.write(f"PAUS\t{arr}".encode()+b'\n')
 
 
 prGreen("Serial_Ard: Class Definition Success")
@@ -98,12 +107,11 @@ class Serial_Ard_FAKE:
         prRed("WARNING: Not Real Arduino Serial, Test version")
     
     def read_message(self):
+        ErrorLog("Fake Ard read_message")
         return input(">")
     
     def send_message(self,data):
         prYellow(f"[FSM TESTING]  Ard Send:   <{data}>")
-prGreen("Serial_Ard_FAKE: Class Definition Success")
-
 #===============================================================================
 
 #test funcs
