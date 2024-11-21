@@ -96,6 +96,7 @@ def reduce_ImgObj(img, coords, output_path, Expan_rate=0.3, Compress_rate=10):
     decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
     
     cv2.imwrite( output_path, decoded_img )
+    return output_path
 
 #coords= [ [x1y1],[x2,y2] ]; assume x2y2>x1y1
 def find_center(coords):

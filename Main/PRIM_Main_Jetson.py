@@ -40,7 +40,7 @@ class PRIM_Main_Jetson():
                  ):
         ErrorLog("Start of PRIM_Main_Jetson")
         #cover cases for when parts of system aren't real
-        self.TeleCam=None;self.TeleCam_Model=None;self.SterCam=None;self.SterCam_Model=None
+        self.TeleCam=None;self.TeleCam_Model=None;self.SterCam=None;self.SterCam_Model=None;self.CamSwap=False
         
         self.Real=Real
         if platform.system() != 'Linux': self.RealSystem=False
@@ -59,6 +59,10 @@ class PRIM_Main_Jetson():
                 prYellow("Switching to Fake TeleCam")
                 self.TeleCam=None
                 self.Real[0]=False
+                
+                #switch to stereo feed?
+                prALERT(f"Do you want to use the Stereo Camera Feed?:\ty?")
+                if input(">").lower() == 'y': self.CamSwap=True
             else:
                 #Telescopic YOLO Model
                 prCyan("TELESCOPIC Camera **ML MODEL** initialization")
@@ -73,7 +77,8 @@ class PRIM_Main_Jetson():
         if self.RealSystem and self.Real[1]:
             self.SterCam = Stereo_Camera()
             if self.SterCam.fail:
-                prYellow("Switching to Fake TeleCam")
+                if self.CamSwap: raise RuntimeError("Cant use a fake Stereo with the TeleCam Feed Swap")
+                prYellow("Switching to Fake StereoCam")
                 self.SterCam=None
                 self.Real[1]=False
             else:
@@ -144,6 +149,7 @@ class PRIM_Main_Jetson():
         self.Stereo_AngDep = None #Relative [Angle, Depth] - 2xN, 2D
         self.Stereo_RelPos = None #Relative [X, Y] - 2xN, 2D
         self.Stereo_Size = None #Unused rn
+        self.Stereo_Captures = None #Unused rn
         updated=True#False
 
         #-----
@@ -195,21 +201,25 @@ class PRIM_Main_Jetson():
                     prALERT("Entered Stop")
                     #raise RuntimeError("STOPPING PRIMARY JETSON MAIN: STOP MESSAGE")
                     #-----
-                    #Resetting
                     self.Tele_angles = None #Relative Angles - 1xN, 1D
                     self.Stereo_AngDep = None #Relative [Angle, Depth] - 2xN, 2D
                     self.Stereo_RelPos = None #Relative [X, Y] - 2xN, 2D
                     self.Stereo_Size = None #Unused rn
+                    self.Stereo_Captures = None #Unused rn
+                    updated=True#False
+
+                    #-----
                     Previous_State = 0
-                    Curr_State = 0;updated=True
+                    Curr_State = 0
                     Current_Cordinate = []  #use??????, is this a duplicate of Current_Location??
                     Path=[]
+                    Path_Dummy=[(0,0),(0,5),(5,5),(5,0),(0,0)]
                     Path_Index = -2
                     Current_Location = [0,0]
                     Runway_Boundaries= []
+
                     Trash_Collected_Locations = []  #use?????? set but not used, send to UI?
                     Trash_Index = -1
-                    self.SerialComms.Stop()
                     #-----
                 #==================================
                 
@@ -217,9 +227,7 @@ class PRIM_Main_Jetson():
                 #-----
                 if message == "ESTO" :
                     print("Estop Triggered")
-                    #@TODO @Joanh please add how to exit the program 
-
-
+            
                 #PAUSE STATE (2)
                 elif message == "PAUS":
                     Previous_State = Curr_State
@@ -274,10 +282,14 @@ class PRIM_Main_Jetson():
             
                 #TAKE PICTURE AND SAVE to folder
                 elif ( message == "CAMR" and self.Real[0] and self.Real[1]):
-                    prYellow(f"taking your picture ;)\t\t<{not self.SterCam is None}, {not self.TeleCam is None}>")
+                    prYellow(f"taking your picture ;)\t\t<{not self.SterCam is None}, {not self.TeleCam is None or self.CamSwap}>")
                     dstr=datestr()
                     if not self.SterCam is None: cv2.imwrite(f"DataCollect/Stereo/STER__{dstr}.jpg",     self.SterCam.get_feed())
-                    if not self.TeleCam is None: cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}.jpg", self.TeleCam.get_feed())
+                    if not self.TeleCam is None:
+                        if self.CamSwap:
+                            prALERT("WARNING: Using StereoCam Feed not Telescopic (CamSwap)")
+                            cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}---StereoSwap.jpg", self.SterCam.get_feed())
+                        else: cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}.jpg", self.TeleCam.get_feed())
             
 
                 
@@ -447,9 +459,12 @@ class PRIM_Main_Jetson():
     def detect_Tele(self):
         #check telescopic camera for objects and their relative Angle
         if self.Real[0]:
-            Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
+            if self.CamSwap: Tele_results = self.SterCam_Model.run_model(  self.SterCam.get_feed()  )
+            else: Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
+            
             if Tele_results is not None:
-                self.Tele_angles = [self.TeleCam.get_relativeANGLEX(res) for res in Tele_results]
+                if self.CamSwap: self.Tele_angles = [self.SterCam.get_relativeANGLEX(res) for res in Tele_results]
+                else: self.Tele_angles = [self.TeleCam.get_relativeANGLEX(res) for res in Tele_results]
                 return True
             else:
                 self.Tele_angles = None
@@ -471,18 +486,20 @@ class PRIM_Main_Jetson():
             if Stereo_results is not None:
                 self.Stereo_AngDep = [ self.SterCam.get_relativeAngDep_BOX( (res[1]) ) for res in Stereo_results ] #list of relative positions of tras
                 self.Stereo_RelPos = [ self.SterCam.get_relativePOSITION_BOX(res[1]) for res in Stereo_results ] #list of relative positions of trash
-                self.Stereo_Sizes = [self.SterCam.get_sizeWEIGHED(res[1])  for res in STERresults]
+                self.Stereo_Sizes  = [self.SterCam.get_sizeWEIGHED(res[1])  for res in Stereo_results]
                 #outputs cropped & compressed pictures of trash
                 if save_image:
-                    for index,res in enumerate(Stereo_results):
-                        reduce_ImgObj( img= Stereo_photo,
-                                       coords=find_center(res[1]),
-                                       output_path=f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
+                    self.Stereo_Captures = [  reduce_ImgObj( img= Stereo_photo, coords=find_center(res[1]), output_path=f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )  for index,res in enumerate(Stereo_results)]
+                    # for index,res in enumerate(Stereo_results):
+                    #     reduce_ImgObj( img= Stereo_photo,
+                    #                    coords=find_center(res[1]),
+                    #                    output_path=f"{CROPCOMPR_FILEPATH}{res[0]}_{index}___{goodtime()}" )
                 return True
             else:
                 self.Stereo_AngDep = None
                 self.Stereo_RelPos = None
                 self.Stereo_Size = None
+                self.Stereo_Captures = None
                 return False
         else:
             if input('>S>>')=='y':
@@ -490,11 +507,13 @@ class PRIM_Main_Jetson():
                 self.Stereo_AngDep = [   [0,2], [0,2]   ] #NOTE: change??
                 self.Stereo_RelPos = [   [0,12], [0, 1.25]   ] #NOTE: change??
                 self.Stereo_Size   = [   [500] , [300]   ]
+                self.Stereo_Captures = ['example1.jpg', 'example2.jpg']
                 return True
             else:
                 self.Stereo_AngDep = None
                 self.Stereo_RelPos = None
                 self.Stereo_Size = None
+                self.Stereo_Captures = None
                 return False
 
 
