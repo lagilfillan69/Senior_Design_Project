@@ -39,7 +39,7 @@ class PRIM_Main_Jetson():
                  Forced=False
                  ):
         #cover cases for when parts of system aren't real
-        self.TeleCam=None;self.TeleCam_Model=None;self.SterCam=None;self.SterCam_Model=None
+        self.TeleCam=None;self.TeleCam_Model=None;self.SterCam=None;self.SterCam_Model=None;self.CamSwap=False
         
         self.Real=Real
         if platform.system() != 'Linux': self.RealSystem=False
@@ -58,6 +58,10 @@ class PRIM_Main_Jetson():
                 prYellow("Switching to Fake TeleCam")
                 self.TeleCam=None
                 self.Real[0]=False
+                
+                #switch to stereo feed?
+                prALERT(f"Do you want to use the Stereo Camera Feed?:\ty?")
+                if input(">").lower() == 'y': self.CamSwap=True
             else:
                 #Telescopic YOLO Model
                 prCyan("TELESCOPIC Camera **ML MODEL** initialization")
@@ -72,7 +76,8 @@ class PRIM_Main_Jetson():
         if self.RealSystem and self.Real[1]:
             self.SterCam = Stereo_Camera()
             if self.SterCam.fail:
-                prYellow("Switching to Fake TeleCam")
+                if self.CamSwap: raise RuntimeError("Cant use a fake Stereo with the TeleCam Feed Swap")
+                prYellow("Switching to Fake StereoCam")
                 self.SterCam=None
                 self.Real[1]=False
             else:
@@ -285,10 +290,14 @@ class PRIM_Main_Jetson():
             
                 #TAKE PICTURE AND SAVE to folder
                 elif ( message == "CAMR" and self.Real[0] and self.Real[1]):
-                    prYellow(f"taking your picture ;)\t\t<{not self.SterCam is None}, {not self.TeleCam is None}>")
+                    prYellow(f"taking your picture ;)\t\t<{not self.SterCam is None}, {not self.TeleCam is None or self.CamSwap}>")
                     dstr=datestr()
                     if not self.SterCam is None: cv2.imwrite(f"DataCollect/Stereo/STER__{dstr}.jpg",     self.SterCam.get_feed())
-                    if not self.TeleCam is None: cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}.jpg", self.TeleCam.get_feed())
+                    if not self.TeleCam is None:
+                        if self.CamSwap:
+                            prALERT("WARNING: Using StereoCam Feed not Telescopic (CamSwap)")
+                            cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}---StereoSwap.jpg", self.SterCam.get_feed())
+                        else: cv2.imwrite(f"DataCollect/Telescopic/TELE__{dstr}.jpg", self.TeleCam.get_feed())
             
 
                 
@@ -393,8 +402,8 @@ class PRIM_Main_Jetson():
                     Curr_State = 7;updated=True
                     self.SerialComms.Collect_GoTo(  str(self.Stereo_AngDep[0])  )
                 elif (time.time() - start_time) > 60:
-            	    Curr_State = 3;updated=True # go to next point, nothing is detected her)
-            	    self.SerialComms.Bluetooth("OBJT")
+                    Curr_State = 3;updated=True # go to next point, nothing is detected her)
+                    self.SerialComms.Bluetooth("OBJT")
                 else:
                     #object is still searching
                     Curr_State = 6
@@ -443,9 +452,12 @@ class PRIM_Main_Jetson():
     def detect_Tele(self):
         #check telescopic camera for objects and their relative Angle
         if self.Real[0]:
-            Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
+            if self.CamSwap: Tele_results = self.SterCam_Model.run_model(  self.SterCam.get_feed()  )
+            else: Tele_results = self.TeleCam_Model.run_model(  self.TeleCam.get_feed()  )
+            
             if Tele_results is not None:
-                self.Tele_angles = [self.TeleCam.get_relativeANGLEX(res) for res in Tele_results]
+                if self.CamSwap: self.Tele_angles = [self.SterCam.get_relativeANGLEX(res) for res in Tele_results]
+                else: self.Tele_angles = [self.TeleCam.get_relativeANGLEX(res) for res in Tele_results]
                 return True
             else:
                 self.Tele_angles = None
@@ -466,7 +478,7 @@ class PRIM_Main_Jetson():
             if Stereo_results is not None:
                 self.Stereo_AngDep = [ self.SterCam.get_relativeAngDep( find_center(res[1]) ) for res in Stereo_results ] #list of relative positions of tras
                 self.Stereo_RelPos = [ self.SterCam.get_relativePOSITION_BOX(res[1]) for res in Stereo_results ] #list of relative positions of trash
-                self.Stereo_Sizes = [self.SterCam.get_sizeWEIGHED(res[1])  for res in STERresults]
+                self.Stereo_Sizes = [self.SterCam.get_sizeWEIGHED(res[1])  for res in Stereo_results]
                 #outputs cropped & compressed pictures of trash
                 if save_image:
                     for index,res in enumerate(Stereo_results):

@@ -102,6 +102,8 @@ class Serial_Ard_FAKE:
     
     def send_message(self,data):
         prYellow(f"[FSM TESTING]  Ard Send:   <{data}>")
+prGreen("Serial_Ard_FAKE: Class Definition Success")
+
 #===============================================================================
 
 #test funcs
