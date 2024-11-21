@@ -102,9 +102,12 @@ def find_center(coords):
     LeftX= min(coords[1][0],coords[0][0])
     LeftY= min(coords[1][1],coords[0][1])
     return [   LeftX+(abs(coords[1][0]-coords[0][0])//2), LeftY+(abs(coords[1][1]-coords[1][0])//2)   ]
-#coords= [ [x1y1],[x2,y2] ]; assume x2y2>x1y1
-def find_center(coords):
-    return [     coords[1][0]-coords[0][0], coords[1][1]-coords[0][1]     ]
+def find_centerBOT(coords):
+    LeftX= min(coords[1][0],coords[0][0])
+    LeftY= min(coords[1][1],coords[0][1])
+    return [   LeftX+(abs(coords[1][0]-coords[0][0])//2), LeftY   ]
+
+
 
 
 import math
@@ -122,8 +125,8 @@ def gps_to_xy(lat1, lon1, lat2, lon2):
     R = 6371000  # Earth radius in meters
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1) * math.cos(math.radians(lat1))  # Adjust for latitude
-    x = round(R * dlon,1)
-    y = round(R * dlat,1)
+    x = R * dlon
+    y = R * dlat
     return x, y
 
 def interpolate_points(start, end, step):
@@ -141,6 +144,7 @@ def interpolate_points(start, end, step):
         points.append((x, y))
     return points
     
+    
 def pntDist(cord1,cord2):
     return abs(  math.sqrt(  (cord2[0]-cord1[0])**2 + (cord2[1]-cord1[1])**2  )  )
 
@@ -156,15 +160,22 @@ def cap_float(value, max_length):
             trimmed_value = trimmed_value.rstrip('0').rstrip('.')  # Remove trailing zeros
             if len(trimmed_value) <= max_length: return trimmed_value
         return str(int(value))
-        
 
-from screeninfo import get_monitors
+
 global monH,monW
-monW=get_monitors()[0].width
-monH=get_monitors()[0].height
-prYellow(f"Monitor Size:\t{monW}x{monH}")
+monH=None;monW=None
+try:
+    from screeninfo import get_monitors
+    monW=get_monitors()[0].width
+    monH=get_monitors()[0].height
+    prYellow(f"Monitor Size:\t{monW}x{monH}")
+except:
+    prALERT("HelpFunc WARNING: couldnt find window size, are you SSHing?\nbeware resizeFrame()")
+
+
 def resizeFrame(frame,divisor=4):
     global monH,monW
+    if monH is None or monW is None: raise RuntimeError("no WindowSize, are you SSHing? I told you Beware...")
     if len(frame.shape)>2: frmH, frmW = frame.shape[:2]
     else: frmH, frmW = frame.shape
     
@@ -183,8 +194,15 @@ def comboImg(imgs):
     newH = max([ img.shape[0] for img in imgs])
     newW = max([ img.shape[1] for img in imgs])
     return np.hstack(  [cv2.resize(img,[newW,newH]) for img in imgs]  )
-    
-    
 
+import traceback,os
+def ErrorLog( strX="" ):
+    dir_path = os.path.abspath("").replace('\\','/')
+    with open(dir_path+'/errorLog.txt', 'a') as file:
+        file.write('\n\n'+'='*10+'\n')
+        file.write(datestr()+'\n\n')
+        
+        if len(strX)==0: file.write(traceback.format_exc())
+        else: file.write(strX)
 
     

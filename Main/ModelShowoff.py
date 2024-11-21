@@ -62,6 +62,7 @@ if typeRun!=2:
     def balance_numpy(arr):
         min_v=np.min(arr)
         max_v=np.max(arr)
+        prYellow(f"min {min_v},\tmax {max_v}")
         if max_v-min_v != 0:  return (((arr.copy()-min_v)/(max_v-min_v))*255).astype(np.uint8)
         else:  return np.zeros(arr.shape).astype(np.uint8)
     
@@ -71,7 +72,7 @@ if typeRun!=2:
 while True:
     if cv2.waitKey(1) == ord('q'): break
     TELEclasses=[];STERclasses=[]
-    TELEangs=None;STER_RELPOSs=None;STER_SIZEs=None
+    TELEangs=None;STER_RELPOSs=None;STER_SIZEs=None;STER_DepAng=None
     #--
     prGreen('\n\n'+'-'*8)
     
@@ -114,15 +115,20 @@ while True:
             #prPurple(f'---')
             #STER_RELPOSs = [SterCamObj.get_relativePOSITION(find_center(res[1]))  for res in STERresults]
             STER_RELPOSs = [SterCamObj.get_relativePOSITION_BOX(res[1])  for res in STERresults]
+            #	relative Ang,Dep
+            #prPurple(f'---')
+            STER_DepAng = [SterCamObj.get_relativeAngDep_BOX(res[1])  for res in STERresults]
             #	size
             #prPurple(f'---')
             #STER_SIZEs = [SterCamObj.get_size(res[1])  for res in STERresults]
             STER_SIZEs = [SterCamObj.get_sizeWEIGHED(res[1])  for res in STERresults]
         else:
             STER_RELPOSs=None
+            STER_DepAng=None
             STER_SIZEs=None
 
-        prLightPurple(f'StereoCam Rel_POS:\t\t{STER_RELPOSs}')
+        prPurple(f'StereoCam Rel_POS:\t\t{STER_RELPOSs}')
+        prLightPurple(f'StereoCam STER_DepAng:\t\t{STER_DepAng}')
         print(f'StereoCam Sizes:  \t\t{STER_SIZEs}')
         #if typeRun==3: cv2.imshow('StereoCamera <q key to quit>',resizeFrame(STER_img,3)) #display
         #if typeRun==3: cv2.imshow("Depthmap <q key to quit>",resizeFrame(STER_depth,3))

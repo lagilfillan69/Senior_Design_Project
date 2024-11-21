@@ -40,6 +40,7 @@ class TeleCAM():
             print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
         except Exception as e:
             prALERT(f"Error starting 'TeleCAM', switch to Fake?:\ty?")
+            ErrorLog("Error starting 'TeleCAM', switch to Fake?:\ty?")
             if input(">").lower() == 'y': self.fail=True
             else: raise RuntimeError("Error loading Real TeleCAM") from e
     

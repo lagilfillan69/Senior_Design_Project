@@ -49,6 +49,7 @@ class Stereo_Camera:
             self.init_helper()
         except Exception as e:
             prALERT(f"Error starting 'Stereo_Camera', switch to Fake?:\ty?")
+            ErrorLog("Error starting 'Stereo_Camera', switch to Fake?:\ty?")
             if input(">").lower() == 'y':
                 self.Real=False
                 self.multithread = False
@@ -333,6 +334,7 @@ class Stereo_Camera:
         
         angle = self.get_relativeANGLEX(coord[0])
         depth = self.get_depthPOINT_BOXmax(box)
+        prRed(f"UNIT SEE ME:\t{depth}")
         
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
@@ -369,6 +371,18 @@ class Stereo_Camera:
         
         angle = self.get_relativeANGLEX(coord[0])
         depth = self.get_depthPOINT(int(coord[0]),int(coord[1]))
+        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
+        
+        return [angle,  distance]
+        
+    #max depth
+    def get_relativeAngDep_BOX(self, box):
+        coord = find_centerBOT(box) #if were using the cameras height due to lack of gyro: have to use bottom
+        #current postiion is [0,0]
+        #telling how far it is from the robots current position
+        
+        angle = self.get_relativeANGLEX(coord[0])
+        depth = self.get_depthPOINT_BOXmax(box)
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         return [angle,  distance]
@@ -484,8 +498,10 @@ if __name__ == "__main__":
         print(f"wait done\n\n{'-'*24}\n")
     
         while True:
-            cv2.imshow("Depthmap <q key to quit>",resizeFrame( balance_numpy(cammie.Depth_Map) ))
-            cv2.imshow("CameraFeed <q key to quit>",resizeFrame( cammie.get_feed() ))
+            #cv2.imshow("Depthmap <q key to quit>",resizeFrame( balance_numpy(cammie.Depth_Map) ))
+            #cv2.imshow("CameraFeed <q key to quit>",resizeFrame( cammie.get_feed() ))
+            cv2.imshow("Depthmap <q key to quit>",( balance_numpy(cammie.Depth_Map) ))
+            cv2.imshow("CameraFeed <q key to quit>",( cammie.get_feed() ))
             if cv2.waitKey(1) == ord('q'):
                 os.system("pkill -f MS_startup.sh")
                 break
