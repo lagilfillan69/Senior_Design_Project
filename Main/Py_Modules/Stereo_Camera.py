@@ -19,11 +19,11 @@ except Exception as e:
 try:
     from helper_functions import *
     from Camera_Node import DisparitySubscriber,ColorImgSubscriber
-    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW,FXTX
 except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW#needs to be manually set
+    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW,FXTX
     #raise RuntimeError("Import Error:\n") from e
 
 
@@ -34,12 +34,14 @@ class Stereo_Camera:
                  GND_Height=STEREOCAM_GND_HEIGHT,
                  H_DegView=STEREOCAM_HORZ_DEG_VIEW,
                  V_DegView=STEREOCAM_VERT_DEG_VIEW,
+                 fxTx=FXTX,
                  Real=True,
                  multithread=True):
         self.Depth_Map = None
         self.GND_Height = GND_Height
         self.H_DegView = H_DegView
         self.V_DegView = V_DegView
+        self.fxTx=fxTx
         if platform.system() != 'Linux': self.Real=False
         else: self.Real=Real
         self.multithread = multithread and self.Real #only multithread if real and allowed
@@ -238,6 +240,15 @@ class Stereo_Camera:
         if self.ColorImg_sub.want is None: raise RuntimeError("get_feed: self.ColorImg_sub.want is None")
         return self.ColorImg_sub.want
     
+    
+    
+    
+    #---------------------------------------------------------------------
+    def dispar2depth(self,dispar):
+        return (self.fxTx  *16)/dispar
+    
+    
+    '''
     #helper func for get_relativePOSITION and get_size
     def get_depthPOINT(self, coordX, coordY, new=True):
         if new or self.multithread: self.check_connection_DISPAR() #update
@@ -258,7 +269,7 @@ class Stereo_Camera:
     #return highest value of depth in a boxed area
     def get_depthPOINT_BOXmax(self, box, new=True):
         if new or self.multithread: self.check_connection_DISPAR() #update
-        if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT: self.Disparity_sub.want is None")
+        if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT_BOXmax: self.Disparity_sub.want is None")
         
         #if Depth map is smaller then ColorImg
         if self.Depth_Map.shape != (self.height,self.width):
@@ -271,8 +282,25 @@ class Stereo_Camera:
         else:
             box[0][0]=int(box[0][0]); box[1][0]=int(box[1][0])
             box[0][1]=int(box[0][1]); box[1][1]=int(box[1][1])
-        return np.max(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]  )
-
+        return self.dispar2depth(np.max(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]  )  )
+    '''
+    #return perctile of values in boxed area
+    def get_depthPOINT_BOXperc(self, box, perc=95, new=True):
+        if new or self.multithread: self.check_connection_DISPAR() #update
+        if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT_BOXperc: self.Disparity_sub.want is None")
+        
+        #if Depth map is smaller then ColorImg
+        if self.Depth_Map.shape != (self.height,self.width):
+            #prRed(f"{self.Depth_Map.shape}\t\t{(self.height,self.width)}")
+            #rescale box
+            Xscaler = (self.Depth_Map.shape[0]/self.height)
+            Yscaler = (self.Depth_Map.shape[1]/self.width)
+            box[0][0]=int(box[0][0]*Xscaler); box[1][0]=int(box[1][0]*Xscaler)
+            box[0][1]=int(box[0][1]*Yscaler); box[1][1]=int(box[1][1]*Yscaler)
+        else:
+            box[0][0]=int(box[0][0]); box[1][0]=int(box[1][0])
+            box[0][1]=int(box[0][1]); box[1][1]=int(box[1][1])
+        return self.dispar2depth(np.percentile(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]], perc  ))
     
     
     #---------------------------------------------------------------------
@@ -305,7 +333,7 @@ class Stereo_Camera:
     
     
     #=====================================================================
-    
+    '''
     #get relative position in COORDINATES given a point from center of bounding box from the YOLO Model
     def get_relativePOSITION(self, coord):
         #prCyan(f'{coord}')
@@ -324,6 +352,7 @@ class Stereo_Camera:
             x_dist = distance * math.sin(math.radians(angle))
             y_dist = math.sqrt(   distance**2 - x_dist**2   )#distance * math.cos(angle)
             return [x_dist,y_dist]
+    '''
     
     #get relative position in COORDINATES given a point from center of bounding box from the YOLO Model
     def get_relativePOSITION_BOX(self, box):
@@ -333,7 +362,7 @@ class Stereo_Camera:
         #telling how far it is from the robots current position
         
         angle = self.get_relativeANGLEX(coord[0])
-        depth = self.get_depthPOINT_BOXmax(box)
+        depth = self.get_depthPOINT_BOXperc(box)
         prRed(f"UNIT SEE ME:\t{depth}")
         
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
@@ -362,7 +391,7 @@ class Stereo_Camera:
     '''
     
     #=====================================================================
-    
+    '''
     #get relative position in __Angle,Depth__ given a point from center of bounding box from the YOLO Model
     def get_relativeAngDep(self, coord):
         
@@ -374,7 +403,8 @@ class Stereo_Camera:
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         return [angle,  distance]
-        
+    '''
+     
     #max depth
     def get_relativeAngDep_BOX(self, box):
         coord = find_centerBOT(box) #if were using the cameras height due to lack of gyro: have to use bottom
@@ -382,12 +412,11 @@ class Stereo_Camera:
         #telling how far it is from the robots current position
         
         angle = self.get_relativeANGLEX(coord[0])
-        depth = self.get_depthPOINT_BOXmax(box)
+        depth = self.get_depthPOINT_BOXperc(box)
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
-        
         return [angle,  distance]
     
-    '''    
+    '''
     #realtive __Angle,Depth__ with current angle and current position
     def get_relativeAngDep(self, coord, currANG):
         
@@ -399,7 +428,7 @@ class Stereo_Camera:
     '''
     
     #=====================================================================
-    
+    '''
     def get_size(self, BB_coords):
         #BB_cord: [   [cord of Top Left bounding box point], [cord of Bottom Right]   ]
         TL_cord = self.get_relativePOSITION(  [BB_coords[0][0],BB_coords[0][1]]  )#x of top left;     y of top left
@@ -420,7 +449,7 @@ class Stereo_Camera:
                     (semiperimeter - c) * 
                     (semiperimeter - d)
                     )
-    
+    '''
     
     #get_size, but the distance of the corners are weighted by proximity within submask
     def get_sizeWEIGHED(self, BB_coords):
@@ -496,15 +525,21 @@ if __name__ == "__main__":
         print("waiting (safe)...")
         time.sleep(4)
         print(f"wait done\n\n{'-'*24}\n")
-    
+        initsplit=1.5;spl=initsplit
         while True:
-            #cv2.imshow("Depthmap <q key to quit>",resizeFrame( balance_numpy(cammie.Depth_Map) ))
-            #cv2.imshow("CameraFeed <q key to quit>",resizeFrame( cammie.get_feed() ))
-            cv2.imshow("Depthmap <q key to quit>",( balance_numpy(cammie.Depth_Map) ))
-            cv2.imshow("CameraFeed <q key to quit>",( cammie.get_feed() ))
             if cv2.waitKey(1) == ord('q'):
                 os.system("pkill -f MS_startup.sh")
                 break
+            if cv2.waitKey(1) == ord('a'): spl-=initsplit*0.2
+            if cv2.waitKey(1) == ord('d'): spl+=initsplit*0.2
+            
+            
+            #cv2.imshow("Depthmap <q key to quit>",resizeFrame( balance_numpy(cammie.Depth_Map) ))
+            #cv2.imshow("CameraFeed <q key to quit>",resizeFrame( cammie.get_feed() ))
+            # cv2.imshow("Depthmap <q key to quit>",( balance_numpy(cammie.Depth_Map) ))
+            # cv2.imshow("CameraFeed <q key to quit>",( cammie.get_feed() ))
+            cv2.imshow("StereoCamera, Depthmap   q key to quit>",resizeFrame(comboImg([cammie.get_feed(),balance_numpy(cammie.Depth_Map)]),spl)  )
+            
     except Exception as e:
         print(e)
         os.system("pkill -f MS_startup.sh")
