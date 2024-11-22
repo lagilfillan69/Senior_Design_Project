@@ -69,8 +69,15 @@ if typeRun!=2:
     
 
 #===============================================================================
+if typeRun==1: initsplit=1.15
+if typeRun==2: initsplit=2
+if typeRun==3: initsplit=1.5
+spl=initsplit
+
 while True:
     if cv2.waitKey(1) == ord('q'): break
+    if cv2.waitKey(1) == ord('a'): spl-=initsplit*0.2
+    if cv2.waitKey(1) == ord('d'): spl+=initsplit*0.2
     TELEclasses=[];STERclasses=[]
     TELEangs=None;STER_RELPOSs=None;STER_SIZEs=None;STER_DepAng=None
     #--
@@ -92,7 +99,7 @@ while True:
         else: TELEangs=None
     
         prRed(f'TeleCam RelAngles:\t\t{TELEangs}')
-        if typeRun==2: cv2.imshow('TeleCamera <q key to quit>',resizeFrame(TELE_img,2)) #display
+        if typeRun==2: cv2.imshow('TeleCamera <q key to quit>',resizeFrame(TELE_img,spl)) #display
     
     
     
@@ -132,10 +139,10 @@ while True:
         print(f'StereoCam Sizes:  \t\t{STER_SIZEs}')
         #if typeRun==3: cv2.imshow('StereoCamera <q key to quit>',resizeFrame(STER_img,3)) #display
         #if typeRun==3: cv2.imshow("Depthmap <q key to quit>",resizeFrame(STER_depth,3))
-        if typeRun==3: cv2.imshow("StereoCamera, Depthmap   q key to quit>",resizeFrame(comboImg([STER_img,STER_depth]),1.5)  )
+        if typeRun==3: cv2.imshow("StereoCamera, Depthmap   q key to quit>",resizeFrame(comboImg([STER_img,STER_depth]),spl)  )
     
     
-    if typeRun==1: cv2.imshow("TeleCamera, StereoCamera, Depthmap   <q key to quit>", resizeFrame(comboImg([TELE_img,STER_img,STER_depth]),1.15)  )
+    if typeRun==1: cv2.imshow("TeleCamera, StereoCamera, Depthmap   <q key to quit>", resizeFrame(comboImg([TELE_img,STER_img,STER_depth]),spl)  )
     
 
     

@@ -189,6 +189,8 @@ def raiseDIM(arr):
     elif len(arr.shape)==2: return np.stack((arr,)*3,axis=-1)
     
 def comboImg(imgs):
+    if len(imgs)==1: return imgs
+    
     #make all 3D, color
     imgs = [ raiseDIM(img) for img in imgs]
     
@@ -205,5 +207,3 @@ def ErrorLog( strX="" ):
         
         if len(strX)==0: file.write(traceback.format_exc())
         else: file.write(strX)
-
-    
