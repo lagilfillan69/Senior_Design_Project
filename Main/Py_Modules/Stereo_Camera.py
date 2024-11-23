@@ -365,7 +365,7 @@ class Stereo_Camera:
         depth = self.get_depthPOINT_BOXperc(box)
         prRed(f"UNIT SEE ME:\t{depth}")
         
-        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
+        distance = math.sqrt(   abs(depth**2 - self.GND_Height**2)   )
         
         #print(angle,depth,distance)
         
@@ -413,7 +413,7 @@ class Stereo_Camera:
         
         angle = self.get_relativeANGLEX(coord[0])
         depth = self.get_depthPOINT_BOXperc(box)
-        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
+        distance = math.sqrt(   abs(depth**2 - self.GND_Height**2)   )
         return [angle,  distance]
     
     '''
