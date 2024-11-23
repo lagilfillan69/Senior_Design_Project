@@ -96,6 +96,7 @@ def reduce_ImgObj(img, coords, output_path, Expan_rate=0.3, Compress_rate=10):
     decoded_img = cv2.imdecode(encimg, cv2.IMREAD_GRAYSCALE)
     
     cv2.imwrite( output_path, decoded_img )
+    return output_path
 
 #coords= [ [x1y1],[x2,y2] ]; assume x2y2>x1y1
 def find_center(coords):
@@ -160,15 +161,22 @@ def cap_float(value, max_length):
             trimmed_value = trimmed_value.rstrip('0').rstrip('.')  # Remove trailing zeros
             if len(trimmed_value) <= max_length: return trimmed_value
         return str(int(value))
-        
 
-from screeninfo import get_monitors
+
 global monH,monW
-monW=get_monitors()[0].width
-monH=get_monitors()[0].height
-prYellow(f"Monitor Size:\t{monW}x{monH}")
+monH=None;monW=None
+try:
+    from screeninfo import get_monitors
+    monW=get_monitors()[0].width
+    monH=get_monitors()[0].height
+    prYellow(f"Monitor Size:\t{monW}x{monH}")
+except:
+    prALERT("HelpFunc WARNING: couldnt find window size, are you SSHing?\nbeware resizeFrame()")
+
+
 def resizeFrame(frame,divisor=4):
     global monH,monW
+    if monH is None or monW is None: raise RuntimeError("no WindowSize, are you SSHing? I told you Beware...")
     if len(frame.shape)>2: frmH, frmW = frame.shape[:2]
     else: frmH, frmW = frame.shape
     
@@ -181,14 +189,21 @@ def raiseDIM(arr):
     elif len(arr.shape)==2: return np.stack((arr,)*3,axis=-1)
     
 def comboImg(imgs):
+    if len(imgs)==1: return imgs
+    
     #make all 3D, color
     imgs = [ raiseDIM(img) for img in imgs]
     
     newH = max([ img.shape[0] for img in imgs])
     newW = max([ img.shape[1] for img in imgs])
     return np.hstack(  [cv2.resize(img,[newW,newH]) for img in imgs]  )
-    
-    
 
-
-    
+import traceback,os
+def ErrorLog( strX="" ):
+    dir_path = os.path.abspath("").replace('\\','/')
+    with open(dir_path+'/errorLog.txt', 'a') as file:
+        file.write('\n\n'+'='*10+'\n')
+        file.write(datestr()+'\n\n')
+        
+        if len(strX)==0: file.write(traceback.format_exc())
+        else: file.write(strX)

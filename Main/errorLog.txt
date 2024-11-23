@@ -1,0 +1,2063 @@
+
+
+==========
+2024-11-18_5_29_20
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Stereo_Camera.py", line 49, in __init__
+    self.init_helper()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Stereo_Camera.py", line 70, in init_helper
+    self.establish_connection()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Stereo_Camera.py", line 143, in establish_connection
+    if self.CAMprocess.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+RuntimeError: Could not establish connection to camera
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 504, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,True,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 73, in __init__
+    self.SterCam = Stereo_Camera()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Stereo_Camera.py", line 56, in __init__
+    else: raise RuntimeError("Error loading Real Arduino:\n") from e
+RuntimeError: Error loading Real Arduino:
+
+
+
+==========
+2024-11-18_6_2_56
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_6_2_56
+
+Tele Pass
+
+==========
+2024-11-18_16_38_25
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_38_25
+
+Tele Pass
+
+==========
+2024-11-18_16_38_25
+
+Stereo Pass
+
+==========
+2024-11-18_16_38_26
+
+SerialComms Pass
+
+==========
+2024-11-18_16_38_26
+
+MainProject_Loop
+
+==========
+2024-11-18_16_42_1
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_42_1
+
+Tele Pass
+
+==========
+2024-11-18_16_42_1
+
+Stereo Pass
+
+==========
+2024-11-18_16_42_2
+
+SerialComms Pass
+
+==========
+2024-11-18_16_42_2
+
+MainProject_Loop
+
+==========
+2024-11-18_16_42_35
+
+EXEC State 1
+
+==========
+2024-11-18_16_43_8
+
+>T>>
+
+==========
+2024-11-18_16_43_58
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_43_58
+
+Tele Pass
+
+==========
+2024-11-18_16_43_58
+
+Stereo Pass
+
+==========
+2024-11-18_16_43_59
+
+SerialComms Pass
+
+==========
+2024-11-18_16_43_59
+
+MainProject_Loop
+
+==========
+2024-11-18_16_44_9
+
+EXEC State 1
+
+==========
+2024-11-18_16_44_42
+
+>T>>
+
+==========
+2024-11-18_16_46_17
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_46_17
+
+Tele Pass
+
+==========
+2024-11-18_16_46_17
+
+Stereo Pass
+
+==========
+2024-11-18_16_46_18
+
+SerialComms Pass
+
+==========
+2024-11-18_16_46_18
+
+MainProject_Loop
+
+==========
+2024-11-18_16_46_29
+
+EXEC State 1
+
+==========
+2024-11-18_16_47_0
+
+>T>>
+
+==========
+2024-11-18_15_19_34
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_19_34
+
+Tele Pass
+
+==========
+2024-11-18_15_19_34
+
+Stereo Pass
+
+==========
+2024-11-18_15_19_35
+
+SerialComms Pass
+
+==========
+2024-11-18_15_19_35
+
+MainProject_Loop
+
+==========
+2024-11-18_15_19_54
+
+EXEC State 1
+
+==========
+2024-11-18_15_20_46
+
+>T>>
+
+==========
+2024-11-18_15_21_38
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_21_38
+
+Tele Pass
+
+==========
+2024-11-18_15_21_38
+
+Stereo Pass
+
+==========
+2024-11-18_15_21_39
+
+SerialComms Pass
+
+==========
+2024-11-18_15_21_39
+
+MainProject_Loop
+
+==========
+2024-11-18_15_21_54
+
+EXEC State 1
+
+==========
+2024-11-18_15_22_47
+
+>T>>
+
+==========
+2024-11-18_15_24_28
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_24_28
+
+Tele Pass
+
+==========
+2024-11-18_15_24_28
+
+Stereo Pass
+
+==========
+2024-11-18_15_24_29
+
+SerialComms Pass
+
+==========
+2024-11-18_15_24_29
+
+MainProject_Loop
+
+==========
+2024-11-18_15_24_45
+
+EXEC State 1
+
+==========
+2024-11-18_15_25_48
+
+>T>>
+
+==========
+2024-11-18_15_26_23
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_26_23
+
+Tele Pass
+
+==========
+2024-11-18_15_26_23
+
+Stereo Pass
+
+==========
+2024-11-18_15_26_24
+
+SerialComms Pass
+
+==========
+2024-11-18_15_26_24
+
+MainProject_Loop
+
+==========
+2024-11-18_15_26_41
+
+EXEC State 1
+
+==========
+2024-11-18_15_27_13
+
+>T>>
+
+==========
+2024-11-18_15_29_51
+
+[Errno 5] Input/output error
+
+==========
+2024-11-18_15_29_51
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 512, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 112, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 169, in MainProject_Loop
+    message = self.SerialComms.read_message()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 59, in read_message
+    if self.ser.in_waiting > 0:
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 549, in in_waiting
+    s = fcntl.ioctl(self.fd, TIOCINQ, TIOCM_zero_str)
+OSError: [Errno 5] Input/output error
+
+
+==========
+2024-11-18_15_32_56
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_32_56
+
+Tele Pass
+
+==========
+2024-11-18_15_32_56
+
+Stereo Pass
+
+==========
+2024-11-18_15_32_57
+
+SerialComms Pass
+
+==========
+2024-11-18_15_32_57
+
+MainProject_Loop
+
+==========
+2024-11-18_15_33_12
+
+EXEC State 1
+
+==========
+2024-11-18_15_33_41
+
+'Serial_Ard' object has no attribute 'Serach_Goto'
+
+==========
+2024-11-18_15_33_41
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 513, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 112, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 355, in MainProject_Loop
+    self.SerialComms.Serach_Goto(Path[Path_Index])
+AttributeError: 'Serial_Ard' object has no attribute 'Serach_Goto'
+
+
+==========
+2024-11-18_15_34_26
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_34_26
+
+Tele Pass
+
+==========
+2024-11-18_15_34_26
+
+Stereo Pass
+
+==========
+2024-11-18_15_34_27
+
+SerialComms Pass
+
+==========
+2024-11-18_15_34_27
+
+MainProject_Loop
+
+==========
+2024-11-18_15_34_33
+
+EXEC State 1
+
+==========
+2024-11-18_15_35_2
+
+'Serial_Ard' object has no attribute 'Serach_Goto'
+
+==========
+2024-11-18_15_35_2
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 513, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 112, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 355, in MainProject_Loop
+    self.SerialComms.Serach_Goto(Path[Path_Index])
+AttributeError: 'Serial_Ard' object has no attribute 'Serach_Goto'
+
+
+==========
+2024-11-18_15_35_30
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_35_30
+
+Tele Pass
+
+==========
+2024-11-18_15_35_30
+
+Stereo Pass
+
+==========
+2024-11-18_15_35_31
+
+SerialComms Pass
+
+==========
+2024-11-18_15_35_31
+
+MainProject_Loop
+
+==========
+2024-11-18_15_35_34
+
+EXEC State 1
+
+==========
+2024-11-18_15_36_3
+
+'Serial_Ard' object has no attribute 'Serach_Goto'
+
+==========
+2024-11-18_15_36_3
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 513, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 112, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 355, in MainProject_Loop
+    self.SerialComms.Serach_Goto(Path[Path_Index])
+AttributeError: 'Serial_Ard' object has no attribute 'Serach_Goto'
+
+
+==========
+2024-11-18_15_36_45
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_36_45
+
+Tele Pass
+
+==========
+2024-11-18_15_36_45
+
+Stereo Pass
+
+==========
+2024-11-18_15_36_46
+
+SerialComms Pass
+
+==========
+2024-11-18_15_36_46
+
+MainProject_Loop
+
+==========
+2024-11-18_15_36_50
+
+EXEC State 1
+
+==========
+2024-11-18_15_37_45
+
+>T>>
+
+==========
+2024-11-18_15_39_25
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_39_25
+
+Tele Pass
+
+==========
+2024-11-18_15_39_25
+
+Stereo Pass
+
+==========
+2024-11-18_15_39_26
+
+SerialComms Pass
+
+==========
+2024-11-18_15_39_26
+
+MainProject_Loop
+
+==========
+2024-11-18_15_39_30
+
+EXEC State 1
+
+==========
+2024-11-18_15_43_20
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_43_20
+
+Tele Pass
+
+==========
+2024-11-18_15_43_20
+
+Stereo Pass
+
+==========
+2024-11-18_15_43_21
+
+SerialComms Pass
+
+==========
+2024-11-18_15_43_21
+
+MainProject_Loop
+
+==========
+2024-11-18_15_43_32
+
+EXEC State 1
+
+==========
+2024-11-18_15_50_39
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_50_39
+
+Tele Pass
+
+==========
+2024-11-18_15_50_39
+
+Stereo Pass
+
+==========
+2024-11-18_15_50_40
+
+SerialComms Pass
+
+==========
+2024-11-18_15_50_40
+
+MainProject_Loop
+
+==========
+2024-11-18_15_51_2
+
+EXEC State 1
+
+==========
+2024-11-18_15_55_24
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_55_24
+
+Tele Pass
+
+==========
+2024-11-18_15_55_24
+
+Stereo Pass
+
+==========
+2024-11-18_15_55_25
+
+SerialComms Pass
+
+==========
+2024-11-18_15_55_25
+
+MainProject_Loop
+
+==========
+2024-11-18_15_55_34
+
+EXEC State 1
+
+==========
+2024-11-18_15_56_16
+
+>T>>
+
+==========
+2024-11-18_15_57_42
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_57_42
+
+Tele Pass
+
+==========
+2024-11-18_15_57_42
+
+Stereo Pass
+
+==========
+2024-11-18_15_57_43
+
+SerialComms Pass
+
+==========
+2024-11-18_15_57_43
+
+MainProject_Loop
+
+==========
+2024-11-18_15_57_50
+
+EXEC State 1
+
+==========
+2024-11-18_15_58_35
+
+>T>>
+
+==========
+2024-11-18_16_2_26
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_2_26
+
+Tele Pass
+
+==========
+2024-11-18_16_2_26
+
+Stereo Pass
+
+==========
+2024-11-18_16_2_27
+
+SerialComms Pass
+
+==========
+2024-11-18_16_2_27
+
+MainProject_Loop
+
+==========
+2024-11-18_16_2_35
+
+EXEC State 1
+
+==========
+2024-11-18_16_5_1
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_5_1
+
+Tele Pass
+
+==========
+2024-11-18_16_5_1
+
+Stereo Pass
+
+==========
+2024-11-18_16_5_1
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-18_16_5_28
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_5_28
+
+Tele Pass
+
+==========
+2024-11-18_16_5_28
+
+Stereo Pass
+
+==========
+2024-11-18_16_5_29
+
+SerialComms Pass
+
+==========
+2024-11-18_16_5_29
+
+MainProject_Loop
+
+==========
+2024-11-18_16_5_35
+
+EXEC State 1
+
+==========
+2024-11-18_15_17_41
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-18_15_17_17
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_17_17
+
+Tele Pass
+
+==========
+2024-11-18_15_17_17
+
+Stereo Pass
+
+==========
+2024-11-18_15_17_17
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-18_15_18_30
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_18_30
+
+Tele Pass
+
+==========
+2024-11-18_15_18_30
+
+Stereo Pass
+
+==========
+2024-11-18_15_18_31
+
+SerialComms Pass
+
+==========
+2024-11-18_15_18_31
+
+MainProject_Loop
+
+==========
+2024-11-18_15_22_11
+
+[Errno 5] Input/output error
+
+==========
+2024-11-18_15_22_11
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 516, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 112, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 169, in MainProject_Loop
+    message = self.SerialComms.read_message()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 59, in read_message
+    if self.ser.in_waiting > 0:
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 549, in in_waiting
+    s = fcntl.ioctl(self.fd, TIOCINQ, TIOCM_zero_str)
+OSError: [Errno 5] Input/output error
+
+
+==========
+2024-11-18_15_24_8
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_24_8
+
+Tele Pass
+
+==========
+2024-11-18_15_24_8
+
+Stereo Pass
+
+==========
+2024-11-18_15_24_9
+
+SerialComms Pass
+
+==========
+2024-11-18_15_24_9
+
+MainProject_Loop
+
+==========
+2024-11-18_15_33_15
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_33_15
+
+Tele Pass
+
+==========
+2024-11-18_15_33_15
+
+Stereo Pass
+
+==========
+2024-11-18_15_33_16
+
+SerialComms Pass
+
+==========
+2024-11-18_15_33_16
+
+MainProject_Loop
+
+==========
+2024-11-18_15_33_53
+
+EXEC State 1
+
+==========
+2024-11-18_15_35_25
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_35_25
+
+Tele Pass
+
+==========
+2024-11-18_15_35_25
+
+Stereo Pass
+
+==========
+2024-11-18_15_35_26
+
+SerialComms Pass
+
+==========
+2024-11-18_15_35_26
+
+MainProject_Loop
+
+==========
+2024-11-18_15_35_41
+
+EXEC State 1
+
+==========
+2024-11-18_15_36_23
+
+>T>>
+
+==========
+2024-11-18_15_43_19
+
+[Errno 5] Input/output error
+
+==========
+2024-11-18_15_43_19
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 516, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 112, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 169, in MainProject_Loop
+    message = self.SerialComms.read_message()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 59, in read_message
+    if self.ser.in_waiting > 0:
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 549, in in_waiting
+    s = fcntl.ioctl(self.fd, TIOCINQ, TIOCM_zero_str)
+OSError: [Errno 5] Input/output error
+
+
+==========
+2024-11-18_15_43_51
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_43_51
+
+Tele Pass
+
+==========
+2024-11-18_15_43_51
+
+Stereo Pass
+
+==========
+2024-11-18_15_43_52
+
+SerialComms Pass
+
+==========
+2024-11-18_15_43_52
+
+MainProject_Loop
+
+==========
+2024-11-18_15_44_42
+
+EXEC State 1
+
+==========
+2024-11-18_15_45_28
+
+>T>>
+
+==========
+2024-11-18_15_49_37
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_49_37
+
+Tele Pass
+
+==========
+2024-11-18_15_49_37
+
+Stereo Pass
+
+==========
+2024-11-18_15_49_38
+
+SerialComms Pass
+
+==========
+2024-11-18_15_49_38
+
+MainProject_Loop
+
+==========
+2024-11-18_15_49_41
+
+EXEC State 1
+
+==========
+2024-11-18_15_50_14
+
+>T>>
+
+==========
+2024-11-18_15_51_51
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_51_51
+
+Tele Pass
+
+==========
+2024-11-18_15_51_51
+
+Stereo Pass
+
+==========
+2024-11-18_15_51_52
+
+SerialComms Pass
+
+==========
+2024-11-18_15_51_52
+
+MainProject_Loop
+
+==========
+2024-11-18_15_51_55
+
+EXEC State 1
+
+==========
+2024-11-18_15_53_4
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_53_4
+
+Tele Pass
+
+==========
+2024-11-18_15_53_4
+
+Stereo Pass
+
+==========
+2024-11-18_15_53_5
+
+SerialComms Pass
+
+==========
+2024-11-18_15_53_5
+
+MainProject_Loop
+
+==========
+2024-11-18_15_53_41
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_53_41
+
+Tele Pass
+
+==========
+2024-11-18_15_53_41
+
+Stereo Pass
+
+==========
+2024-11-18_15_53_42
+
+SerialComms Pass
+
+==========
+2024-11-18_15_53_42
+
+MainProject_Loop
+
+==========
+2024-11-18_15_54_38
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_54_38
+
+Tele Pass
+
+==========
+2024-11-18_15_54_38
+
+Stereo Pass
+
+==========
+2024-11-18_15_54_39
+
+SerialComms Pass
+
+==========
+2024-11-18_15_54_39
+
+MainProject_Loop
+
+==========
+2024-11-18_15_55_46
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_55_46
+
+Tele Pass
+
+==========
+2024-11-18_15_55_46
+
+Stereo Pass
+
+==========
+2024-11-18_15_55_47
+
+SerialComms Pass
+
+==========
+2024-11-18_15_55_47
+
+MainProject_Loop
+
+==========
+2024-11-18_15_57_0
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_57_0
+
+Tele Pass
+
+==========
+2024-11-18_15_57_0
+
+Stereo Pass
+
+==========
+2024-11-18_15_57_1
+
+SerialComms Pass
+
+==========
+2024-11-18_15_57_1
+
+MainProject_Loop
+
+==========
+2024-11-18_15_57_29
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_57_29
+
+Tele Pass
+
+==========
+2024-11-18_15_57_29
+
+Stereo Pass
+
+==========
+2024-11-18_15_57_29
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-18_15_57_46
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_57_46
+
+Tele Pass
+
+==========
+2024-11-18_15_57_46
+
+Stereo Pass
+
+==========
+2024-11-18_15_57_47
+
+SerialComms Pass
+
+==========
+2024-11-18_15_57_47
+
+MainProject_Loop
+
+==========
+2024-11-18_15_58_6
+
+EXEC State 1
+
+==========
+2024-11-18_15_58_39
+
+>T>>
+
+==========
+2024-11-18_16_11_53
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_11_53
+
+Tele Pass
+
+==========
+2024-11-18_16_11_53
+
+Stereo Pass
+
+==========
+2024-11-18_16_11_54
+
+SerialComms Pass
+
+==========
+2024-11-18_16_11_54
+
+MainProject_Loop
+
+==========
+2024-11-18_16_12_4
+
+EXEC State 1
+
+==========
+2024-11-18_16_18_17
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_18_17
+
+Tele Pass
+
+==========
+2024-11-18_16_18_17
+
+Stereo Pass
+
+==========
+2024-11-18_16_18_18
+
+SerialComms Pass
+
+==========
+2024-11-18_16_18_18
+
+MainProject_Loop
+
+==========
+2024-11-18_16_18_25
+
+EXEC State 1
+
+==========
+2024-11-18_16_18_30
+
+>T>>
+
+==========
+2024-11-18_16_20_48
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_20_48
+
+Tele Pass
+
+==========
+2024-11-18_16_20_48
+
+Stereo Pass
+
+==========
+2024-11-18_16_20_49
+
+SerialComms Pass
+
+==========
+2024-11-18_16_20_49
+
+MainProject_Loop
+
+==========
+2024-11-18_16_21_53
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_21_53
+
+Tele Pass
+
+==========
+2024-11-18_16_21_53
+
+Stereo Pass
+
+==========
+2024-11-18_16_21_54
+
+SerialComms Pass
+
+==========
+2024-11-18_16_21_54
+
+MainProject_Loop
+
+==========
+2024-11-18_16_22_12
+
+[Errno 5] Input/output error
+
+==========
+2024-11-18_16_22_12
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 526, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 112, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 170, in MainProject_Loop
+    message = self.SerialComms.read_message()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 59, in read_message
+    if self.ser.in_waiting > 0:
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 549, in in_waiting
+    s = fcntl.ioctl(self.fd, TIOCINQ, TIOCM_zero_str)
+OSError: [Errno 5] Input/output error
+
+
+==========
+2024-11-18_16_22_28
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_22_28
+
+Tele Pass
+
+==========
+2024-11-18_16_22_28
+
+Stereo Pass
+
+==========
+2024-11-18_16_22_29
+
+SerialComms Pass
+
+==========
+2024-11-18_16_22_29
+
+MainProject_Loop
+
+==========
+2024-11-18_16_22_42
+
+EXEC State 1
+
+==========
+2024-11-18_16_22_46
+
+>T>>
+
+==========
+2024-11-18_16_24_51
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_24_51
+
+Tele Pass
+
+==========
+2024-11-18_16_24_51
+
+Stereo Pass
+
+==========
+2024-11-18_16_24_52
+
+SerialComms Pass
+
+==========
+2024-11-18_16_24_52
+
+MainProject_Loop
+
+==========
+2024-11-18_16_25_2
+
+EXEC State 1
+
+==========
+2024-11-18_16_25_6
+
+>T>>
+
+==========
+2024-11-18_16_27_42
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_27_42
+
+Tele Pass
+
+==========
+2024-11-18_16_27_42
+
+Stereo Pass
+
+==========
+2024-11-18_16_27_43
+
+SerialComms Pass
+
+==========
+2024-11-18_16_27_43
+
+MainProject_Loop
+
+==========
+2024-11-18_16_27_57
+
+EXEC State 1
+
+==========
+2024-11-18_16_28_0
+
+>T>>
+
+==========
+2024-11-18_15_17_42
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_17_42
+
+Tele Pass
+
+==========
+2024-11-18_15_17_42
+
+Stereo Pass
+
+==========
+2024-11-18_15_17_43
+
+SerialComms Pass
+
+==========
+2024-11-18_15_17_43
+
+MainProject_Loop
+
+==========
+2024-11-18_15_17_50
+
+EXEC State 1
+
+==========
+2024-11-18_15_18_0
+
+>T>>
+
+==========
+2024-11-18_15_22_10
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_22_10
+
+Tele Pass
+
+==========
+2024-11-18_15_22_10
+
+Stereo Pass
+
+==========
+2024-11-18_15_22_10
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-18_15_22_31
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_22_31
+
+Tele Pass
+
+==========
+2024-11-18_15_22_31
+
+Stereo Pass
+
+==========
+2024-11-18_15_22_32
+
+SerialComms Pass
+
+==========
+2024-11-18_15_22_32
+
+MainProject_Loop
+
+==========
+2024-11-18_15_22_39
+
+EXEC State 1
+
+==========
+2024-11-18_15_22_44
+
+>T>>
+
+==========
+2024-11-18_15_24_57
+
+>S>>
+
+==========
+2024-11-18_15_36_28
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_36_28
+
+Tele Pass
+
+==========
+2024-11-18_15_36_28
+
+Stereo Pass
+
+==========
+2024-11-18_15_36_29
+
+SerialComms Pass
+
+==========
+2024-11-18_15_36_29
+
+MainProject_Loop
+
+==========
+2024-11-18_15_36_34
+
+EXEC State 1
+
+==========
+2024-11-18_15_36_48
+
+>T>>
+
+==========
+2024-11-18_15_38_7
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_38_7
+
+Tele Pass
+
+==========
+2024-11-18_15_38_7
+
+Stereo Pass
+
+==========
+2024-11-18_15_38_8
+
+SerialComms Pass
+
+==========
+2024-11-18_15_38_8
+
+MainProject_Loop
+
+==========
+2024-11-18_15_38_11
+
+EXEC State 1
+
+==========
+2024-11-18_15_38_16
+
+>T>>
+
+==========
+2024-11-18_15_41_32
+
+>T>>
+
+==========
+2024-11-18_16_1_43
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_16_1_43
+
+Tele Pass
+
+==========
+2024-11-18_16_1_43
+
+Stereo Pass
+
+==========
+2024-11-18_16_1_43
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-18_16_1_48
+
+Error loading Real Arduino
+
+==========
+2024-11-18_16_1_48
+
+Traceback (most recent call last):
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 322, in open
+    self.fd = os.open(self.portstr, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/ttyACM0'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 46, in __init__
+    self.ser = serial.Serial(Port, BaudRate, timeout=1)
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialutil.py", line 244, in __init__
+    self.open()
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 325, in open
+    raise SerialException(msg.errno, "could not open port {}: {}".format(self._port, msg))
+serial.serialutil.SerialException: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 509, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 92, in __init__
+    self.SerialComms = Serial_Ard()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 54, in __init__
+    else: raise RuntimeError("Error loading Real Arduino") from e
+RuntimeError: Error loading Real Arduino
+
+
+==========
+2024-11-18_15_28_6
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_28_6
+
+Tele Pass
+
+==========
+2024-11-18_15_28_6
+
+Stereo Pass
+
+==========
+2024-11-18_15_28_7
+
+SerialComms Pass
+
+==========
+2024-11-18_15_28_7
+
+MainProject_Loop
+
+==========
+2024-11-18_15_18_18
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_18_18
+
+Tele Pass
+
+==========
+2024-11-18_15_18_18
+
+Stereo Pass
+
+==========
+2024-11-18_15_18_19
+
+SerialComms Pass
+
+==========
+2024-11-18_15_18_19
+
+MainProject_Loop
+
+==========
+2024-11-18_15_21_57
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_21_57
+
+Tele Pass
+
+==========
+2024-11-18_15_21_57
+
+Stereo Pass
+
+==========
+2024-11-18_15_21_57
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-18_15_24_39
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-18_15_24_39
+
+Tele Pass
+
+==========
+2024-11-18_15_24_39
+
+Stereo Pass
+
+==========
+2024-11-18_15_24_39
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-22_9_27_17
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-22_9_38_2
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-22_9_43_59
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-22_9_43_59
+
+Tele Pass
+
+==========
+2024-11-22_9_43_59
+
+Stereo Pass
+
+==========
+2024-11-22_9_43_59
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-22_9_44_27
+
+SerialComms Pass
+
+==========
+2024-11-22_9_44_27
+
+MainProject_Loop
+
+==========
+2024-11-22_9_44_27
+
+Fake Ard read_message
+
+==========
+2024-11-22_9_44_33
+
+'Serial_Ard_FAKE' object has no attribute 'Pause'
+
+==========
+2024-11-22_9_44_33
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 528, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 117, in __init__
+    self.MainProject_Loop()
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 234, in MainProject_Loop
+    self.SerialComms.Pause()
+AttributeError: 'Serial_Ard_FAKE' object has no attribute 'Pause'
+
+
+==========
+2024-11-22_9_45_0
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-22_9_45_0
+
+Tele Pass
+
+==========
+2024-11-22_9_45_0
+
+Stereo Pass
+
+==========
+2024-11-22_9_45_0
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-22_9_45_2
+
+SerialComms Pass
+
+==========
+2024-11-22_9_45_2
+
+MainProject_Loop
+
+==========
+2024-11-22_9_45_2
+
+Fake Ard read_message
+
+==========
+2024-11-22_9_45_3
+
+Fake Ard read_message
+
+==========
+2024-11-22_9_45_18
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-22_9_45_18
+
+Tele Pass
+
+==========
+2024-11-22_9_45_18
+
+Stereo Pass
+
+==========
+2024-11-22_9_45_18
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-22_9_46_4
+
+Error loading Real Arduino
+
+==========
+2024-11-22_9_46_4
+
+Traceback (most recent call last):
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 322, in open
+    self.fd = os.open(self.portstr, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/ttyACM0'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 46, in __init__
+    self.ser = serial.Serial(Port, BaudRate, timeout=1)
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialutil.py", line 244, in __init__
+    self.open()
+  File "/home/jetson/.local/lib/python3.10/site-packages/serial/serialposix.py", line 325, in open
+    raise SerialException(msg.errno, "could not open port {}: {}".format(self._port, msg))
+serial.serialutil.SerialException: [Errno 2] could not open port /dev/ttyACM0: [Errno 2] No such file or directory: '/dev/ttyACM0'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 528, in <module>
+    eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 97, in __init__
+    self.SerialComms = Serial_Ard()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Serial_Comms.py", line 54, in __init__
+    else: raise RuntimeError("Error loading Real Arduino") from e
+RuntimeError: Error loading Real Arduino
+
+
+==========
+2024-11-22_9_47_29
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-22_9_47_29
+
+Tele Pass
+
+==========
+2024-11-22_9_47_29
+
+Stereo Pass
+
+==========
+2024-11-22_9_47_29
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-22_9_48_18
+
+SerialComms Pass
+
+==========
+2024-11-22_9_48_18
+
+MainProject_Loop
+
+==========
+2024-11-22_9_48_18
+
+Fake Ard read_message
+
+==========
+2024-11-22_9_48_26
+
+Fake Ard read_message
+
+==========
+2024-11-22_9_55_24
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-22_9_55_31
+
+Tele Pass
+
+==========
+2024-11-22_9_55_43
+
+Stereo Pass
+
+==========
+2024-11-22_9_55_43
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-22_9_57_27
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-22_9_57_34
+
+Tele Pass
+
+==========
+2024-11-22_9_57_46
+
+Stereo Pass
+
+==========
+2024-11-22_9_57_47
+
+SerialComms Pass
+
+==========
+2024-11-22_9_57_47
+
+MainProject_Loop
+
+==========
+2024-11-22_10_28_53
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-22_10_29_3
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-22_10_29_10
+
+Tele Pass
+
+==========
+2024-11-22_10_29_17
+
+Error starting 'Stereo_Camera', switch to Fake?:	y?
+
+==========
+2024-11-22_10_29_20
+
+Stereo Pass
+
+==========
+2024-11-22_10_29_20
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-22_10_29_22
+
+SerialComms Pass
+
+==========
+2024-11-22_10_29_22
+
+MainProject_Loop
+
+==========
+2024-11-22_10_29_22
+
+Fake Ard read_message
+
+==========
+2024-11-22_10_29_32
+
+Fake Ard read_message

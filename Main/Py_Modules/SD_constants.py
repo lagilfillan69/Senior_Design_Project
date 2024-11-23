@@ -10,9 +10,10 @@ print(f"CONSTANTS DIRECTORY:\t\t<{dir_path}>")
 
 #=========================
 #STEREO CAMERA
-STEREOCAM_GND_HEIGHT = 0 #NOTE: NEEDS ACTUALLY SET
+STEREOCAM_GND_HEIGHT = 8 #8"
 STEREOCAM_HORZ_DEG_VIEW = 135 #https://www.carnegierobotics.com/AutonomousVehicles/CameraManufacturing/StereoCameraManufacturing/KS21i/Files/KS21i_Data_Sheet_CRL.pdf
 STEREOCAM_VERT_DEG_VIEW = 84
+FXTX=126.1172
 
 #TELESCOPIC CAMERA
 TELECAM_PORT=0

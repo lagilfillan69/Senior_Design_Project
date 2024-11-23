@@ -1,8 +1,0 @@
-
-/__pycache__
-/Py_Modules/__pycache__
-*.ipynb
-*.pyc
-/Main/Ros2 Main/Py_Modules/YOLOv8/datasets/example_dataset
-/Main/Ros2 Main/Py_Modules/YOLOv8/runs
-/runs
