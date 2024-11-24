@@ -36,7 +36,7 @@ class TeleCAM():
             t_frame = self.get_feed()
             prGreen("--TCAM: connected")
             self.height,self.width,self.layers = t_frame.shape
-            prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+            prLightPurple(f'TELE CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
             print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
         except Exception as e:
             prALERT(f"Error starting 'TeleCAM', switch to Fake?:\ty?")

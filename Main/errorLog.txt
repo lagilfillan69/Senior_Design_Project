@@ -2061,3 +2061,8 @@ Fake Ard read_message
 2024-11-22_10_29_32
 
 Fake Ard read_message
+
+==========
+2024-11-23_16_55_12
+
+Error starting 'TeleCAM', switch to Fake?:	y?

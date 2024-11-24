@@ -140,10 +140,17 @@ class Stereo_Camera:
             prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
             os.system("pkill -f MS_startup.sh")
             #self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "./MS_startup.sh; exec bash"'],stderr=subprocess.PIPE)
-            self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "~/MS_startup.sh; exec bash"'],stderr=subprocess.PIPE) #this should work from anywhere provided the shell file is in home
+            self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "~/Senior_Design_Project/MS_startup.sh; exec bash"'],stderr=subprocess.PIPE) #this should work from anywhere provided the shell file is in home
             prYellow("Loading parallel terminal to ---start up ROS CAMERA---")
             time.sleep(5)
             if self.CAMprocess.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+            
+            #change its settings
+            prYellow("Changing Camera Values")
+            res = subprocess.run('~/Senior_Design_Project/defaultSettings.sh', shell=True, capture_output=True, text=True)
+            time.sleep(5)
+            if res.returncode != 0: prALERT(f"!!!!!!! WARNING !!!!!!!\nCouldnt edit default settings")
+            
             
             #Start up ROS
             rclpy.init()
@@ -343,6 +350,7 @@ class Stereo_Camera:
         angle = self.get_relativeANGLEX(coord[0])
         depth = self.get_depthPOINT(coord[0],coord[1])
         
+        if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         #print(angle,depth,distance)
@@ -365,6 +373,7 @@ class Stereo_Camera:
         depth = self.get_depthPOINT_BOXperc(box)
         prRed(f"UNIT SEE ME:\t{depth}")
         
+        if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   abs(depth**2 - self.GND_Height**2)   )
         
         #print(angle,depth,distance)
@@ -381,6 +390,7 @@ class Stereo_Camera:
         angle = self.get_relativeANGLEX(coord) + currANG
         depth = self.get_depthPOINT(int(coord[0]),int(coord[1]))
         
+        if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         if angle == 0: return [currPOS[0]+distance,   currPOS[1]]
@@ -400,6 +410,7 @@ class Stereo_Camera:
         
         angle = self.get_relativeANGLEX(coord[0])
         depth = self.get_depthPOINT(int(coord[0]),int(coord[1]))
+        if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         return [angle,  distance]
@@ -413,6 +424,7 @@ class Stereo_Camera:
         
         angle = self.get_relativeANGLEX(coord[0])
         depth = self.get_depthPOINT_BOXperc(box)
+        if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   abs(depth**2 - self.GND_Height**2)   )
         return [angle,  distance]
     
@@ -422,6 +434,7 @@ class Stereo_Camera:
         
         angle = self.get_relativeANGLEX(coord) + currANG
         depth = self.get_depthPOINT(int(coord[0]),int(coord[1]))
+        if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   depth**2 - self.GND_Height**2   )
         
         return [angle,  distance]
@@ -481,6 +494,7 @@ class Stereo_Camera:
         wAngL = self.get_relativeANGLEX(x1)
         wAngR = self.get_relativeANGLEX(x2)      
         for idx in range(4):
+            if wDepCorn[idx]<self.GND_Height: prALERT(f"__SIZE__ depth warn: wDepCorn{idx}<GNDHeight, bad triangle. Make sure constant's units are correct.")
             distance = math.sqrt(   wDepCorn[idx]**2 - self.GND_Height**2   )
             if idx%2==1:   x_dist = distance * math.sin(math.radians(wAngL)) #x1 Left
             elif idx%2==0: x_dist = distance * math.sin(math.radians(wAngR)) #x2 Right
