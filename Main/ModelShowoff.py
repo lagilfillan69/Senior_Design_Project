@@ -68,37 +68,71 @@ if typeRun!=2:
         #prYellow(f"min {min_v},\tmax {max_v}")
         if max_v-min_v != 0:  return (((arr.copy()-min_v)/(max_v-min_v))*255).astype(np.uint8)
         else:  return np.zeros(arr.shape).astype(np.uint8)
+
+    #return: 0 mask, reg image
+    def balance_numpy2(arr):
+        narr=arr.copy()
+        narrZ=(narr==0)
+        #regular
+        min_v=np.min(arr); max_v=np.max(arr)
+        if max_v-min_v != 0:  return narrZ, (((arr.copy()-min_v)/(max_v-min_v))*255).astype(np.uint8)
+        else:  return narrZ, np.zeros(arr.shape).astype(np.uint8)
     
     
 
 #===============================================================================
 #keyboard window scaling
 from pynput import keyboard
-global initsplit,spl,breker,selPOS
+global initsplit,spl,breker,selPOS,lBOXs,changerVAL_add1,changerVAL_add2,changerVAL_add3,changerVAL_add4
 if typeRun==1: initsplit=1.15
 if typeRun==2: initsplit=2
 if typeRun==3: initsplit=1.5
 spl=initsplit
 breker=False
 selPOS=[0,0]
+lBOXs=10
+changerVAL_add1=1.029#0.975
+changerVAL_add2=0.00007
+changerVAL_add3=-0.2566
+changerVAL_add4=0.0048
 
 def Regpress(key):
-    global initsplit,spl,selPOS
-    #if key == keyboard.Key.up: spl-=initsplit*0.2
-    #elif key == keyboard.Key.down: spl+=initsplit*0.2
-    if hasattr(key, 'char'):
-        if key.char == '<': spl-=initsplit*0.2
-        if key.char == '>': spl+=initsplit*0.2
-    else:
-        if   key == keyboard.Key.up:    selPOS[0]+=1
-        elif key == keyboard.Key.down:  selPOS[0]-=1
-        elif key == keyboard.Key.right: selPOS[1]+=1
-        elif key == keyboard.Key.left:  selPOS[1]-=1
+    try:
+        global initsplit,spl,selPOS,lBOXs,changerVAL_add1,changerVAL_add2,changerVAL_add3,changerVAL_add4
+        #if key == keyboard.Key.up: spl-=initsplit*0.2
+        #elif key == keyboard.Key.down: spl+=initsplit*0.2
+        #print('hi',key)
+        if hasattr(key, 'char'):
+            #if key.char == '<' or key.char==',': spl+=initsplit*0.2
+            #if key.char == '>' or key.char=='.': spl-=initsplit*0.2
+            if key.char == '<': spl+=initsplit*0.2
+            if key.char == '>': spl-=initsplit*0.2
+            if key.char == '-' or key.char=='_': lBOXs-=1
+            if key.char == '=' or key.char=='+': lBOXs+=1
+            if key.char == 'z': changerVAL_add1+=0.001
+            if key.char == 'x': changerVAL_add1-=0.001
+            if key.char == 'c': changerVAL_add2+=0.00001
+            if key.char == 'v': changerVAL_add2-=0.00001
+            if key.char == 'a': changerVAL_add3+=0.01
+            if key.char == 's': changerVAL_add3-=0.01
+            if key.char == 'd': changerVAL_add4+=0.0001
+            if key.char == 'f': changerVAL_add4-=0.0001
+        else:
+            if   key == keyboard.Key.up:    selPOS[0]-=1
+            elif key == keyboard.Key.down:  selPOS[0]+=1
+            elif key == keyboard.Key.right: selPOS[1]+=1
+            elif key == keyboard.Key.left:  selPOS[1]-=1
+    except Exception as e:
+        global breker
+        breker=True
+        prALERT(e)
 def ESCpress(key):
     global breker
     if key == keyboard.Key.esc:
         breker=True
         return False
+    if hasattr(key, 'char'):
+        if key.char=='q': return False
 listenlearn = keyboard.Listener(on_press=Regpress, on_release=ESCpress)
 listenlearn.start()
 
@@ -106,29 +140,36 @@ listenlearn.start()
 
 #===============================================================================
 while True:
+    #prRed(f"selPOS:\t{selPOS}")
+    
     if cv2.waitKey(1) == ord('q') or breker: break
     #if keyboard.is_pressed('up'): spl+=initsplit*0.2
     #if keyboard.is_pressed('down'): spl-=initsplit*0.2
     TELEclasses=[];STERclasses=[]
     TELEangs=None;STER_RELPOSs=None;STER_SIZEs=None;STER_DepAng=None;TELEresults=[];STERresults=[]
     #--
-    prGreen('\n\n'+'-'*8)
+    #prGreen('\n\n'+'-'*8)
     
     
     #---------------------
     #   TELESCOPIC
     if typeRun!=3:
         TELE_img=TeleCamObj.get_feed()    
-        if typeMod: TELEresults = TeleCam_Model.run_model(TELE_img)
-        if len(TELEresults)>0:
-            #draw
-            for res in TELEresults:
-                TELEclasses.append(res[0])
-                cv2.rectangle(TELE_img,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,(0, 255, 0),2) #green
-            #relative angle
-            TELEangs= [TeleCamObj.get_relativeANGLEX(find_center(res[1])) for res in TELEresults]
-        else: TELEangs=None
-    
+        if typeMod:
+            TELEresults = TeleCam_Model.run_model(TELE_img)
+            if len(TELEresults)>0:
+                #draw
+                for res in TELEresults:
+                    TELEclasses.append(res[0])
+                    cv2.rectangle(TELE_img,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,(255, 0, 0),2) #blue
+                #relative angle
+                TELEangs= [TeleCamObj.get_relativeANGLEX(find_center(res[1])) for res in TELEresults]
+            else: TELEangs=None
+        else:
+            h,w=TELE_img.shape[:2]
+            #TELE_img = cv2.circle(TELE_img, [w//2+selPOS[1],  h//2+selPOS[0]],10,(0,255,0),5) #green
+            box=  [    [int(w//2+selPOS[1]-lBOXs),int(h//2+selPOS[0]-lBOXs)],   [int(w//2+selPOS[1]+lBOXs),int(h//2+selPOS[0]+lBOXs)]   ]
+            cv2.rectangle(TELE_img,    box[0],   box[1],   (255,0,0),2) #blue
         if typeMod: prRed(f'TeleCam RelAngles:\t\t{TELEangs}')
         if typeRun==2: cv2.imshow('TeleCamera <q key to quit>',resizeFrame(TELE_img,spl)) #display
     
@@ -138,8 +179,12 @@ while True:
     #---------------------
     #   STEREO
     if typeRun!=2:
-        STER_img=SterCamObj.get_feed()    
-        STER_depth=balance_numpy(SterCamObj.Depth_Map)
+        STER_img=SterCamObj.get_feed()
+        #STER_depth=balance_numpy(SterCamObj.Depth_Map)
+        Zmask,STER_depth=balance_numpy2(SterCamObj.Depth_Map)
+        #prYellow(f'zeroDISPAR:\t{np.sum(Zmask)}')
+        STER_depth=  np.stack( (STER_depth,)*3, axis=-1)
+        STER_depth[Zmask]=[0,0,255]
         if typeMod:
             STERresults = SterCam_Model.run_model(STER_img)
             if len(STERresults)>0:
@@ -147,7 +192,7 @@ while True:
                 for res in STERresults:
                     STERclasses.append(res[0])
                     cv2.rectangle(STER_img,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,(255, 0, 0),2) #blue
-                    cv2.rectangle(STER_depth,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,255,2) #solid block 
+                    cv2.rectangle(STER_depth,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,(255,0,0),2)
                 #	relative position
                 #prPurple(f'---')
                 #STER_RELPOSs = [SterCamObj.get_relativePOSITION(find_center(res[1]))  for res in STERresults]
@@ -163,17 +208,52 @@ while True:
                 STER_RELPOSs=None
                 STER_DepAng=None
                 STER_SIZEs=None
-        else:
-            print('draw')
-            h,w=STER_depth.shape[:2]
-            STER_depth = cv2.circle(STER_depth, [h+selPOS[0],  w+selPOS[1]],20,255,2)
-
-        if typeMod: 
             prPurple(f'StereoCam Rel_POS:\t\t{STER_RELPOSs}')
             prLightPurple(f'StereoCam STER_DepAng:\t\t{STER_DepAng}')
             print(f'StereoCam Sizes:  \t\t{STER_SIZEs}')
             if typeRun!=3: prYellow(f'TELE Classes:\t{TELEclasses}')
             if typeRun!=2: prYellow(f'STER Classes:\t{STERclasses}')
+        else:
+            h,w=STER_depth.shape[:2]
+            #STER_depth = cv2.circle(STER_depth, [w//2+selPOS[1],  h//2+selPOS[0]],10,(0,255,0),5)
+            box=  [    [int(w//2+selPOS[1]-lBOXs),int(h//2+selPOS[0]-lBOXs)],   [int(w//2+selPOS[1]+lBOXs),int(h//2+selPOS[0]+lBOXs)]   ]
+            #color image
+            cv2.rectangle(STER_img,    box[0],   box[1],   (255,0,0),2) #blue
+            #dispar box
+            #nX1=int(  ((w/2)+selPOS[1])*changerVAL_add1  )
+            #nX2=int(  ((w/2)+selPOS[1])*changerVAL_add2 +(((w/2)+selPOS[1])**2)*changerVAL_add2 )
+            #nX3=int(  ((w/2)+selPOS[1])*changerVAL_add1 +(((w/2)+selPOS[1])**2)*changerVAL_add2 )
+            #nX3=int(  (((w/2)+selPOS[1])*changerVAL_add1) +((((w/2)+selPOS[1])**2)*changerVAL_add2)+ ( lBOXs*2*changerVAL_add3)+ ( ((lBOXs*2)**2)*changerVAL_add4) )
+            #nX4=int(  ((w/2)+selPOS[1])*changerVAL_add2 +(((w/2)+selPOS[1])**2)*changerVAL_add1 )
+            depth1,nbox1=   SterCamObj.get_depthPOINT_BOXperc(box,adjust=1)
+            depth2,nbox2=   SterCamObj.get_depthPOINT_BOXperc(box,adjust=2)
+            cv2.rectangle(STER_depth, nbox1[0], nbox1[1],(255,0,0),2)
+            cv2.rectangle(STER_depth, nbox2[0], nbox2[1],(0,255,0),2)
+            
+            
+            #cv2.rectangle(STER_depth, [    nX1-lBOXs,box[0][1] ], [    nX1+lBOXs,box[1][1] ],(0,255,0),2)
+            #cv2.rectangle(STER_depth, [    nX2-lBOXs,box[0][1] ], [    nX2+lBOXs,box[1][1] ],(255,255,0),2)
+            #cv2.rectangle(STER_depth, [    nX3-lBOXs,box[0][1] ], [    nX3+lBOXs,box[1][1] ],(0,255,0),2)
+            #cv2.rectangle(STER_depth, [    nX4-lBOXs,box[0][1] ], [    nX4+lBOXs,box[1][1] ],(175,255,0),2)
+            #	multiply
+            #cv2.rectangle(STER_depth, [    int(w//2+nX_mul-lBOXs),box[0][1]], [    int(w//2+nX_mul+lBOXs),box[1][1]],(255,255,0),2)
+            prPurple( '\n'+'-'*8,
+                      f'selPOS[1]:  {selPOS[1]}',
+                      #f' x1, x2:    {int((w/2)+selPOS[1]-lBOXs)},{int((w/2)+selPOS[1]+lBOXs)}',
+                      #f'Nx1,Nx2:    {nX1},{nX2}',
+                      #f'scalerADD1:    {changerVAL_add1}',
+                      #f'scalerADD2:    {changerVAL_add2}',
+                      #f'scalerADD3:    {changerVAL_add3}',
+                      #f'scalerADD4:    {changerVAL_add4}',
+                      #f'n 1,2,3,4:   {nX1},{nX2},{nX3},{nX4}',
+                      #f'effects:    {((w/2)+selPOS[1])*changerVAL_add1},  {(((w/2)+selPOS[1])**2)*changerVAL_add2}, {lBOXs*2*changerVAL_add3}, {((lBOXs*2)**2)*changerVAL_add4}',
+                      f'Depth:  \t{SterCamObj.get_depthPOINT_BOXperc( box )}',
+                      f'Depth1: \t{depth1}',
+                      f'Depth2: \t{depth2}',
+                      f'RelPOS:\t{SterCamObj.get_relativePOSITION_BOX( box )}',
+                      f'RelPOS1:\t{SterCamObj.get_relativePOSITION_BOX( box,adjust=1 )}',
+                      f'RelPOS2:\t{SterCamObj.get_relativePOSITION_BOX( box,adjust=2 )}',
+                      sep='\n')
         #if typeRun==3: cv2.imshow('StereoCamera <q key to quit>',resizeFrame(STER_img,3)) #display
         #if typeRun==3: cv2.imshow("Depthmap <q key to quit>",resizeFrame(STER_depth,3))
         if typeRun==3: cv2.imshow("StereoCamera, Depthmap   q key to quit>",resizeFrame(comboImg([STER_img,STER_depth]),spl)  )

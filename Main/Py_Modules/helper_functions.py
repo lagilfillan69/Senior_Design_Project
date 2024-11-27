@@ -51,6 +51,9 @@ def rgb(minimum, maximum, value):
 def datestr():
     return f'{datetime.datetime.now().date()}_{datetime.datetime.now().hour}_{datetime.datetime.now().minute}_{datetime.datetime.now().second}'
 
+def datestrT():
+    return f'{datetime.datetime.now()}'
+
 def mean(arr):
     tot=0
     for i in arr:tot+=i

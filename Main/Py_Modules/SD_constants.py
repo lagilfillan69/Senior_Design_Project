@@ -4,20 +4,33 @@
 Keeper of Constant variables
 '''
 import os
+from colorama import Back, Style
 dir_path = os.path.abspath("").replace('\\','/')
 print(f"CONSTANTS DIRECTORY:\t\t<{dir_path}>")
 
 
 #=========================
 #STEREO CAMERA
-STEREOCAM_GND_HEIGHT = 8 #8" !!!!!!!!!!!!!!!!! UNITS
-STEREOCAM_HORZ_DEG_VIEW = 135 #https://www.carnegierobotics.com/AutonomousVehicles/CameraManufacturing/StereoCameraManufacturing/KS21i/Files/KS21i_Data_Sheet_CRL.pdf
-STEREOCAM_VERT_DEG_VIEW = 84
+STEREOCAM_GND_HEIGHT = 0 #0.22	#METERS, 22cm
+#https://www.carnegierobotics.com/AutonomousVehicles/CameraManufacturing/StereoCameraManufacturing/KS21i/Files/KS21i_Data_Sheet_CRL.pdf
+STEREOCAM_HORZDEGVIEW_C = 137	#colored cam
+STEREOCAM_VERTDEGVIEW_C = 83
+STEREOCAM_HORZDEGVIEW_S = 135	#stereo cam
+STEREOCAM_VERTDEGVIEW_S = 84
 FXTX=126.1172
+convs=[0.495436,19.50535]
+CONVERSION=convs[1] #0.495436 meters, 19.50535 inches
+CLR2DPR1=1.029   #scaling x value on colorFeed to Dispar Feed
+CLR2DPR2=0.00007 #scaling x value on colorFeed to Dispar Feed
+CLR2DPR3=-0.2566 #scaling x value on colorFeed to Dispar Feed
+CLR2DPR4=0.0048  #scaling x value on colorFeed to Dispar Feed
+if CONVERSION==convs[0]: print(Back.YELLOW+"Depth in ___METERS___"+Style.RESET_ALL)
+if CONVERSION==convs[1]: print(Back.YELLOW+"Depth in ___INCHES___"+Style.RESET_ALL)
+if STEREOCAM_GND_HEIGHT==0: print(Back.RED+'!'*60+"\nCONSTANTS WARNING:\t\tSTEREOCAM_GND_HEIGHT at 0, are you testing????\n"+'!'*60+Style.RESET_ALL)
 
 #TELESCOPIC CAMERA
 TELECAM_PORT=0
-TELECAM_GND_HEIGHT = 13.25 #13.25" rn?	!!!!!!!!!!!!!!!!!!!! UNITS
+TELECAM_GND_HEIGHT = 0.36
 TELECAM_FOCAL_LENGTH =  135# 18mm shortest, 135 highest zoom
 
 
@@ -34,8 +47,8 @@ BAUDRATE=9600
 #=========================
 models_path=dir_path+"/Py_Modules/YOLOv8/loadable_models/"
 #MODELSHOW OFF
-DEMO_STEREOCAM_MODELPATH = models_path+"DEMO_1920x1188.pt" #NOTE: NEEDS ACTUALLY SET
-DEMO_TELECAM_MODELPATH = models_path+"DEMO_1920x1188.pt" #NOTE: NEEDS ACTUALLY SET
+DEMO_STEREOCAM_MODELPATH = models_path+"DEMO_1920x1188.pt"
+DEMO_TELECAM_MODELPATH = models_path+"DEMO_1920x1188.pt"
 
 #MAIN
 STEREOCAM_MODELPATH = models_path+"" #NOTE: NEEDS ACTUALLY SET

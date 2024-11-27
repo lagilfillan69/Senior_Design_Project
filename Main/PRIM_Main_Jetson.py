@@ -525,7 +525,7 @@ import traceback
 
 if __name__ == "__main__":
     try:
-        eevee = PRIM_Main_Jetson(Real=[True,True,True])#,Forced=True)
+        eevee = PRIM_Main_Jetson(Real=[True,False,True])#,Forced=True)
     except Exception as e:
         os.system("pkill -f MS_startup.sh")
         ErrorLog(str(e))

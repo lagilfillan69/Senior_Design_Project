@@ -41,7 +41,6 @@ class Stereo_Camera:
         self.fxTx=constants[3]
         self.UnitConv=constants[4]
         self.convWeights=constants[5:]
-        prPurple(f'constants:\t{constants}')
         prYellow(f'convert:\t{self.UnitConv}')
         prYellow(f'constants:\t{self.convWeights}')
         if platform.system() != 'Linux': self.Real=False
@@ -298,10 +297,9 @@ class Stereo_Camera:
         return self.dispar2depth(np.max(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]  )  )
     '''
     #return perctile of values in boxed area
-    def get_depthPOINT_BOXperc(self, box_t, perc=95, new=True, adjust=0):
+    def get_depthPOINT_BOXperc(self, box, perc=95, new=True, adjust=False):
         if new or self.multithread: self.check_connection_DISPAR() #update
         if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT_BOXperc: self.Disparity_sub.want is None")
-        box=box_t.copy()
         
         #if Depth map is smaller then ColorImg
         #if self.Depth_Map.shape != (self.height,self.width):
@@ -312,26 +310,19 @@ class Stereo_Camera:
         #    box[0][0]=int(box[0][0]*Xscaler); box[1][0]=int(box[1][0]*Xscaler)
         #    box[0][1]=int(box[0][1]*Yscaler); box[1][1]=int(box[1][1]*Yscaler)
         #else:
-        box[1][0]=int(box[1][0])
-        box[1][1]=int(box[1][1])
-        if adjust==1:
-            t_map=self.Depth_Map.copy()
-            box[0][0]=int(box[0][0]-t_map[box[0][1],[0][0]])
-            box[1][0]=int(box[1][0]-t_map[box[1][1],[1][0]])
-            mapr=self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]
-            dep=self.dispar2depth(np.percentile(  mapr, perc  )) #seperate for one bug
-            return dep, box
-        elif adjust==2:
-            t_map=self.Depth_Map.copy()
-            box[0][0]=int(box[0][0]-t_map[box[0][1],[0][0]])
-            box[1][0]=int(box[1][0]-t_map[box[1][1],[1][0]])
-            mapr=self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]
-            dep=self.dispar2depth(np.percentile(  mapr, perc  ))
-            return dep, box
+        if adjust:
+            hlfwid= box[1][0]-box[0][0]
+            Xcent= box[0][0]+hlfwid
+            adj=int(  (Xcent*convWeights[0]) + ((Xcent**2)*convWeights[1]) + (hlfwid*convWeights[2]) + ((hlfwid**2)*convWeights[3])   )
+            box[0][0]= adj-hlfwid
+            box[0][1]= adj+hlfwid
         else:
             box[0][0]=int(box[0][0])
             box[1][0]=int(box[1][0])
-            return self.dispar2depth(np.percentile(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]], perc  ))
+        box[1][0]=int(box[1][0])
+        box[1][1]=int(box[1][1])
+        #
+        return self.dispar2depth(np.percentile(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]], perc  ))
     
     
     #---------------------------------------------------------------------
@@ -387,15 +378,14 @@ class Stereo_Camera:
     '''
     
     #get relative position in COORDINATES given a point from center of bounding box from the YOLO Model
-    def get_relativePOSITION_BOX(self, box, adjust=0):
+    def get_relativePOSITION_BOX(self, box):
         coord = find_centerBOT(box) #if were using the cameras height due to lack of gyro: have to use bottom
         #prCyan(f'{coord}')
         #current postiion is [0,0]
         #telling how far it is from the robots current position
         
         angle = self.get_relativeANGLEX(coord[0])
-        if adjust==1 or adjust==2: depth,_ = self.get_depthPOINT_BOXperc(box,adjust=adjust)
-        else: depth = self.get_depthPOINT_BOXperc(box,adjust=adjust)
+        depth = self.get_depthPOINT_BOXperc(box)
         #prRed(f"UNIT SEE ME:\t{depth}")
         
         if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
@@ -442,14 +432,13 @@ class Stereo_Camera:
     '''
      
     #max depth
-    def get_relativeAngDep_BOX(self, box, adjust=0):
+    def get_relativeAngDep_BOX(self, box):
         coord = find_centerBOT(box) #if were using the cameras height due to lack of gyro: have to use bottom
         #current postiion is [0,0]
         #telling how far it is from the robots current position
         
         angle = self.get_relativeANGLEX(coord[0])
-        if adjust==1 or adjust==2: depth,_ = self.get_depthPOINT_BOXperc(box,adjust=adjust)
-        else: depth = self.get_depthPOINT_BOXperc(box,adjust=adjust)
+        depth = self.get_depthPOINT_BOXperc(box)
         if depth<self.GND_Height: prALERT("depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   abs(depth**2 - self.GND_Height**2)   )
         return [angle,  distance]
