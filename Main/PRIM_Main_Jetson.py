@@ -499,10 +499,21 @@ prGreen("PRIMARY MAIN Jetson: Class Definition Success")
 
 
 if __name__ == "__main__":
+    old_stdout = sys.stdout
+
+    name = "log" + time.ctime.time() + ".log"
+    log_file = open(name,"w")
+
+    sys.stdout = log_file
+    
     try:
         eevee = PRIM_Main_Jetson(Real=[False,False,True])#,Forced=True)
     except Exception as e:
         os.system("pkill -f MS_startup.sh")
         raise RuntimeError("PRIM Jetson __main__ Error") from e
+    
+    sys.stdout = old_stdout
+
+    log_file.close()
     
     

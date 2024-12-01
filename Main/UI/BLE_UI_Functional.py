@@ -1,3 +1,5 @@
+import tkinter
+
 import tkintermapview
 import asyncio
 import tkinter as tk
@@ -14,123 +16,123 @@ import sys,os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Py_Modules')))
 from Path_Planning import generate_corners
 from helper_functions import *
-prRed("hi")
 
     
-
 write_uuid = '0000ffe0-0000-1000-8000-00805f9b34fb'
 read_uuid = '0000ffe0-0000-1000-8000-00805f9b34fb'
 
 
-def build_gui():
-    """Build a simple GUI."""
-    # For the sake of simplicity, we use some global variables:
-    global main_window, device_list, device_data, message_variable, input_buffer, is_connected
-    default_gps = [(40.35193576273826, -79.92251632083196), (40.35216725384582, -79.92235178305927),
-                   (40.357392805988894, -79.93423733144638)]
-    main_window = tk.Tk()
-    main_window.title('Tkinter/bleak asyncio Demo')
 
-    main_window.title("GPS & Bluetooth Controller")
-    main_window.geometry("900x900")
-    main_window.configure(bg="#2c3e50")  # Background color
+class App(tkinter.Tk):
+    def __init__(self, *args, **kwargs):
+        tkinter.Tk.__init__(self, *args, **kwargs)
+        global main_window, device_list, device_data, message_variable, input_buffer, is_connected
+        default_gps = [(40.35193576273826, -79.92251632083196), (40.35216725384582, -79.92235178305927),
+                       (40.357392805988894, -79.93423733144638)]
+        main_window = tk.Tk()
+        main_window.title('Tkinter/bleak asyncio Demo')
 
-    # Title Label
-    title_label = tk.Label(main_window, text="Wall-e Control", font=("Arial", 28, "bold"), fg="white", bg="#2c3e50")
-    title_label.pack(pady=10)
+        main_window.title("GPS & Bluetooth Controller")
+        main_window.geometry("600x600")
+        main_window.configure(bg="#2c3e50")  # Background color
 
-    # Start/Stop Frame
-    control_frame = ttk.Frame(main_window)
-    control_frame.pack(pady=10)
+        # Title Label
+        title_label = tk.Label(main_window, text="Wall-e Control", font=("Arial", 28, "bold"), fg="white", bg="#2c3e50")
+        title_label.pack(pady=10)
 
-    ##########################
-    # Pressing the x-Icon on the Window calls stop_loop()
-    main_window.protocol("WM_DELETE_WINDOW", BLE.stop_loop)
 
-    message_variable = tk.StringVar()
-    input_buffer = tk.StringVar()
-    ####################################################
+        control_frame = ttk.Frame(main_window)
+        control_frame.pack(pady=10)
+        main_window.protocol("WM_DELETE_WINDOW", BLE.stop_loop)
 
-    main_window.start_button = ttk.Button(control_frame, text="Start", style="TButton", command= lambda : asyncio.create_task(BLE.start_task()))
-    main_window.start_button.grid(row=0, column=0, padx=20, pady=10, sticky="nsew", ipadx=20)
+        message_variable = tk.StringVar()
+        input_buffer = tk.StringVar()
 
-    main_window.stop_button = ttk.Button(control_frame, text="Stop", style="TButton", command= lambda : asyncio.create_task(BLE.write("STOP\t")))
-    main_window.stop_button.grid(row=0, column=2, padx=20, pady=10, sticky="nsew", ipadx=20)
+        main_window.start_button = ttk.Button(control_frame, text="Start", style="TButton", command= lambda : asyncio.create_task(BLE.start_task()))
+        main_window.start_button.grid(row=0, column=0, padx=20, pady=10, sticky="nsew", ipadx=20)
 
-    main_window.pause_button = ttk.Button(control_frame, text="Pause", style="TButton", command= lambda : asyncio.create_task(BLE.write("PAUS\t")))
-    main_window.pause_button.grid(row=0, column=1, padx=20, pady=10, sticky="nsew", ipadx=20)
+        main_window.stop_button = ttk.Button(control_frame, text="Stop", style="TButton", command= lambda : asyncio.create_task(BLE.write("STOP\t")))
+        main_window.stop_button.grid(row=0, column=2, padx=20, pady=10, sticky="nsew", ipadx=20)
 
-    # Bluetooth Frame
-    bluetooth_frame = ttk.Frame(main_window
-)
-    bluetooth_frame.pack(pady=10)
+        main_window.pause_button = ttk.Button(control_frame, text="Pause", style="TButton", command= lambda : asyncio.create_task(BLE.write("PAUS\t")))
+        main_window.pause_button.grid(row=0, column=1, padx=20, pady=10, sticky="nsew", ipadx=20)
 
-    main_window.bt_button = ttk.Button(bluetooth_frame, text="Connect Bluetooth", command=lambda : asyncio.create_task(BLE.connect()))
-    main_window.bt_button.grid(row=0, column=0, padx=10)
+        # Bluetooth Frame
+        bluetooth_frame = ttk.Frame(main_window
+    )
+        bluetooth_frame.pack(pady=10)
 
-    main_window.status_label = tk.Label(bluetooth_frame, textvariable=message_variable, font=("Arial", 12),
-                                 fg="red", bg="white")
-    main_window.status_label.grid(row=0, column=1, padx=10)
+        main_window.bt_button = ttk.Button(bluetooth_frame, text="Connect Bluetooth", command=lambda : asyncio.create_task(BLE.connect()))
+        main_window.bt_button.grid(row=0, column=0, padx=10)
 
-    # Map Frame
-    map_frame = ttk.Frame(main_window)
-    map_frame.pack(pady=10)
+        main_window.status_label = tk.Label(bluetooth_frame, textvariable=message_variable, font=("Arial", 12),
+                                     fg="red", bg="white")
+        main_window.status_label.grid(row=0, column=1, padx=10)
 
-    main_window.map_widget = tkintermapview.TkinterMapView(map_frame, width=700, height=400, corner_radius=10)
-    main_window.map_widget.pack()
-    main_window.map_widget.set_position(37.7749, -122.4194)
-    main_window.map_widget.set_zoom(10)
+        # # Map Frame
+        # # map_frame = ttk.Frame(main_window)
+        # # map_frame.pack(pady=10)
+        # script_directory = os.path.dirname(os.path.abspath(__file__))
+        # database_path = os.path.join(script_directory, "Offline_Maps/offline_tiles.db")
+        #
+        # main_window.map_widget = tkintermapview.TkinterMapView(main_window, width=700, height=500, corner_radius=0, use_database_only=True,database_path=database_path)
+        # main_window.map_widget.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        # # main_window.map_widget.grid(row=1, column=0, columnspan=3, sticky="nsew")
+        # main_window.map_widget.pack()
+        # # main_window.map_widget.set_position(48.860381, 2.338594)  # Paris, France
+        # main_window.map_widget.set_zoom(15)
+        # main_window.map_widget.set_tile_server("https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}&s=Ga")
+        #
+        # # Add initial markers
+        # # main_window.markers = [
+        # #     main_window.map_widget.set_marker(48.860381, 2.338594, text="Start"),
+        # #     main_window.map_widget.set_marker(48.860381, 2.338594, text="Corner 1"),
+        # #     main_window.map_widget.set_marker(48.860381, 2.3385942, text="Corner 2")
+        # # ]
 
-    # Add initial markers
-    main_window.markers = [
-        main_window.map_widget.set_marker(37.7749, -122.4194, text="Start"),
-        main_window.map_widget.set_marker(37.8044, -122.2711, text="Corner 1"),
-        main_window.map_widget.set_marker(37.6879, -122.4702, text="Corner 2")
-    ]
+        # GPS Input Frame
+        gps_input_frame = ttk.Frame(main_window)
+        gps_input_frame.pack(pady=20)
 
-    # GPS Input Frame
-    gps_input_frame = ttk.Frame(main_window)
-    gps_input_frame.pack(pady=20)
+        main_window.gps_fields = []
+        for i in range(3):
+            gps_frame = ttk.Frame(gps_input_frame)
+            gps_frame.grid(row=i, column=0, padx=10, pady=5, sticky="w")
 
-    main_window.gps_fields = []
-    for i in range(3):
-        gps_frame = ttk.Frame(gps_input_frame)
-        gps_frame.grid(row=i, column=0, padx=10, pady=5, sticky="w")
+            lat_label = ttk.Label(gps_frame, text=f"Latitude {i + 1}:", font=("Arial", 12))
+            lat_label.grid(row=0, column=0, padx=5)
+            lat_entry = ttk.Entry(gps_frame, width=10)
+            lat_entry.insert(0,default_gps[i][0])
+            lat_entry.grid(row=0, column=1, padx=5)
 
-        lat_label = ttk.Label(gps_frame, text=f"Latitude {i + 1}:", font=("Arial", 12))
-        lat_label.grid(row=0, column=0, padx=5)
-        lat_entry = ttk.Entry(gps_frame, width=10)
-        lat_entry.insert(0,default_gps[i][0])
-        lat_entry.grid(row=0, column=1, padx=5)
+            lon_label = ttk.Label(gps_frame, text=f"Longitude {i + 1}:", font=("Arial", 12))
+            lon_label.grid(row=0, column=2, padx=5)
+            lon_entry = ttk.Entry(gps_frame, width=10)
+            lon_entry.insert(0, default_gps[i][1])
+            lon_entry.grid(row=0, column=3, padx=5)
 
-        lon_label = ttk.Label(gps_frame, text=f"Longitude {i + 1}:", font=("Arial", 12))
-        lon_label.grid(row=0, column=2, padx=5)
-        lon_entry = ttk.Entry(gps_frame, width=10)
-        lon_entry.insert(0, default_gps[i][1])
-        lon_entry.grid(row=0, column=3, padx=5)
+            main_window.gps_fields.append((lat_entry, lon_entry))
 
-        main_window.gps_fields.append((lat_entry, lon_entry))
+        main_window.set_button = ttk.Button(gps_frame, text=f"Set Coords",
+                                            command=gps_update)
+        main_window.set_button.grid(row=2, column=4, padx=5)
 
-    main_window.set_button = ttk.Button(gps_frame, text=f"Set Coords",
-                                        command=gps_update)
-    main_window.set_button.grid(row=2, column=4, padx=5)
+        buffer_input_frame = ttk.Frame(main_window)
+        buffer_input_frame.pack(pady=20)
+        main_window.input_label = tk.Label(buffer_input_frame, textvariable=input_buffer, font=("Arial", 12),
+                                            fg="red", bg="white")
 
-    buffer_input_frame = ttk.Frame(main_window)
-    buffer_input_frame.pack(pady=20)
-    main_window.input_label = tk.Label(buffer_input_frame, textvariable=input_buffer, font=("Arial", 12),
-                                        fg="red", bg="white")
+        main_window.input_label.grid(row=0, column=1, padx=20)
 
-    main_window.input_label.grid(row=0, column=1, padx=20)
+        ESTOP_frame = ttk.Frame(main_window)
+        ESTOP_frame.pack(pady=20)
+        main_window.estop_button = ttk.Button(ESTOP_frame, text="ESTOP", command= lambda : asyncio.create_task(BLE.write("ESTO\t")))
+        main_window.pic = ttk.Button(ESTOP_frame, text="PIC",
+                                              command=lambda: asyncio.create_task(BLE.write("CAMR\t")))
+        main_window.estop_button.grid(row=0, column=1, padx=20)
+        main_window.pic.grid(row=0, column=2, padx=20)
 
-    ESTOP_frame = ttk.Frame(main_window)
-    ESTOP_frame.pack(pady=20)
-    main_window.estop_button = ttk.Button(ESTOP_frame, text="ESTOP", command= lambda : asyncio.create_task(BLE.write("ESTO\t")))
-    main_window.pic = ttk.Button(ESTOP_frame, text="PIC",
-                                          command=lambda: asyncio.create_task(BLE.write("CAMR\t")))
-    main_window.estop_button.grid(row=0, column=1, padx=20)
-    main_window.pic.grid(row=0, column=2, padx=20)
-
-     ###################
+         ###################
 
 
     # Don't do: main_window.mainloop()!
@@ -315,7 +317,7 @@ async def main():
     BLE = BLE()
     stop = asyncio.Event()
     disconnect = asyncio.Event()
-    build_gui()
+    GUI = App()
     await BLE.show()
     main_window.destroy()
 
