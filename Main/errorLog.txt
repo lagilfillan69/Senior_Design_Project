@@ -2066,3 +2066,196 @@ Fake Ard read_message
 2024-11-23_16_55_12
 
 Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-24_10_45_2
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-24_10_45_12
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-24_10_45_21
+
+Tele Pass
+
+==========
+2024-11-24_10_45_28
+
+Error starting 'Stereo_Camera', switch to Fake?:	y?
+
+==========
+2024-11-24_10_45_32
+
+Cant use a fake Stereo with the TeleCam Feed Swap
+
+==========
+2024-11-24_10_45_32
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 528, in <module>
+    eevee = PRIM_Main_Jetson(Real=[True,True,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 80, in __init__
+    if self.CamSwap: raise RuntimeError("Cant use a fake Stereo with the TeleCam Feed Swap")
+RuntimeError: Cant use a fake Stereo with the TeleCam Feed Swap
+
+
+==========
+2024-11-24_10_46_23
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-24_10_46_30
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-24_10_46_35
+
+Error loading Real TeleCAM
+
+==========
+2024-11-24_10_46_35
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Tele_Camera.py", line 36, in __init__
+    t_frame = self.get_feed()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Tele_Camera.py", line 95, in get_feed
+    if not ret: raise RuntimeError("Can't receive frame (stream end?)")
+RuntimeError: Can't receive frame (stream end?)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 528, in <module>
+    eevee = PRIM_Main_Jetson(Real=[True,True,True])#,Forced=True)
+  File "/home/jetson/Senior_Design_Project/Main/PRIM_Main_Jetson.py", line 57, in __init__
+    self.TeleCam = TeleCAM()
+  File "/home/jetson/Senior_Design_Project/Main/Py_Modules/Tele_Camera.py", line 45, in __init__
+    else: raise RuntimeError("Error loading Real TeleCAM") from e
+RuntimeError: Error loading Real TeleCAM
+
+
+==========
+2024-11-24_10_50_41
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-24_10_50_48
+
+Tele Pass
+
+==========
+2024-11-24_10_50_48
+
+Stereo Pass
+
+==========
+2024-11-24_10_50_48
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-24_10_50_54
+
+SerialComms Pass
+
+==========
+2024-11-24_10_50_54
+
+MainProject_Loop
+
+==========
+2024-11-24_10_50_54
+
+Fake Ard read_message
+
+==========
+2024-11-24_10_50_59
+
+Fake Ard read_message
+
+==========
+2024-11-24_10_51_0
+
+Fake Ard read_message
+
+==========
+2024-11-24_10_51_5
+
+Fake Ard read_message
+
+==========
+2024-11-24_10_51_7
+
+Fake Ard read_message
+
+==========
+2024-11-24_10_51_8
+
+Fake Ard read_message
+
+==========
+2024-11-24_11_5_36
+
+Start of PRIM_Main_Jetson
+
+==========
+2024-11-24_11_5_43
+
+Tele Pass
+
+==========
+2024-11-24_11_5_43
+
+Stereo Pass
+
+==========
+2024-11-24_11_5_43
+
+Error starting 'Serial_Ard', switch to Fake?:	y?
+
+==========
+2024-11-24_11_5_45
+
+SerialComms Pass
+
+==========
+2024-11-24_11_5_45
+
+MainProject_Loop
+
+==========
+2024-11-24_11_5_45
+
+Fake Ard read_message
+
+==========
+2024-11-24_11_5_49
+
+Fake Ard read_message
+
+==========
+2024-11-24_10_53_53
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-24_10_53_48
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-24_10_54_41
+
+Error starting 'TeleCAM', switch to Fake?:	y?
+
+==========
+2024-11-24_10_54_26
+
+Error starting 'TeleCAM', switch to Fake?:	y?

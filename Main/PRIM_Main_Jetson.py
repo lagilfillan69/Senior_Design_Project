@@ -54,7 +54,7 @@ class PRIM_Main_Jetson():
         print(Back.CYAN+("="*24)+Style.RESET_ALL)
         prCyan("TELESCOPIC Camera initialization")        
         if self.RealSystem and self.Real[0]:
-            self.TeleCam = TeleCAM()
+            self.TeleCam = TeleCAM(FrameSize=[640,640])
             if self.TeleCam.fail:
                 prYellow("Switching to Fake TeleCam")
                 self.TeleCam=None
@@ -192,6 +192,8 @@ class PRIM_Main_Jetson():
                 f"currTrashTarg: Stereo_AngDep\t\t{Trash_Index}: {self.Stereo_AngDep if self.Stereo_AngDep is not None else None}",
                 f"currTrashTarg: Stereo_RelPos\t\t{Trash_Index}: {self.Stereo_RelPos if self.Stereo_RelPos is not None else None}",
                 f"Tele Angles:\t\t{Trash_Index}: {self.Tele_angles}",sep='\n')
+                
+                ErrorLog(f"Curr, Prev\t\t{Curr_State}, {Previous_State}\nRunWayBound\t\t{Runway_Boundaries}\nPathIdx, PathLen, PathTarg\t\t{Path_Index}, {len(Path)}, { f'[{Path[Path_Index][0]}, {Path[Path_Index][1]}]' if (Path is not None and Path_Index>=0) else None }\nCurrent_Location\t\t{Current_Location}\ncurrTrashTarg: Stereo_AngDep\t\t{Trash_Index}: {self.Stereo_AngDep if self.Stereo_AngDep is not None else None}\ncurrTrashTarg: Stereo_RelPos\t\t{Trash_Index}: {self.Stereo_RelPos if self.Stereo_RelPos is not None else None}\nTele Angles:\t\t{Trash_Index}: {self.Tele_angles}")
 
             
             
@@ -374,7 +376,7 @@ class PRIM_Main_Jetson():
                     self.SerialComms.Stop()
                     Curr_State = 5;updated=True
                     #NOTE : possible pickup the same object over and over BUGGG
-                    self.SerialComms.Bluetooth(  str(self.Tele_angles[0]))
+                    self.SerialComms.Bluetooth( str(self.Tele_angles[0]))
                 elif (time.time() - start_time) > 60: Curr_State = 9;updated=True # return to home, nothing is detected here
                 else: Curr_State = 4
                 Previous_State = 4

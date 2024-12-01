@@ -35,7 +35,7 @@ if typeRun!=3:
     #Telescopic Camera
     print(Back.CYAN+("="*24)+Style.RESET_ALL)
     prCyan("TELESCOPIC Camera initialization")        
-    TeleCamObj = TeleCAM()
+    TeleCamObj = TeleCAM(FrameSize=[640,640])
     if TeleCamObj.fail:
         if typeRun==2: raise RuntimeError("Couldnt make TELE")
         if typeRun==1: typeRun=3
@@ -140,6 +140,7 @@ listenlearn.start()
 
 #===============================================================================
 while True:
+    s_time=time.time()
     #prRed(f"selPOS:\t{selPOS}")
     
     if cv2.waitKey(1) == ord('q') or breker: break
@@ -211,8 +212,6 @@ while True:
             prPurple(f'StereoCam Rel_POS:\t\t{STER_RELPOSs}')
             prLightPurple(f'StereoCam STER_DepAng:\t\t{STER_DepAng}')
             print(f'StereoCam Sizes:  \t\t{STER_SIZEs}')
-            if typeRun!=3: prYellow(f'TELE Classes:\t{TELEclasses}')
-            if typeRun!=2: prYellow(f'STER Classes:\t{STERclasses}')
         else:
             h,w=STER_depth.shape[:2]
             #STER_depth = cv2.circle(STER_depth, [w//2+selPOS[1],  h//2+selPOS[0]],10,(0,255,0),5)
@@ -237,6 +236,7 @@ while True:
             #cv2.rectangle(STER_depth, [    nX4-lBOXs,box[0][1] ], [    nX4+lBOXs,box[1][1] ],(175,255,0),2)
             #	multiply
             #cv2.rectangle(STER_depth, [    int(w//2+nX_mul-lBOXs),box[0][1]], [    int(w//2+nX_mul+lBOXs),box[1][1]],(255,255,0),2)
+            """
             prPurple( '\n'+'-'*8,
                       f'selPOS[1]:  {selPOS[1]}',
                       #f' x1, x2:    {int((w/2)+selPOS[1]-lBOXs)},{int((w/2)+selPOS[1]+lBOXs)}',
@@ -254,11 +254,17 @@ while True:
                       f'RelPOS1:\t{SterCamObj.get_relativePOSITION_BOX( box,adjust=1 )}',
                       f'RelPOS2:\t{SterCamObj.get_relativePOSITION_BOX( box,adjust=2 )}',
                       sep='\n')
+            """
         #if typeRun==3: cv2.imshow('StereoCamera <q key to quit>',resizeFrame(STER_img,3)) #display
         #if typeRun==3: cv2.imshow("Depthmap <q key to quit>",resizeFrame(STER_depth,3))
         if typeRun==3: cv2.imshow("StereoCamera, Depthmap   q key to quit>",resizeFrame(comboImg([STER_img,STER_depth]),spl)  )
     
     
+    
+    if typeRun!=3:prYellow(f'TELE Classes:\t{TELEclasses}')
+    if typeRun!=2:prYellow(f'STER Classes:\t{STERclasses}')
+    runtime=time.time()-s_time
+    prGreen(f'RUNTIME: {runtime}\t\tFPS: {1/runtime}')
     if typeRun==1: cv2.imshow("TeleCamera, StereoCamera, Depthmap   <q key to quit>", resizeFrame(comboImg([TELE_img,STER_img,STER_depth]),spl)  )
     
 

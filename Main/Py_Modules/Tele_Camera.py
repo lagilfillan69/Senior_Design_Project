@@ -19,7 +19,7 @@ class TeleCAM():
     def __init__(self, index=TELECAM_PORT,
                  GND_Height=TELECAM_GND_HEIGHT,
                  FocalLength=TELECAM_FOCAL_LENGTH,
-                 FrameSize=[1920,1280]):
+                 FrameSize=[1920,1080]):
         self.GND_Height = GND_Height
         self.H_DegView = math.degrees(2*math.atan(  22.3/(2*FocalLength) ))#prev:FL*16 (realistic? was not)
         self.V_DegView = math.degrees(2*math.atan(  14.9/(2*FocalLength) ))

@@ -19,11 +19,11 @@ except Exception as e:
 try:
     from helper_functions import *
     from Camera_Node import DisparitySubscriber,ColorImgSubscriber
-    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZDEGVIEW_C,STEREOCAM_VERTDEGVIEW_C,FXTX,CONVERSION,CLR2DPR1,CLR2DPR2,CLR2DPR3,CLR2DPR4
+    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZDEGVIEW_C,STEREOCAM_VERTDEGVIEW_C,FXTX,CONVERSION,CAMERAINFO,CLR2DPRWEIHTS
 except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZDEGVIEW_C,STEREOCAM_VERTDEGVIEW_C,FXTX,CONVERSION,CLR2DPR1,CLR2DPR2,CLR2DPR3,CLR2DPR4
+    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZDEGVIEW_C,STEREOCAM_VERTDEGVIEW_C,FXTX,CONVERSION,CAMERAINFO,CLR2DPRWEIHTS
     #raise RuntimeError("Import Error:\n") from e
 
 
@@ -31,7 +31,7 @@ except Exception as e:
 
 class Stereo_Camera:
     def __init__(self,
-                 constants=[STEREOCAM_GND_HEIGHT, STEREOCAM_HORZDEGVIEW_C, STEREOCAM_VERTDEGVIEW_C, FXTX, CONVERSION, CLR2DPR1,CLR2DPR2,CLR2DPR3,CLR2DPR4],
+                 constants=[STEREOCAM_GND_HEIGHT, STEREOCAM_HORZDEGVIEW_C, STEREOCAM_VERTDEGVIEW_C, FXTX, CONVERSION, CAMERAINFO, CLR2DPRWEIHTS],
                  Real=True,
                  multithread=True):
         self.Depth_Map = None
@@ -40,8 +40,9 @@ class Stereo_Camera:
         self.V_DegView = constants[2]
         self.fxTx=constants[3]
         self.UnitConv=constants[4]
-        self.convWeights=constants[5:]
-        prPurple(f'constants:\t{constants}')
+        self.CameraInfo=constants[5] #[K_left,K_aux,R_aux,T_aux,T_skew]
+        self.convWeights=constants[6]
+        prPurple(f'constants:\t{constants[:5]}')
         prYellow(f'convert:\t{self.UnitConv}')
         prYellow(f'constants:\t{self.convWeights}')
         if platform.system() != 'Linux': self.Real=False
@@ -250,12 +251,147 @@ class Stereo_Camera:
         return self.ColorImg_sub.want
     
     
+    #                   [0,    ,1    ,2    ,3    ,4]
+    #self.CameraInfo    [K_left,K_aux,R_aux,T_aux,T_skew]
+    def find_best_matching_point(self,AUXpnt):
+        #---------------------------
+        #	Compute the epipolar line
+        a,b,c = (np.linalg.inv(self.CameraInfo[0]).T @ self.CameraInfo[4] @ self.CameraInfo[2] @ np.linalg.inv(self.CameraInfo[1])) @ np.array([AUXpnt[0], AUXpnt[1], 1])  # Epipolar line in homogeneous coordinates
+        #prGreen(a,b,c)
+        
+        
+        #---------------------------
+        # Step 3: Iterate over pixel coordinates along the epipolar line in the auxiliary image
+        #temp=np.arange(self.width)
+        temp=np.arange(int(AUXpnt[0]-(self.width*0.1)),  int(AUXpnt[0]+(self.width*0.1)))
+        if a<0.1:
+            pnts = np.column_stack((temp, np.full_like(temp, int(-c/b))))
+        else:
+            pnts = np.column_stack((temp, int(-((a*temp)+c)/b)))
+
+        best_match = None
+        min_error = float('inf')
+        
+        #prGreen(pnts[0],pnts[-1])
+        
+        
+        
+
+        #---------------------------
+        # Step 4: For each point on the epipolar line, get depth, back-project to 3D, and re-project
+        err=[];cords=[]
+        for x_aux, y_aux in pnts:
+            #---------------------------
+            # Get the depth at this point (assuming depth_function returns Z for [x, y] in the left image)
+            Z = self.dispar2depth( self.Depth_Map[y_aux,x_aux],  alert=False )  # Get the depth of the point in the left image
+            if Z == 0 or Z== float('inf'): continue
+            #prRed(Z)
+
+            
+            #---------------------------
+            # Back-project the point to 3D coordinates in the left camera
+            point_3d_homogeneous = np.linalg.inv(self.CameraInfo[0]) @ np.array([x_aux * Z, y_aux * Z, Z])
+
+            
+            #---------------------------
+            # Step 5: Re-project the 3D point onto the auxiliary camera's image plane (right image)
+            point_3d_aux = self.CameraInfo[2] @ point_3d_homogeneous + self.CameraInfo[3]  # Transform the 3D point to the auxiliary camera frame
+            point_projected = self.CameraInfo[1] @ point_3d_aux  # Project the 3D point into the auxiliary image
+
+            
+            #---------------------------
+            # Normalize the projected point to get pixel coordinates
+            predicted_x, predicted_y = point_projected[:2] / point_projected[2]
+            
+            
+            #---------------------------
+            err.append(np.linalg.norm([predicted_x - x_aux, predicted_y - y_aux]))
+            cords.append([predicted_x, predicted_y])
+        
+        #---------------------------
+        err=np.asarray(err)
+        # prCyan(  err)
+        val=np.percentile(err,95)
+        idx=np.abs(err-val).argmin()
+        
+        
+        # prCyan(  np.percentile(  err, 95  )  )
+        # prYellow(  err.index( np.percentile(  np.asarray(err), 95))  )
+        return [int(cords[idx][0]),int(cords[idx][1])], pnts[0],pnts[-1]
+    
+    
+    
+    
+    #---------------------------------------------------------------------
+    #---------------------------------------------------------------------
+    #---------------------------------------------------------------------
+    def get_DepthBESTMATCH_BOXperc(self,AUXbox,area_perc=None,windowCUT_perc=0.46,dropoff=2,perc=95):
+        #---------------------------
+        #   Sliding window from L->R
+        boxwid= AUXbox[1][0]-AUXbox[0][0]
+        if area_perc is None:
+            mincol= int(AUXbox[0][0]-boxwid)
+            maxcol= int(AUXbox[1][0]+boxwid)
+        else:
+            #mincol= int(AUXbox[0][0]-(self.width*area_perc))
+            #maxcol= int(AUXbox[1][0]+(self.width*area_perc))
+            mincol= int(AUXbox[0][0]-(boxwid*area_perc))
+            maxcol= int(AUXbox[1][0]+(boxwid*area_perc))
+        if mincol<0:          mincol=0
+        if maxcol>self.width: maxcol=self.width
+        
+        
+        #---------------------------
+        #   actual window
+        #	>getting area and windows
+        area= self.Depth_Map[    AUXbox[0][1]:AUXbox[1][1], mincol:maxcol    ]
+        windows= [  area[:, i:i+boxwid] for i in range(maxcol-mincol+1-boxwid)  ]
+        
+        #	calc perc to cutoff
+        if windowCUT_perc is None: windowCUT_perc=  np.percentile([1-(np.sum(wind==0)/wind.size) for wind in windows], perc)
+        
+        #	>removing windows
+        valid_window=[];idxs=[]
+        for idx,wind in enumerate(windows):
+            if 1-(np.sum(wind==0)/wind.size)>=windowCUT_perc:
+                valid_window.append(wind)
+                idxs.append(idx)
+        
+        #	>edge cases
+        if len(idxs)==0: return self.get_depthPOINT_BOXperc(AUXbox),AUXbox
+        if len(idxs)==1:
+            box=  [   [idxs[0]+mincol,AUXbox[0][1]],  [idxs[0]+mincol+boxwid,AUXbox[1][1]]   ]
+            return self.get_depthPOINT_BOXperc(box),box
+        
+        
+        
+        #---------------------------
+        #   weigh depths by distance from center
+        depths = np.asarray([self.dispar2depth(np.percentile(wind,95),alert=False) for wind in valid_window])
+        weights= np.asarray(  [1/(1e-10+(abs(  (mincol+(maxcol-mincol)/2) - (idx+mincol+(boxwid/2))  )**dropoff)) for idx in idxs]  )
+        weights= weights/depths
+        
+        
+        
+        #---------------------------
+        #   Find 'best' idx with percentiled weight
+        ChosenOne=np.percentile(weights,perc)
+        idx=(np.abs(weights-ChosenOne)).argmin()
+        idx_n=idxs[idx]
+        box= [   [idx_n+mincol,AUXbox[0][1]],  [idx_n+mincol+boxwid,AUXbox[1][1]]   ]
+        
+        return depths[idx], box
+    
+    
+    
+    
+    
     
     
     #---------------------------------------------------------------------
     #disparity value to depth value, units included
-    def dispar2depth(self,dispar):
-        if dispar==0:
+    def dispar2depth(self,dispar,alert=True):
+        if alert and dispar==0:
             prALERT("dispar2depth:  division by zero")
             return 0
         return (self.UnitConv*self.fxTx  *16)/dispar
@@ -497,7 +633,9 @@ class Stereo_Camera:
         
         
         #-----
-        #weigh
+        #	weigh
+        '''
+        #distances
         boxed = self.Depth_Map[y1:y2, x1:x2]
         wDepCorn=[0]*4
         for i in range(boxed.shape[0]):
@@ -508,9 +646,24 @@ class Stereo_Camera:
                 wDepCorn[2] += 1/(np.sqrt(abs(i-y2))**2  +  np.sqrt(abs(j-x1))**2+ 1e-5)
                 wDepCorn[3] += 1/(np.sqrt(abs(i-y2))**2  +  np.sqrt(abs(j-x2))**2+ 1e-5)
         
-        #	normalize
+        #normalize
         normalizer = np.max(boxed)/np.max(wDepCorn) #max of area/max of weights
         wDepCorn=[ele*normalizer for ele in wDepCorn]
+        '''
+        #corners weight =   sum(weights *values)/sum(weights)
+        boxed = self.Depth_Map[y1:y2, x1:x2]
+        row,cols=boxed.shape[:2]
+        y_ind,x_ind = np.meshgrid(range(rows), range(cols), indexing='ij')
+        #TL,TR, BL,BR
+        w1= 1/(np.sqrt( (y_ind- y1)**2 + (x_ind- x1)**2)+ 1e-5)
+        w2= 1/(np.sqrt( (y_ind- y1)**2 + (x_ind- x2)**2)+ 1e-5)
+        w3= 1/(np.sqrt( (y_ind- y2)**2 + (x_ind- x1)**2)+ 1e-5)
+        w4= 1/(np.sqrt( (y_ind- y2)**2 + (x_ind- x2)**2)+ 1e-5)
+        
+        wDepCorn[ np.sum(w1*boxed)/np.sum(w1),
+        	  np.sum(w2*boxed)/np.sum(w2),
+        	  np.sum(w3*boxed)/np.sum(w3),
+        	  np.sum(w4*boxed)/np.sum(w4) ]
         
         
         #-----
