@@ -36,7 +36,7 @@ void steerToAngle(int angle) {
 
 void center() {
   steeringServo.write(47); // Move servo to center 
-  Steering_Angle = 0
+  Steering_Angle = 0;
   delay(5);
 }
 
@@ -44,13 +44,13 @@ void center() {
 
 void left() {
   steeringServo.write(110); // Move servo to left
-  Steering_Angle = 63// NORMALIZED
+  Steering_Angle = 63;// NORMALIZED
   delay(5);
 }
 
 void right() {
   steeringServo.write(0); // Move servo to right
-  steering_Angle = -47  // NEED TO NOrMALIZED
+  Steering_Angle = -47;  // NEED TO NOrMALIZED
   delay(5);
 }
 
@@ -121,7 +121,7 @@ void runDistance(int steps) {
 void runDistanceRev(int steps) {
     //Serial.println("Driving forward...");
     //Serial.print("PRE SRCH REV LOOP "); Serial.print(Counter); Serial.print("  "); Serial.print(steps); Serial.println(incomingString);
-    local_counter = Counter;
+    int local_counter = Counter;
     
     while (abs(Counter - local_counter) < steps) {
       if(Serial.available() > 0  || btSerial.available() > 0){
@@ -219,11 +219,11 @@ float degree_to_rad(float rad){
 
 float bicycle_equation(){
     
-    float delta_s = (Counts - Previous_Steer_Count / COUNTS_PER_REV) * wheel_circumference;
+    float delta_s = (Counter - Previous_Steer_Count / COUNTS_PER_REV) * wheel_circumference;
     
-    Previous_Steer_Count = Counts;
+    Previous_Steer_Count = Counter;
     // Read steering angle δ in radians
-    float delta = degree_to_rad(Steering_Angle)
+    float delta = degree_to_rad(Steering_Angle);
 
     // Adjust steering angle due to understeer caused by locked differentials
     float effective_delta = delta * UNDERSTEER_COEFF;
@@ -233,6 +233,15 @@ float bicycle_equation(){
 
     // Compute change in heading angle Δθ = κ * Δs
     float delta_theta = curvature * delta_s;
+
+    //     // Update heading angle
+    theta += delta_theta;
+
+    // Normalize theta to be within [-π, π]
+    if (theta > PI)
+        theta -= 2.0f * PI;
+    else if (theta < -PI)
+        theta += 2.0f * PI;
 
     // Update position
     float theta_mid = theta + (delta_theta / 2.0f);

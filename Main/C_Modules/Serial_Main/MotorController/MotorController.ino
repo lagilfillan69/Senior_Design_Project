@@ -26,13 +26,13 @@ int LastCount = 0; // To keep track of changes
 int Previous_Steer_Count = 0;
 int Steering_Angle = 0;
 
- float wheel_circumference = PI * WHEEL_DIAMETER;
+
  // Constants (adjust these according to your RC car's specifications)
-const float PI = 3.14159265358979323846f;
-const float WHEEL_DIAMETER = 0.42f;  // Wheel diameter in meters (example: 5 cm)
+const float WHEEL_DIAMETER = 0.16002;  // Wheel diameter in meters (example: 5 cm)
 const int COUNTS_PER_REV = 20;      // Encoder counts per wheel revolution
-const float WHEELBASE = 0.2f;        // Distance between front and rear axles in meters
+const float WHEELBASE = .405;        // Distance between front and rear axles in meters
 const float UNDERSTEER_COEFF = 0.8;
+float wheel_circumference = M_PI * WHEEL_DIAMETER;
 
 RotaryEncoder Rotary(&RotaryChanged, 2, 3, 4); // (CLK),  (DT),  (SW)
 volatile unsigned int state = Rotary.GetState();
@@ -68,8 +68,6 @@ const int testDataSize = sizeof(testData) / sizeof(testData[0]);
 float totalDistanceDriven = 0.0;
 
 
-
-
 SoftwareSerial btSerial(11,10); //RX to DIgital 4, TX to Digital 3
 
 
@@ -92,6 +90,7 @@ String C4 = "";
 String PrevCMD = "";
 bool found = false;
 bool Rflag =  0;
+float theta=0.0;
 
 int steps = 0;
 
