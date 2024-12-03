@@ -513,7 +513,6 @@ if __name__ == "__main__":
         raise RuntimeError("PRIM Jetson __main__ Error") from e
     
     sys.stdout = old_stdout
-
     log_file.close()
     
     

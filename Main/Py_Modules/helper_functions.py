@@ -126,13 +126,20 @@ def gps_to_xy(lat1, lon1, lat2, lon2):
     y = round(R * dlat,1)
     return x, y
 
+from shapely.geometry import Polygon
+
+def is_valid_polygon(corners):
+    polygon = Polygon(corners)
+    return polygon.is_valid
+
 def interpolate_points(start, end, step):
     """Generate points along the line segment between start and end."""
     x1, y1 = start
     x2, y2 = end
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     num_points = int(distance // step)
-
+    if num_points <= 0:
+        return [-1,-1]
     points = []
     for i in range(num_points + 1):
         t = i / num_points
@@ -140,6 +147,24 @@ def interpolate_points(start, end, step):
         y = y1 + t * (y2 - y1)
         points.append((x, y))
     return points
+
+def sort_corners(corners):
+    centroid_x = sum(x for x, y in corners) / len(corners)
+    centroid_y = sum(y for x, y in corners) / len(corners)
+
+    corners.sort(key=lambda point: math.atan2(point[1] - centroid_y, point[0] - centroid_x))
+
+    if(corners[0] != (0,0)):
+        temp = corners
+        if corners[1] != (0,0):
+            if corners[2] != (0,0):
+                corners = [corners[3], corners[0], corners[1], corners[2]]
+            else :
+                corners = [corners[2], corners[3], corners[0], corners[1]]
+
+        else:
+            corners = [corners[1], corners[2], corners[3],corners[0]]
+    return corners
     
 def pntDist(cord1,cord2):
     return abs(  math.sqrt(  (cord2[0]-cord1[0])**2 + (cord2[1]-cord1[1])**2  )  )
