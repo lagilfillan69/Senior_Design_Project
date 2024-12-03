@@ -27,11 +27,13 @@ int Previous_Steer_Count = 0;
 int Steering_Angle = 0;
 
 
+
  // Constants (adjust these according to your RC car's specifications)
 const float WHEEL_DIAMETER = 0.16002;  // Wheel diameter in meters (example: 5 cm)
 const int COUNTS_PER_REV = 20;      // Encoder counts per wheel revolution
 const float WHEELBASE = .405;        // Distance between front and rear axles in meters
 const float UNDERSTEER_COEFF = 0.8;
+const float UNDERSTEER_COEFF_BCK
 float wheel_circumference = M_PI * WHEEL_DIAMETER;
 
 RotaryEncoder Rotary(&RotaryChanged, 2, 3, 4); // (CLK),  (DT),  (SW)

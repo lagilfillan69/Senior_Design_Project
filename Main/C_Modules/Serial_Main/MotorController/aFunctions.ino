@@ -249,4 +249,174 @@ float bicycle_equation(){
     CurrPos_Y += delta_s * sin(theta_mid);
 }
 
+float bicycle_equation_bckwrd(){
+    float delta_s = (Counter - Previous_Steer_Count / COUNTS_PER_REV) * wheel_circumference;
+    
+    Previous_Steer_Count = Counter;
+    // Read steering angle δ in radians
+    float delta = degree_to_rad(Steering_Angle);
+
+    // Adjust steering angle due to understeer caused by locked differentials
+    float effective_delta = delta * UNDERSTEER_COEFF_BCK;
+
+    // Compute curvature κ = tan(δ) / L
+    float curvature = tan(delta) / WHEELBASE;
+
+    // Compute change in heading angle Δθ = κ * Δs
+    float delta_theta = curvature * delta_s;
+
+    //     // Update heading angle
+    theta += delta_theta;
+
+    // Normalize theta to be within [-π, π]
+    if (theta > PI)
+        theta -= 2.0f * PI;
+    else if (theta < -PI)
+        theta += 2.0f * PI;
+
+    // Update position
+    float theta_mid = theta + (delta_theta / 2.0f);
+    CurrPos_X += delta_s * cos(theta_mid);
+    CurrPos_Y += delta_s * sin(theta_mid);
+}
+
+
+
+// float bicycle_equationREV(){
+    
+//     float delta_s = (Counter - Previous_Steer_Count / COUNTS_PER_REV) * wheel_circumference;
+    
+//     Previous_Steer_Count = Counter;
+//     // Read steering angle δ in radians
+//     float delta = degree_to_rad(Steering_Angle);
+
+//     // Adjust steering angle due to understeer caused by locked differentials
+//     float effective_delta = delta * UNDERSTEER_COEFF;
+
+//     // Compute curvature κ = tan(δ) / L
+//     float curvature = tan(delta) / WHEELBASE;
+
+//     // Compute change in heading angle Δθ = κ * Δs
+//     float delta_theta = curvature * delta_s;
+
+//     //     // Update heading angle
+//     theta += delta_theta;
+
+//     // Normalize theta to be within [-π, π]
+//     if (theta > PI)
+//         theta -= 2.0f * PI;
+//     else if (theta < -PI)
+//         theta += 2.0f * PI;
+
+//     // Update position
+//     float theta_mid = theta + (delta_theta / 2.0f);
+//     CurrPos_X += delta_s * cos(theta_mid);
+//     CurrPos_Y += delta_s * sin(theta_mid);
+// }
+
+// void inverse_bicycle_equation(float Target_X, float Target_Y) {
+//     // Compute change in position
+//     float delta_x = Target_X - CurrPos_X;
+//     float delta_y = Target_Y - CurrPos_Y;
+    
+//     // Compute distance to move
+//     float delta_s = sqrt(delta_x * delta_x + delta_y * delta_y);
+    
+//     // Compute change in heading angle
+//     float phi = atan2(delta_y, delta_x);
+//     float delta_theta = 2.0f * (phi - theta);
+    
+//     // Normalize delta_theta to be within [-π, π]
+//     if (delta_theta > PI)
+//         delta_theta -= 2.0f * PI;
+//     else if (delta_theta < -PI)
+//         delta_theta += 2.0f * PI;
+    
+//     // Compute effective steering angle
+//     float numerator = delta_theta * WHEELBASE;
+//     float denominator = delta_s;
+    
+//     if (denominator == 0) {
+//         // Avoid division by zero
+//         effective_delta = 0;
+//     } else {
+//         float effective_delta = atan2(numerator, denominator);
+//     }
+    
+//     // Compute actual steering angle, accounting for understeer
+//     float delta = effective_delta / UNDERSTEER_COEFF;
+    
+//     // Convert steering angle to degrees
+//     Steering_Angle = rad_to_degree(delta);
+    
+//     // Compute required wheel steps (or counts)
+//     float delta_steps = (delta_s / wheel_circumference) * COUNTS_PER_REV;
+//     Steps = Previous_Steer_Count + delta_steps;
+    
+
+
+//     // // Update Previous_Steer_Count for next iteration
+//     // Previous_Steer_Count = Counter;
+  
+//     // // Update heading angle
+//     // theta += delta_theta;
+    
+//     // // Normalize theta to be within [-π, π]
+//     // if (theta > PI)
+//     //     theta -= 2.0f * PI;
+//     // else if (theta < -PI)
+//     //     theta += 2.0f * PI;
+    
+//     // // Update position
+//     // /// SHOULD NOT UPDATE IF WE ARE CALCULATING HOW FAR WE NEED TO GO
+//     // float theta_mid = theta + (delta_theta / 2.0f);
+//     // CurrPos_X += delta_s * cos(theta_mid);
+//     // CurrPos_Y += delta_s * sin(theta_mid);
+
+//     return Steps, Angle
+// }
+
+void inverse_bicycle(float Target_X, float Target_Y) {
+    // Compute change in position
+    float delta_x = Target_X - CurrPos_X;
+    float delta_y = Target_Y - CurrPos_Y;
+    
+    // Compute distance to move (Δs)
+    float delta_s = sqrt(delta_x * delta_x + delta_y * delta_y);
+    
+    // Compute desired heading angle (φ)
+    float phi = atan2(delta_y, delta_x);
+    
+    // Compute change in heading angle (Δθ)
+    float delta_theta = phi - theta;
+    
+    // Normalize delta_theta to be within [-π, π]
+    if (delta_theta > PI)
+        delta_theta -= 2.0f * PI;
+    else if (delta_theta < -PI)
+        delta_theta += 2.0f * PI;
+    
+    // Compute curvature (κ)
+    float curvature;
+    if (delta_s != 0.0f)
+        curvature = delta_theta / delta_s;
+    else
+        curvature = 0.0f; // No movement needed
+    
+    // Compute effective steering angle (δ_eff)
+    float effective_delta = atan(curvature * WHEELBASE);
+    
+    // Adjust for understeer
+    float delta = effective_delta / UNDERSTEER_COEFF;
+    
+    // Convert steering angle to degrees
+    int Desire_Angle = rad_to_degree(delta);
+    
+    // Compute required wheel steps
+    int Steps = (delta_s / wheel_circumference) * COUNTS_PER_REV;
+
+    return Steps,Desired_Angle;
+}
+
+
 
