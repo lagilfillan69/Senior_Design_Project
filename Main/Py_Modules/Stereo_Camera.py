@@ -19,11 +19,11 @@ except Exception as e:
 try:
     from helper_functions import *
     from Camera_Node import DisparitySubscriber,ColorImgSubscriber
-    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW,FXTX
+    from SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_DEGVIEWS,FXTX,CONVERSION,CAMERAINFO
 except Exception as e:
     from Py_Modules.helper_functions import *
     from Py_Modules.Camera_Node import DisparitySubscriber,ColorImgSubscriber
-    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_HORZ_DEG_VIEW,STEREOCAM_VERT_DEG_VIEW,FXTX
+    from Py_Modules.SD_constants import STEREOCAM_GND_HEIGHT,STEREOCAM_DEGVIEWS,FXTX,CONVERSION,CAMERAINFO
     #raise RuntimeError("Import Error:\n") from e
 
 
@@ -31,17 +31,20 @@ except Exception as e:
 
 class Stereo_Camera:
     def __init__(self,
-                 GND_Height=STEREOCAM_GND_HEIGHT,
-                 H_DegView=STEREOCAM_HORZ_DEG_VIEW,
-                 V_DegView=STEREOCAM_VERT_DEG_VIEW,
-                 fxTx=FXTX,
+                 constants=[STEREOCAM_GND_HEIGHT, STEREOCAM_DEGVIEWS, FXTX, CONVERSION, CAMERAINFO],
                  Real=True,
                  multithread=True):
         self.Depth_Map = None
-        self.GND_Height = GND_Height
-        self.H_DegView = H_DegView
-        self.V_DegView = V_DegView
-        self.fxTx=fxTx
+        self.GND_Height = constants[0]
+        self.HC_DegView = constants[1][0]
+        self.VC_DegView = constants[1][1]
+        self.HS_DegView = constants[1][2]
+        self.VS_DegView = constants[1][3]
+        self.fxTx=constants[3]
+        self.UnitConv=constants[4]
+        self.CameraInfo=constants[5] #[K_left,K_aux,R_aux,T_aux,T_skew]
+        prPurple(f'constants:\t{constants[:5]}')
+        prYellow(f'convert:\t{self.UnitConv}')
         if platform.system() != 'Linux': self.Real=False
         else: self.Real=Real
         self.multithread = multithread and self.Real #only multithread if real and allowed
@@ -67,7 +70,7 @@ class Stereo_Camera:
         self.CAMprocess=None; self.SpinThread=None #prevent minor error in destructor
         self.Disparity_sub=None; self.ColorImg_sub=None
         if self.Real:
-            os.system("pkill -f MS_startup.sh")
+            # os.system("pkill -f MS_startup.sh")
             time.sleep(2)
             #Start up Depth Camera; also boots Ros subscribers
             self.establish_connection()
@@ -96,7 +99,7 @@ class Stereo_Camera:
                 prYellow("Giving time for Split terminal to run before closing")
                 time.sleep(5)
                 #os.kill(self.CAMprocess.pid,signal.SIGTERM)
-                os.system("pkill -f MS_startup.sh")
+                # os.system("pkill -f MS_startup.sh")
                 if self.CAMprocess.poll() is not None: prRed("Couldn't shutdown parallel terminal; please shutdown popped up terminal yourself if open")
             except Exception as e:
                 prRed("error shutting down parallel terminal,Likely minor:\n",e)
@@ -137,13 +140,23 @@ class Stereo_Camera:
             source install/setup.bash
             ros2 launch multisense_ros multisense_launch.py
             '''
-            prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
-            os.system("pkill -f MS_startup.sh")
-            #self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "./MS_startup.sh; exec bash"'],stderr=subprocess.PIPE)
-            self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "~/MS_startup.sh; exec bash"'],stderr=subprocess.PIPE) #this should work from anywhere provided the shell file is in home
-            prYellow("Loading parallel terminal to ---start up ROS CAMERA---")
+            if 'SSH_CLIENT' in os.environ:
+                prRed("Not starting up parralel terminal:\tSSH")
+            else:
+                prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
+                os.system("pkill -f MS_startup.sh")
+                #self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "./MS_startup.sh; exec bash"'],stderr=subprocess.PIPE)
+                self.CAMprocess = subprocess.Popen(['x-terminal-emulator','-e', 'bash -c "~/Senior_Design_Project/MS_startup.sh; exec bash"'],stderr=subprocess.PIPE) #this should work from anywhere provided the shell file is in home
+                prYellow("Loading parallel terminal to ---start up ROS CAMERA---")
+                time.sleep(5)
+                if self.CAMprocess.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+            
+            #change its settings
+            prYellow("Changing Camera Values")
+            res = subprocess.run('~/Senior_Design_Project/defaultSettings.sh', shell=True, capture_output=True, text=True)
             time.sleep(5)
-            if self.CAMprocess.poll() is not None: raise RuntimeError(f"Could not establish connection to camera")
+            if res.returncode != 0: raise RuntimeError(f"!!!!!!! WARNING !!!!!!!\nCouldnt edit default settings")
+            
             
             #Start up ROS
             rclpy.init()
@@ -169,8 +182,8 @@ class Stereo_Camera:
                 st=time.time()
                 while (self.Disparity_sub.first_try and self.ColorImg_sub.first_try):
                     if time.time()-st >5:
-                        prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
-                        os.system("pkill -f MS_startup.sh")
+                        # prYellow("Killing any missed parallel terminals for the ROS Camera Startup")
+                        # os.system("pkill -f MS_startup.sh")
                         raise RuntimeError("Could not establish connection;   SpinThread;   Timeout>5s")
                 #----
                 print(Back.GREEN+"SUCCESS: ROS THREADING PASS"+Style.RESET_ALL)
@@ -191,7 +204,7 @@ class Stereo_Camera:
                 self.Depth_Map = self.Disparity_sub.want
             prRed("Stereo_Camera;  from helperSpinner: Killing Spin Thread")
         except Exception as e:
-            os.system("pkill -f MS_startup.sh")
+            # os.system("pkill -f MS_startup.sh")
             raise RuntimeError("Error in ROS Node Spinner:\n") from e
     #unused (problems)
     '''
@@ -243,64 +256,115 @@ class Stereo_Camera:
     
     
     
+    
+    
     #---------------------------------------------------------------------
-    def dispar2depth(self,dispar):
-        return (self.fxTx  *16)/dispar
-    
-    
-    '''
-    #helper func for get_relativePOSITION and get_size
-    def get_depthPOINT(self, coordX, coordY, new=True):
-        if new or self.multithread: self.check_connection_DISPAR() #update
-        if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT: self.Disparity_sub.want is None")
-        
-        #if Depth map is smaller then ColorImg
-        if self.Depth_Map.shape != (self.height,self.width):
-            #prRed(f"{self.Depth_Map.shape}\t\t{(self.height,self.width)}")
-            coordX = int(  (self.Depth_Map.shape[0]/self.height)*coordX  )
-            coordY = int(  (self.Depth_Map.shape[1]/self.width )*coordY  )
+    #---------------------------------------------------------------------
+    #---------------------------------------------------------------------
+    def get_DepthBESTMATCH_BOXperc(self,AUXbox,area_perc=None,windowCUT_perc=0.46,dropoff=2,perc=95):        
+        #---------------------------
+        #   Sliding window from L->R
+        boxwid= int(AUXbox[1][0]-AUXbox[0][0])
+        if area_perc is None:
+            mincol= int(AUXbox[0][0]-boxwid)
+            maxcol= int(AUXbox[1][0]+boxwid)
         else:
-            coordX=int(coordX)
-            coordY=int(coordY)
-        return self.Depth_Map[coordY, coordX]
-
-    
-    
-    #return highest value of depth in a boxed area
-    def get_depthPOINT_BOXmax(self, box, new=True):
-        if new or self.multithread: self.check_connection_DISPAR() #update
-        if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT_BOXmax: self.Disparity_sub.want is None")
+            #mincol= int(AUXbox[0][0]-(self.width*area_perc))
+            #maxcol= int(AUXbox[1][0]+(self.width*area_perc))
+            mincol= int(AUXbox[0][0]-(boxwid*area_perc))
+            maxcol= int(AUXbox[1][0]+(boxwid*area_perc))
+        if mincol<0:          mincol=0
+        if maxcol>self.width: maxcol=self.width
         
-        #if Depth map is smaller then ColorImg
-        if self.Depth_Map.shape != (self.height,self.width):
-            #prRed(f"{self.Depth_Map.shape}\t\t{(self.height,self.width)}")
-            #rescale box
-            Xscaler = (self.Depth_Map.shape[0]/self.height)
-            Yscaler = (self.Depth_Map.shape[1]/self.width)
-            box[0][0]=int(box[0][0]*Xscaler); box[1][0]=int(box[1][0]*Xscaler)
-            box[0][1]=int(box[0][1]*Yscaler); box[1][1]=int(box[1][1]*Yscaler)
-        else:
-            box[0][0]=int(box[0][0]); box[1][0]=int(box[1][0])
-            box[0][1]=int(box[0][1]); box[1][1]=int(box[1][1])
-        return self.dispar2depth(np.max(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]  )  )
-    '''
+        AUXbox[0][0] = int(AUXbox[0][0])
+        AUXbox[0][1] = int(AUXbox[0][1])
+        AUXbox[1][0] = int(AUXbox[1][0])
+        AUXbox[1][1] = int(AUXbox[1][1])
+        
+        
+        #---------------------------
+        #   actual window
+        #	>getting area and windows
+        area= self.Depth_Map[    int(AUXbox[0][1]):int(AUXbox[1][1]), mincol:maxcol    ]
+        windows= [  area[:, i:i+boxwid] for i in range(maxcol-mincol+1-boxwid)  ]
+        
+        #	calc perc to cutoff
+        if windowCUT_perc is None: windowCUT_perc=  np.percentile([1-(np.sum(wind==0)/wind.size) for wind in windows], perc)
+        
+        #	>removing windows
+        valid_window=[];idxs=[]
+        for idx,wind in enumerate(windows):
+            if 1-(np.sum(wind==0)/wind.size)>=windowCUT_perc:
+                valid_window.append(wind)
+                idxs.append(idx)
+        
+        #	>edge cases
+        if len(idxs)==0: return self.get_depthPOINT_BOXperc(AUXbox),AUXbox
+        if len(idxs)==1:
+            box=  [   [idxs[0]+mincol,AUXbox[0][1]],  [idxs[0]+mincol+boxwid,AUXbox[1][1]]   ]
+            return self.get_depthPOINT_BOXperc(box),box
+        
+        
+        
+        #---------------------------
+        #   weigh depths by distance from center
+        depths = np.asarray([self.dispar2depth(np.percentile(wind,95),alert=False) for wind in valid_window])
+        weights= np.asarray(  [1/(1e-10+(abs(  (mincol+(maxcol-mincol)/2) - (idx+mincol+(boxwid/2))  )**dropoff)) for idx in idxs]  )
+        weights= weights/depths
+        
+        
+        
+        #---------------------------
+        #   Find 'best' idx with percentiled weight
+        ChosenOne=np.percentile(weights,perc)
+        idx=(np.abs(weights-ChosenOne)).argmin()
+        idx_n=idxs[idx]
+        box= [   [idx_n+mincol,AUXbox[0][1]],  [idx_n+mincol+boxwid,AUXbox[1][1]]   ]
+        
+        return depths[idx], box
+    
+    
+    
+    
+    
+    
+    
+    #---------------------------------------------------------------------
+    #disparity value to depth value, units included
+    def dispar2depth(self,dispar,alert=True):
+        if alert and dispar==0:
+            prALERT("dispar2depth:  division by zero")
+            return 0
+        return (self.UnitConv*self.fxTx  *16)/dispar
+    
+    
     #return perctile of values in boxed area
-    def get_depthPOINT_BOXperc(self, box, perc=95, new=True):
+    def get_depthPOINT_BOXperc(self, box_t, perc=95, new=True, adjust=0):
         if new or self.multithread: self.check_connection_DISPAR() #update
         if self.Disparity_sub.want is None: raise RuntimeError("get_depthPOINT_BOXperc: self.Disparity_sub.want is None")
+        box=box_t.copy()
         
-        #if Depth map is smaller then ColorImg
-        if self.Depth_Map.shape != (self.height,self.width):
-            #prRed(f"{self.Depth_Map.shape}\t\t{(self.height,self.width)}")
-            #rescale box
-            Xscaler = (self.Depth_Map.shape[0]/self.height)
-            Yscaler = (self.Depth_Map.shape[1]/self.width)
-            box[0][0]=int(box[0][0]*Xscaler); box[1][0]=int(box[1][0]*Xscaler)
-            box[0][1]=int(box[0][1]*Yscaler); box[1][1]=int(box[1][1]*Yscaler)
+        
+        box[1][0]=int(box[1][0])
+        box[1][1]=int(box[1][1])
+        if adjust==1:
+            t_map=self.Depth_Map.copy()
+            box[0][0]=int(box[0][0]-t_map[box[0][1],[0][0]])
+            box[1][0]=int(box[1][0]-t_map[box[1][1],[1][0]])
+            mapr=self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]
+            dep=self.dispar2depth(np.percentile(  mapr, perc  )) #seperate for one bug
+            return dep, box
+        elif adjust==2:
+            t_map=self.Depth_Map.copy()
+            box[0][0]=int(box[0][0]-t_map[box[0][1],[0][0]])
+            box[1][0]=int(box[1][0]-t_map[box[1][1],[1][0]])
+            mapr=self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]]
+            dep=self.dispar2depth(np.percentile(  mapr, perc  ))
+            return dep, box
         else:
-            box[0][0]=int(box[0][0]); box[1][0]=int(box[1][0])
-            box[0][1]=int(box[0][1]); box[1][1]=int(box[1][1])
-        return self.dispar2depth(np.percentile(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]], perc  ))
+            box[0][0]=int(box[0][0])
+            box[1][0]=int(box[1][0])
+            return self.dispar2depth(np.percentile(  self.Depth_Map[box[0][1]:box[1][1], box[0][0]:box[1][0]], perc  ))
     
     
     #---------------------------------------------------------------------
@@ -308,170 +372,112 @@ class Stereo_Camera:
     #helper func for get_relativePOSITION and get_size
     #pos: angle to the right
     #neg: angle to the left
-    def get_relativeANGLEX(self, coord):
+    def get_relativeANGLEX(self, coord, color=True):
         mid = self.width/2
         diff = mid - coord
         
-        #left
-        if diff>0: return -abs(diff) * self.H_DegView/self.width
-        #right
-        elif diff<0: return abs(diff) * self.H_DegView/self.width
-        #middle
-        else: return 0
+        if color:
+            #left
+            if diff>0: return -abs(diff) * self.HC_DegView/self.width
+            #right
+            elif diff<0: return abs(diff) * self.HC_DegView/self.width
+            #middle
+            else: return 0
+        else:
+            #left
+            if diff>0: return -abs(diff) * self.HS_DegView/self.width
+            #right
+            elif diff<0: return abs(diff) * self.HS_DegView/self.width
+            #middle
+            else: return 0
     
     #Not sure if we'll use
-    def get_relativeANGLEY(self, coord):
+    def get_relativeANGLEY(self, coord, color=True):
         mid = self.height/2
         diff = mid - coord
         
-        #left
-        if diff>0: return -abs(diff) * self.V_DegView/self.height
-        #right
-        elif diff<0: return abs(diff) * self.V_DegView/self.height
-        #middle
-        else: return 0
+        if color:
+            #left
+            if diff>0: return -abs(diff) * self.VC_DegView/self.height
+            #right
+            elif diff<0: return abs(diff) * self.VC_DegView/self.height
+            #middle
+            else: return 0
+        else:
+            #left
+            if diff>0: return -abs(diff) * self.VS_DegView/self.height
+            #right
+            elif diff<0: return abs(diff) * self.VS_DegView/self.height
+            #middle
+            else: return 0
     
     
     #=====================================================================
-    '''
+        
     #get relative position in COORDINATES given a point from center of bounding box from the YOLO Model
-    def get_relativePOSITION(self, coord):
-        #prCyan(f'{coord}')
-        #current postiion is [0,0]
-        #telling how far it is from the robots current position
-        
-        angle = self.get_relativeANGLEX(coord[0])
-        depth = self.get_depthPOINT(coord[0],coord[1])
-        
-        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
-        
-        #print(angle,depth,distance)
-        
-        if angle == 0: return [distance,0]
-        else:
-            x_dist = distance * math.sin(math.radians(angle))
-            y_dist = math.sqrt(   distance**2 - x_dist**2   )#distance * math.cos(angle)
-            return [x_dist,y_dist]
-    '''
-    
-    #get relative position in COORDINATES given a point from center of bounding box from the YOLO Model
-    def get_relativePOSITION_BOX(self, box):
+    def get_relativePOSITION_BOX(self, box, percision=2):
         coord = find_centerBOT(box) #if were using the cameras height due to lack of gyro: have to use bottom
         #prCyan(f'{coord}')
         #current postiion is [0,0]
         #telling how far it is from the robots current position
         
-        angle = self.get_relativeANGLEX(coord[0])
-        depth = self.get_depthPOINT_BOXperc(box)
-        prRed(f"UNIT SEE ME:\t{depth}")
+        # angle = self.get_relativeANGLEX(coord[0])
+        depth,Nbox = self.get_DepthBESTMATCH_BOXperc(box)
+        angle = self.get_relativeANGLEX(find_center(Nbox),color=False)
         
+        if depth<self.GND_Height: prALERT("get_relativePOSITION_BOX  depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   abs(depth**2 - self.GND_Height**2)   )
         
-        #print(angle,depth,distance)
         
         if angle == 0: return [distance,0]
         else:
             x_dist = distance * math.sin(math.radians(angle))
             y_dist = math.sqrt(   distance**2 - x_dist**2   )#distance * math.cos(angle)
-            return [x_dist,y_dist]
-    '''    
-    #realtive position with current angle and current position
-    def get_relativePOSITION(self, coord, currPOS, currANG):
-        
-        angle = self.get_relativeANGLEX(coord) + currANG
-        depth = self.get_depthPOINT(int(coord[0]),int(coord[1]))
-        
-        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
-        
-        if angle == 0: return [currPOS[0]+distance,   currPOS[1]]
-        else:
-            x_dist = distance * math.sin(math.radians(angle))
-            y_dist = math.sqrt(   distance**2 - x_dist**2   )#distance * math.cos(angle)
-            return [x_dist,y_dist]
-    '''
+            return [round(x_dist,percision),round(y_dist,percision)]
     
     #=====================================================================
-    '''
-    #get relative position in __Angle,Depth__ given a point from center of bounding box from the YOLO Model
-    def get_relativeAngDep(self, coord):
-        
-        #current postiion is [0,0]
-        #telling how far it is from the robots current position
-        
-        angle = self.get_relativeANGLEX(coord[0])
-        depth = self.get_depthPOINT(int(coord[0]),int(coord[1]))
-        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
-        
-        return [angle,  distance]
-    '''
      
     #max depth
-    def get_relativeAngDep_BOX(self, box):
+    def get_relativeAngDep_BOX(self, box, percision=2):
         coord = find_centerBOT(box) #if were using the cameras height due to lack of gyro: have to use bottom
         #current postiion is [0,0]
         #telling how far it is from the robots current position
         
-        angle = self.get_relativeANGLEX(coord[0])
-        depth = self.get_depthPOINT_BOXperc(box)
+        # angle = self.get_relativeANGLEX(coord[0])
+        depth,Nbox = self.get_DepthBESTMATCH_BOXperc(box)
+        angle = self.get_relativeANGLEX(find_center(Nbox),color=False)
+        
+        if depth<self.GND_Height: prALERT("get_relativeAngDep_BOX  depth warn: depth<GNDHeight, bad triangle. Make sure constant's units are correct.")
         distance = math.sqrt(   abs(depth**2 - self.GND_Height**2)   )
-        return [angle,  distance]
-    
-    '''
-    #realtive __Angle,Depth__ with current angle and current position
-    def get_relativeAngDep(self, coord, currANG):
-        
-        angle = self.get_relativeANGLEX(coord) + currANG
-        depth = self.get_depthPOINT(int(coord[0]),int(coord[1]))
-        distance = math.sqrt(   depth**2 - self.GND_Height**2   )
-        
-        return [angle,  distance]
-    '''
+        return [round(angle,percision),  round(distance,percision)]
     
     #=====================================================================
-    '''
-    def get_size(self, BB_coords):
-        #BB_cord: [   [cord of Top Left bounding box point], [cord of Bottom Right]   ]
-        TL_cord = self.get_relativePOSITION(  [BB_coords[0][0],BB_coords[0][1]]  )#x of top left;     y of top left
-        TR_cord = self.get_relativePOSITION(  [BB_coords[0][0],BB_coords[1][1]]  )#x of top left;     y of bot right
-        BL_cord = self.get_relativePOSITION(  [BB_coords[1][0],BB_coords[0][1]]  )#x of bot right;    y of top left
-        BR_cord = self.get_relativePOSITION(  [BB_coords[1][0],BB_coords[1][1]]  )#x of bot right;    y of bot right
-        
-        #calculate area for general quadrilateral
-        a = math.sqrt(   (TL_cord[0]-TR_cord[0])**2  +  (TL_cord[1]-TR_cord[1])**2   ) #distance from TL to TR
-        b = math.sqrt(   (TR_cord[0]-BR_cord[0])**2  +  (TR_cord[1]-BR_cord[1])**2   ) #distance from TR to BR
-        c = math.sqrt(   (BR_cord[0]-BL_cord[0])**2  +  (BR_cord[1]-BL_cord[1])**2   ) #distance from BR to BL
-        d = math.sqrt(   (BL_cord[0]-TL_cord[0])**2  +  (BL_cord[1]-TL_cord[1])**2   ) #distance from BL to TL
-        semiperimeter = (a+b+c+d)/2
-        
-        return math.sqrt(
-                    (semiperimeter - a) *
-                    (semiperimeter - b) *
-                    (semiperimeter - c) * 
-                    (semiperimeter - d)
-                    )
-    '''
     
     #get_size, but the distance of the corners are weighted by proximity within submask
-    def get_sizeWEIGHED(self, BB_coords):
-        (x1,y1), (x2,y2) = BB_coords
-        #print(f"{x1},{y1}\t{x2},{y2}")
-        
-        
+    def get_sizeWEIGHED(self, BB_coords,percision=2):
         #-----
-        #weigh
-        boxed = self.Depth_Map[y1:y2, x1:x2]
-        wDepCorn=[0]*4
-        for i in range(boxed.shape[0]):
-            for j in range(boxed.shape[1]):
-                #TL,TR, BL,BR
-                wDepCorn[0] += 1/(np.sqrt(abs(i-y1))**2  +  np.sqrt(abs(j-x1))**2+ 1e-5)
-                wDepCorn[1] += 1/(np.sqrt(abs(i-y1))**2  +  np.sqrt(abs(j-x2))**2+ 1e-5)
-                wDepCorn[2] += 1/(np.sqrt(abs(i-y2))**2  +  np.sqrt(abs(j-x1))**2+ 1e-5)
-                wDepCorn[3] += 1/(np.sqrt(abs(i-y2))**2  +  np.sqrt(abs(j-x2))**2+ 1e-5)
+        #	weigh
         
-        #	normalize
-        normalizer = np.max(boxed)/np.max(wDepCorn) #max of area/max of weights
-        wDepCorn=[ele*normalizer for ele in wDepCorn]
+        #corners weight =   sum(weights *values)/sum(weights)
+        _,Nbox = self.get_DepthBESTMATCH_BOXperc(box)
+        (x1,y1), (x2,y2) = Nbox
+        x1=int(x1);x2=int(x2)
+        y1=int(y1);y2=int(y2)
+        boxed = self.Depth_Map[y1:y2, x1:x2]
+        
+        rows,cols=boxed.shape[:2]
+        y_ind,x_ind = np.meshgrid(range(rows), range(cols), indexing='ij')
+        #TL,TR, BL,BR
+        w1= 1/(np.sqrt( (y_ind- y1)**2 + (x_ind- x1)**2)+ 1e-5)
+        w2= 1/(np.sqrt( (y_ind- y1)**2 + (x_ind- x2)**2)+ 1e-5)
+        w3= 1/(np.sqrt( (y_ind- y2)**2 + (x_ind- x1)**2)+ 1e-5)
+        w4= 1/(np.sqrt( (y_ind- y2)**2 + (x_ind- x2)**2)+ 1e-5)
+        
+        wDepCorn= [ np.sum(w1*boxed)/np.sum(w1),
+        	  np.sum(w2*boxed)/np.sum(w2),
+        	  np.sum(w3*boxed)/np.sum(w3),
+        	  np.sum(w4*boxed)/np.sum(w4) ]
+        #prRed(f'wDepCorn:\t{wDepCorn}')
         
         
         #-----
@@ -481,6 +487,7 @@ class Stereo_Camera:
         wAngL = self.get_relativeANGLEX(x1)
         wAngR = self.get_relativeANGLEX(x2)      
         for idx in range(4):
+            if wDepCorn[idx]<self.GND_Height: prALERT(f"get_sizeWEIGHED  depth warn: wDepCorn{idx}<GNDHeight, bad triangle. Make sure constant's units are correct.")
             distance = math.sqrt(   wDepCorn[idx]**2 - self.GND_Height**2   )
             if idx%2==1:   x_dist = distance * math.sin(math.radians(wAngL)) #x1 Left
             elif idx%2==0: x_dist = distance * math.sin(math.radians(wAngR)) #x2 Right
@@ -502,7 +509,7 @@ class Stereo_Camera:
         area = 0.5*  np.linalg.norm( np.cross(wPOSCorn[1]-wPOSCorn[0],wPOSCorn[2]-wPOSCorn[0]))
         #	Triangle 1 023
         area+= 0.5*  np.linalg.norm( np.cross(wPOSCorn[2]-wPOSCorn[0],wPOSCorn[3]-wPOSCorn[0]))
-        return area
+        return round(area,percision)
 
 
 
@@ -528,7 +535,7 @@ if __name__ == "__main__":
         initsplit=1.5;spl=initsplit
         while True:
             if cv2.waitKey(1) == ord('q'):
-                os.system("pkill -f MS_startup.sh")
+                # os.system("pkill -f MS_startup.sh")
                 break
             if cv2.waitKey(1) == ord('a'): spl-=initsplit*0.2
             if cv2.waitKey(1) == ord('d'): spl+=initsplit*0.2
@@ -542,7 +549,7 @@ if __name__ == "__main__":
             
     except Exception as e:
         print(e)
-        os.system("pkill -f MS_startup.sh")
+        # os.system("pkill -f MS_startup.sh")
         raise RuntimeError("Stereo Main Error:\n") from e
 
 

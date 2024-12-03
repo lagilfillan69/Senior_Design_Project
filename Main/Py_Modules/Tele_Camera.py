@@ -19,7 +19,7 @@ class TeleCAM():
     def __init__(self, index=TELECAM_PORT,
                  GND_Height=TELECAM_GND_HEIGHT,
                  FocalLength=TELECAM_FOCAL_LENGTH,
-                 FrameSize=[1920,1280]):
+                 FrameSize=[1920,1080]):
         self.GND_Height = GND_Height
         self.H_DegView = math.degrees(2*math.atan(  22.3/(2*FocalLength) ))#prev:FL*16 (realistic? was not)
         self.V_DegView = math.degrees(2*math.atan(  14.9/(2*FocalLength) ))
@@ -36,7 +36,7 @@ class TeleCAM():
             t_frame = self.get_feed()
             prGreen("--TCAM: connected")
             self.height,self.width,self.layers = t_frame.shape
-            prLightPurple(f'DEPTH CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
+            prLightPurple(f'TELE CAM:\t<{self.width}> w,  <{self.height}> h,  <{self.layers}> layers')
             print(Back.GREEN+"SUCCESS: TELESCOPIC CAMERA INIT PASS"+Style.RESET_ALL)
         except Exception as e:
             prALERT(f"Error starting 'TeleCAM', switch to Fake?:\ty?")

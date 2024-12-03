@@ -51,6 +51,9 @@ def rgb(minimum, maximum, value):
 def datestr():
     return f'{datetime.datetime.now().date()}_{datetime.datetime.now().hour}_{datetime.datetime.now().minute}_{datetime.datetime.now().second}'
 
+def datestrT():
+    return f'{datetime.datetime.now()}'
+
 def mean(arr):
     tot=0
     for i in arr:tot+=i
@@ -145,7 +148,13 @@ def interpolate_points(start, end, step):
         points.append((x, y))
     return points
     
-    
+def sort_corners(corners):
+    centroid_x = sum(x for x, y in corners) / len(corners)
+    centroid_y = sum(y for x, y in corners) / len(corners)
+
+    corners.sort(key= lambda point : math.atan2(point[1] - centroid_y, point[0] - centroid_x))
+    return corners 
+
 def pntDist(cord1,cord2):
     return abs(  math.sqrt(  (cord2[0]-cord1[0])**2 + (cord2[1]-cord1[1])**2  )  )
 
