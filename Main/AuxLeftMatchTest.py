@@ -130,6 +130,7 @@ listenlearn.start()
 cnt=0
 file_wipe('AuxLeftMatchTest_FPS.txt')
 while True:
+    time.sleep(0.1)
     s_time=time.time()
     #prRed(f"selPOS:\t{selPOS}")
     
@@ -206,6 +207,12 @@ while True:
                  sep='\n')
     #---
     cv2.rectangle(STER_depth,    Newbox2[0],   Newbox2[1],   (255,100,0),1) #blue	changed box
+    STER_RELPOSs = SterCamObj.get_relativePOSITION_BOX(Newbox2)
+    STER_DepAng = SterCamObj.get_relativeAngDep_BOX(Newbox2)
+    #STER_SIZEs = SterCamObj.get_sizeWEIGHED(Newbox2)
+    prPurple(f'StereoCam Rel_POS:\t\t{STER_RELPOSs}')
+    prLightPurple(f'StereoCam STER_DepAng:\t\t{STER_DepAng}')
+    #print(f'StereoCam Sizes:  \t\t{STER_SIZEs}')
     
     
     #-------------------

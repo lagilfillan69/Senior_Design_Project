@@ -192,8 +192,10 @@ while True:
                 #draw
                 for res in STERresults:
                     STERclasses.append(res[0])
+                    _, Newbox2= SterCamObj.get_DepthBESTMATCH_BOXperc(res[1])
                     cv2.rectangle(STER_img,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,(255, 0, 0),2) #blue
-                    cv2.rectangle(STER_depth,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,(255,0,0),2)
+                    cv2.rectangle(STER_depth,  [int(res[1][0][0]),int(res[1][0][1])],   [int(res[1][1][0]),int(res[1][1][1])]   ,(0,255,0),2)
+                    cv2.rectangle(STER_depth,  Newbox2[0],   Newbox2[1],   (255,100,0),2) #blue	changed box
                 #	relative position
                 #prPurple(f'---')
                 #STER_RELPOSs = [SterCamObj.get_relativePOSITION(find_center(res[1]))  for res in STERresults]
@@ -216,6 +218,15 @@ while True:
             h,w=STER_depth.shape[:2]
             #STER_depth = cv2.circle(STER_depth, [w//2+selPOS[1],  h//2+selPOS[0]],10,(0,255,0),5)
             box=  [    [int(w//2+selPOS[1]-lBOXs),int(h//2+selPOS[0]-lBOXs)],   [int(w//2+selPOS[1]+lBOXs),int(h//2+selPOS[0]+lBOXs)]   ]
+            
+            
+            STER_RELPOSs = SterCamObj.get_relativePOSITION_BOX(box)
+            STER_DepAng = SterCamObj.get_relativeAngDep_BOX(box)
+            STER_SIZEs = SterCamObj.get_sizeWEIGHED(box)
+            prPurple(f'StereoCam Rel_POS:\t\t{STER_RELPOSs}')
+            prLightPurple(f'StereoCam STER_DepAng:\t\t{STER_DepAng}')
+            print(f'StereoCam Sizes:  \t\t{STER_SIZEs}')
+                
             #color image
             cv2.rectangle(STER_img,    box[0],   box[1],   (255,0,0),2) #blue
             #dispar box

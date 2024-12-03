@@ -92,7 +92,7 @@ class Serial_Ard:
         self.ser.write(f"RTUN\t{arr}".encode()+b'\n')
     
     def Pause(self):
-        self.ser.write(f"PAUS\t{arr}".encode()+b'\n')
+        self.ser.write(f"PAUS\t".encode()+b'\n')
 
 
 prGreen("Serial_Ard: Class Definition Success")

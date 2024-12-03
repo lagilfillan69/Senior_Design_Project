@@ -11,27 +11,32 @@ print(f"CONSTANTS DIRECTORY:\t\t<{dir_path}>")
 
 #=========================
 #STEREO CAMERA
-convs=[0.495436,19.50535]
-CONVERSION=convs[1] #0.495436 meters, 19.50535 inches
+conv_choice=['m','i']
+choise=conv_choice[1]#	CHANGE THIS TO DECIDE
+if choise == 'm': CONVERSION=0.495436 #0.495436 meters, 19.50535 inches
+if choise == 'i': CONVERSION=19.50535 #0.495436 meters, 19.50535 inches
 
-if CONVERSION==convs[1]:  STEREOCAM_GND_HEIGHT = 8.66142 #Inches
-else:                     STEREOCAM_GND_HEIGHT = 0.22    #METERS, 22cm
+if choise=='i':  STEREOCAM_GND_HEIGHT = 8.66142 #Inches
+else:            STEREOCAM_GND_HEIGHT = 0.22    #METERS, 22cm
+print(f'CONVERSION:\t{CONVERSION}')
+print(f'STEREOCAM_GND_HEIGHT:\t{STEREOCAM_GND_HEIGHT}')
+if choise=='m': print(Back.YELLOW+"Depth in ___METERS___"+Style.RESET_ALL)
+if choise=='i': print(Back.YELLOW+"Depth in ___INCHES___"+Style.RESET_ALL)
+if STEREOCAM_GND_HEIGHT==0: print(Back.RED+'!'*60+"\nCONSTANTS WARNING:\t\tSTEREOCAM_GND_HEIGHT at 0, are you testing????\n"+'!'*60+Style.RESET_ALL)
+
 #https://www.carnegierobotics.com/AutonomousVehicles/CameraManufacturing/StereoCameraManufacturing/KS21i/Files/KS21i_Data_Sheet_CRL.pdf
 STEREOCAM_HORZDEGVIEW_C = 137	#colored cam
 STEREOCAM_VERTDEGVIEW_C = 83
 STEREOCAM_HORZDEGVIEW_S = 135	#stereo cam
 STEREOCAM_VERTDEGVIEW_S = 84
+STEREOCAM_DEGVIEWS=[STEREOCAM_HORZDEGVIEW_C,STEREOCAM_VERTDEGVIEW_C,  STEREOCAM_HORZDEGVIEW_S,STEREOCAM_VERTDEGVIEW_S]
 FXTX=126.1172
-convs=[0.495436,19.50535]
-CONVERSION=convs[1] #0.495436 meters, 19.50535 inches
-Clr2Dpr1=1.029   #scaling x value on colorFeed to Dispar Feed
-Clr2Dpr2=0.00007 #scaling x value on colorFeed to Dispar Feed
-Clr2Dpr3=-0.2566 #scaling x value on colorFeed to Dispar Feed
-Clr2Dpr4=0.0048  #scaling x value on colorFeed to Dispar Feed
-CLR2DPRWEIHTS=[Clr2Dpr1,Clr2Dpr2,Clr2Dpr3,Clr2Dpr4]
-if CONVERSION==convs[0]: print(Back.YELLOW+"Depth in ___METERS___"+Style.RESET_ALL)
-if CONVERSION==convs[1]: print(Back.YELLOW+"Depth in ___INCHES___"+Style.RESET_ALL)
-if STEREOCAM_GND_HEIGHT==0: print(Back.RED+'!'*60+"\nCONSTANTS WARNING:\t\tSTEREOCAM_GND_HEIGHT at 0, are you testing????\n"+'!'*60+Style.RESET_ALL)
+
+# Clr2Dpr1=1.029   #scaling x value on colorFeed to Dispar Feed
+# Clr2Dpr2=0.00007 #scaling x value on colorFeed to Dispar Feed
+# Clr2Dpr3=-0.2566 #scaling x value on colorFeed to Dispar Feed
+# Clr2Dpr4=0.0048  #scaling x value on colorFeed to Dispar Feed
+# CLR2DPRWEIHTS=[Clr2Dpr1,Clr2Dpr2,Clr2Dpr3,Clr2Dpr4]
 
 #   Matchpoints
 import numpy as np
@@ -57,8 +62,9 @@ CAMERAINFO=[K_left,K_aux,R_aux,T_aux,T_skew]
 
 #TELESCOPIC CAMERA
 TELECAM_PORT=0
-if CONVERSION==convs[1]:  TELECAM_GND_HEIGHT = 14.1732 #Inches
-else:                     TELECAM_GND_HEIGHT = 0.36    #METERS, 22cm
+if choise=='i':  TELECAM_GND_HEIGHT = 14.1732 #Inches
+else:            TELECAM_GND_HEIGHT = 0.36    #METERS, 36cm
+print(f'TELECAM_GND_HEIGHT:\t{TELECAM_GND_HEIGHT}')
 TELECAM_FOCAL_LENGTH =  135# 18mm shortest, 135 highest zoom
 
 
@@ -79,8 +85,12 @@ DEMO_STEREOCAM_MODELPATH = models_path+"DEMO_1920x1188.pt"
 DEMO_TELECAM_MODELPATH = models_path+"DEMO_1920x1188.pt"
 
 #MAIN
-STEREOCAM_MODELPATH = models_path+"STER-DataReal_640x640.pt" #NOTE: NEEDS ACTUALLY SET
-TELECAM_MODELPATH = models_path+"TELE-DataReal_640x640.pt" #NOTE: NEEDS ACTUALLY SET
+STEREOCAM_MODELPATH = models_path+"STER-DataReal_640x640.pt"
+#STEREOCAM_MODELPATH = models_path+"otherscales/Ster640x384.pt"
+#STEREOCAM_MODELPATH = models_path+"otherscales/Ster960x600.pt"
+TELECAM_MODELPATH = models_path+"TELE-DataReal_640x640.pt"
+#TELECAM_MODELPATH = models_path+"otherscales/Tele960x544.pt"
+#TELECAM_MODELPATH = models_path+"otherscales/Tele1920x1080.pt"
 CROPCOMPR_FILEPATH = "" #NOTE: NEEDS ACTUALLY SET #end with '/'
 if STEREOCAM_MODELPATH[-3:] != '.pt': STEREOCAM_MODELPATH = DEMO_STEREOCAM_MODELPATH
 if TELECAM_MODELPATH[-3:]   != '.pt': TELECAM_MODELPATH = DEMO_TELECAM_MODELPATH
